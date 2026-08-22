@@ -20,5 +20,6 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 ## Calidad técnica
 
 - `pnpm check`: aprobado.
-- `pnpm test`: 18 pruebas aprobadas en 4 archivos.
+- `pnpm test`: 25 pruebas aprobadas en 6 archivos.
+- Flujo de integración real comprobado en MariaDB aislado: crear sitio → registrar check-in → crear nota vinculada → leer detalle/planilla → validar restricción de acceso entre vendedores.
 - Capturas revisadas en escritorio y móvil para panel de administración, clientes, notas, perfil y usuarios.

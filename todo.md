@@ -41,6 +41,6 @@
 - [x] Sistema visual premium (paleta, tipografía, tokens) en index.css
 - [x] Interfaz completamente en español
 - [x] Pruebas Vitest de autenticación, contraseñas, CSV y reglas geográficas
-- [ ] Pruebas de integración de sitios, check-ins y notas con base de datos aislada
+- [x] Pruebas de integración reales de sitios, check-ins y notas con MariaDB aislado
 - [x] Verificación visual en móvil y escritorio
 - [x] Verificación de Google Maps en la vista previa pública (SDK y lienzo de mapa cargados)

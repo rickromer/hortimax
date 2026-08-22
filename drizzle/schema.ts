@@ -1,22 +1,39 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  decimal,
+  index,
+  int,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 /**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
+ * Tabla de usuarios. Mantiene compatibilidad con el flujo OAuth del template
+ * (openId) pero el acceso real de la app es por usuario + contraseña propia.
  */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
+  /** Identificador interno único (para OAuth del template o generado localmente). */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  /** Nombre de usuario para iniciar sesión (único, en minúsculas). */
+  username: varchar("username", { length: 64 }).unique(),
+  /** Hash scrypt de la contraseña. Null hasta que el usuario la define. */
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  /** Obliga a definir contraseña en el primer ingreso. */
+  mustChangePassword: boolean("mustChangePassword").default(true).notNull(),
+  /** Código temporal de activación entregado por el admin al vendedor. */
+  activationCode: varchar("activationCode", { length: 32 }),
+  phone: varchar("phone", { length: 40 }),
+  /** Zona principal asignada al vendedor (referencial). */
+  zone: varchar("zone", { length: 120 }),
+  active: boolean("active").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -25,4 +42,100 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/** Sitios de clientes mapeados en terreno. */
+export const sites = mysqlTable(
+  "sites",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 200 }).notNull(),
+    /** Tipo de cliente: productor, revendedor, etc. Texto libre con sugerencias. */
+    clientType: varchar("clientType", { length: 80 }),
+    /** Zona geográfica o comercial. */
+    zone: varchar("zone", { length: 120 }),
+    description: text("description"),
+    contactName: varchar("contactName", { length: 160 }),
+    phone: varchar("phone", { length: 40 }),
+    /** Coordenadas con 7 decimales (~1 cm de precisión). */
+    latitude: decimal("latitude", { precision: 10, scale: 7 }).notNull(),
+    longitude: decimal("longitude", { precision: 10, scale: 7 }).notNull(),
+    /** Precisión del GPS al momento de registrar, en metros. */
+    accuracy: int("accuracy"),
+    address: text("address"),
+    createdBy: int("createdBy").notNull(),
+    active: boolean("active").default(true).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => ({
+    createdByIdx: index("sites_createdBy_idx").on(table.createdBy),
+    zoneIdx: index("sites_zone_idx").on(table.zone),
+  })
+);
+
+export type Site = typeof sites.$inferSelect;
+export type InsertSite = typeof sites.$inferInsert;
+
+/** Registro de visitas (check-in) a un sitio. */
+export const checkins = mysqlTable(
+  "checkins",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    siteId: int("siteId").notNull(),
+    userId: int("userId").notNull(),
+    latitude: decimal("latitude", { precision: 10, scale: 7 }),
+    longitude: decimal("longitude", { precision: 10, scale: 7 }),
+    /** Distancia en metros entre el vendedor y el sitio al hacer check-in. */
+    distanceMeters: int("distanceMeters"),
+    comment: text("comment"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    siteIdx: index("checkins_site_idx").on(table.siteId),
+    userIdx: index("checkins_user_idx").on(table.userId),
+  })
+);
+
+export type Checkin = typeof checkins.$inferSelect;
+export type InsertCheckin = typeof checkins.$inferInsert;
+
+/** Planilla de notas por sitio: cabecera con fecha/hora + texto libre. */
+export const notes = mysqlTable(
+  "notes",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    siteId: int("siteId").notNull(),
+    userId: int("userId").notNull(),
+    /** Check-in asociado, si la nota se cargó durante una visita. */
+    checkinId: int("checkinId"),
+    /** Categoría opcional: aplicación, visita, pedido, reclamo, otro. */
+    category: varchar("category", { length: 80 }),
+    content: text("content").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => ({
+    siteIdx: index("notes_site_idx").on(table.siteId),
+    userIdx: index("notes_user_idx").on(table.userId),
+  })
+);
+
+export type Note = typeof notes.$inferSelect;
+export type InsertNote = typeof notes.$inferInsert;
+
+/** Catálogos configurables: zonas y tipos de cliente. */
+export const catalogs = mysqlTable(
+  "catalogs",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    kind: mysqlEnum("kind", ["zone", "clientType", "noteCategory"]).notNull(),
+    value: varchar("value", { length: 120 }).notNull(),
+    sortOrder: int("sortOrder").default(0).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    kindIdx: index("catalogs_kind_idx").on(table.kind),
+  })
+);
+
+export type Catalog = typeof catalogs.$inferSelect;
+export type InsertCatalog = typeof catalogs.$inferInsert;

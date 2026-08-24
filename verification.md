@@ -90,3 +90,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - El modo satelital usa la capa híbrida de Google Maps para conservar referencias: imágenes, rutas, nombres y lugares. Los iconos de lugar se habilitaron para permitir interacción con referencias nativas del mapa.
 - El panel **Capas y referencias** fue probado de forma interactiva: muestra Satélite, Mapa vial, leyenda con Productor, Revendedor, Cooperativa y Acopio, además de la explicación de rutas y lugares.
 - Revisión de escritorio: la franja corporativa recorre los encabezados con los cuatro colores, mientras el mapa híbrido presenta imágenes satelitales con nombres, rutas, límites y lugares visibles. El panel desplegado mantiene contraste suficiente sobre el mapa y separa claramente capas, leyenda y acciones.
+
+## Referencias del selector de ubicación
+
+- El selector dejó de usar `satellite` puro y ahora alterna entre Mapa vial y **Satélite + lugares** (Google Maps `hybrid`).
+- La verificación interactiva confirma que, sobre la imagen aérea, se conservan rutas, nombres de lugares e íconos de referencias cercanas; el control cambia a **Mapa vial** al activar el modo híbrido.
+- La captura de verificación del selector híbrido muestra explícitamente la etiqueta **DRQProducciones** y su ícono azul de lugar de Google Maps sobre la imagen aérea. También se ven referencias adicionales por iconos circulares y la escala de Google, elementos ausentes en la vista satelital pura reportada inicialmente.
+- En la captura de comprobación del selector híbrido se ve la etiqueta de lugar **DRQProducciones** junto con su ícono azul de Google Maps, además de marcadores circulares de referencias cercanas y la atribución/escala de Google. Estas referencias no estaban disponibles en el modo satelital puro reportado por el usuario.

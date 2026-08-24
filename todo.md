@@ -131,3 +131,10 @@
 - [x] Verificar contraste y legibilidad de la nueva identidad en móvil y escritorio
 - [x] Verificar en escritorio franja corporativa, panel de referencias, pines y controles del mapa
 - [x] Capturar evidencia del modo satelital híbrido con referencias visibles y panel de capas desplegado en escritorio
+
+## Referencias en el selector de ubicación
+- [x] Cambiar el selector de satélite puro a satélite híbrido con nombres, rutas y lugares
+- [x] Ajustar el control del selector para aclarar que el modo satelital conserva referencias
+- [x] Verificar interactivamente que al alternar el selector aparezcan referencias sobre la imagen satelital
+- [x] Documentar referencias concretas visibles en la captura del selector híbrido
+- [x] Confirmar en el documento de verificación la etiqueta visible del modo híbrido

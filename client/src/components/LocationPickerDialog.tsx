@@ -33,7 +33,7 @@ export function LocationPickerDialog({
   const [center, setCenter] = useState<Coordinates>(initialCoords ?? DEFAULT_CENTER);
   const [mapFocus, setMapFocus] = useState<Coordinates>(initialCoords ?? DEFAULT_CENTER);
   const [locating, setLocating] = useState(false);
-  const [mapType, setMapType] = useState<"roadmap" | "satellite">("roadmap");
+  const [mapType, setMapType] = useState<"roadmap" | "hybrid">("roadmap");
   const [zone, setZone] = useState<string | null>(null);
   const [lookingUpZone, setLookingUpZone] = useState(false);
   const lookupRequest = useRef(0);
@@ -153,9 +153,9 @@ export function LocationPickerDialog({
             size="sm"
             variant="secondary"
             className="bg-background shadow-md"
-            onClick={() => setMapType(type => (type === "roadmap" ? "satellite" : "roadmap"))}>
+            onClick={() => setMapType(type => (type === "roadmap" ? "hybrid" : "roadmap"))}>
             {mapType === "roadmap" ? <Satellite className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
-            {mapType === "roadmap" ? "Satélite" : "Mapa"}
+            {mapType === "roadmap" ? "Satélite + lugares" : "Mapa vial"}
           </Button>
         </div>
 

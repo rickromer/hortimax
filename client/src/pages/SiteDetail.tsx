@@ -1,6 +1,7 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
 import { FieldShell } from "@/components/FieldShell";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { FollowupsPanel } from "@/components/FollowupsPanel";
 import { PointLocationActions } from "@/components/PointLocationActions";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
@@ -39,7 +40,9 @@ import { Link, useRoute } from "wouter";
 export default function SiteDetail() {
   const [, params] = useRoute("/sitios/:id");
   const siteId = Number(params?.id);
-  const geo = useGeolocation();
+  const { user } = useAuth();
+  const canEdit = Boolean(user);
+  const geo = useGeolocation({ enabled: canEdit });
   const utils = trpc.useUtils();
 
   const [noteText, setNoteText] = useState("");
@@ -51,7 +54,10 @@ export default function SiteDetail() {
     { id: siteId },
     { enabled: Number.isFinite(siteId) && siteId > 0 }
   );
-  const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  const catalog = trpc.admin.catalog.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    enabled: canEdit,
+  });
 
   const createNote = trpc.notes.create.useMutation({
     onSuccess: async () => {
@@ -113,7 +119,7 @@ export default function SiteDetail() {
     <FieldShell
       title={site.name}
       subtitle={[site.clientType, site.zone].filter(Boolean).join(" · ") || "Sin clasificar"}
-      action={
+      action={canEdit ? (
         <Button
           variant="ghost"
           size="icon"
@@ -122,7 +128,7 @@ export default function SiteDetail() {
           aria-label="Editar sitio">
           <Pencil className="h-4.5 w-4.5" />
         </Button>
-      }>
+      ) : undefined}>
       <div className="space-y-4">
         <Button variant="ghost" size="sm" className="-ml-2" asChild>
           <Link href="/sitios">
@@ -188,12 +194,12 @@ export default function SiteDetail() {
               )}
             </div>
 
-            <div className="flex gap-2 pt-1">
+            {canEdit && <div className="flex gap-2 pt-1">
               <Button className="flex-1" onClick={() => setCheckinOpen(true)}>
                 <Navigation className="h-4 w-4" />
                 Check-in
               </Button>
-            </div>
+            </div>}
             <PointLocationActions
               name={site.name}
               coords={{ latitude: site.latitude, longitude: site.longitude }}
@@ -215,7 +221,7 @@ export default function SiteDetail() {
           </TabsList>
 
           <TabsContent value="notas" className="space-y-3 mt-3">
-            <div className="surface-card p-3.5 space-y-3">
+            {canEdit && <div className="surface-card p-3.5 space-y-3">
               <div className="flex items-center gap-2">
                 <NotebookPen className="h-4 w-4 text-primary" />
                 <p className="text-sm font-medium">Nueva nota</p>
@@ -263,7 +269,7 @@ export default function SiteDetail() {
                   Agregar
                 </Button>
               </div>
-            </div>
+            </div>}
 
             {notes.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
@@ -286,13 +292,13 @@ export default function SiteDetail() {
                       <span className="text-[11px] text-muted-foreground ml-auto truncate max-w-[35%]">
                         {note.userName ?? note.username}
                       </span>
-                      <Button
+                      {canEdit && <Button
                         size="icon"
                         variant="ghost"
                         className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"
                         onClick={() => removeNote.mutate({ id: note.id })}>
                         <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      </Button>}
                     </div>
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">
                       {note.content}
@@ -304,7 +310,7 @@ export default function SiteDetail() {
           </TabsContent>
 
           <TabsContent value="relevamientos" className="mt-3">
-            <FollowupsPanel siteId={site.id} followups={followups} />
+            <FollowupsPanel siteId={site.id} followups={followups} readOnly={!canEdit} />
           </TabsContent>
 
           <TabsContent value="visitas" className="mt-3">
@@ -341,13 +347,13 @@ export default function SiteDetail() {
         </Tabs>
       </div>
 
-      <CheckinDialog
+      {canEdit && <CheckinDialog
         open={checkinOpen}
         onOpenChange={setCheckinOpen}
         site={{ id: site.id, name: site.name }}
         coords={geo.position}
-      />
-      <SiteFormSheet
+      />}
+      {canEdit && <SiteFormSheet
         open={editOpen}
         onOpenChange={setEditOpen}
         mode="edit"
@@ -362,7 +368,7 @@ export default function SiteDetail() {
           phone: site.phone ?? "",
           address: site.address ?? "",
         }}
-      />
+      />}
     </FieldShell>
   );
 }

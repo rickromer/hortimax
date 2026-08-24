@@ -51,4 +51,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - Se verificó el logo HORTIMAX proporcionado (940 × 174 px) y se publicó como activo estático administrado en los encabezados de campo, acceso y administración.
 - La identidad visible ahora es **Portal de Seguimiento a Clientes**; el panel administrativo muestra también la agenda global de próximos relevamientos.
 - La integración real de MariaDB aislada cubre cliente → check-in → nota → próximo relevamiento → lectura en detalle, incluidos los permisos de cartera.
+
+## Consulta pública temporal
+
+- La vista previa sin cookie de sesión abre directamente el mapa centrado en Paraguay y no muestra el formulario de acceso ni acciones de alta o check-in.
+- El listado `/sitios` abre sin credenciales, permite búsqueda y filtros, y oculta alta, exportación y check-in; en una cartera vacía muestra solo el estado de consulta.
+- Tipos, compilación y 37 pruebas automatizadas pasaron; se comprueba que los procedimientos públicos permiten leer, mientras la creación de puntos sin sesión responde `UNAUTHORIZED`.
 - Capturas revisadas en escritorio y móvil para panel de administración, clientes, notas, perfil y usuarios.

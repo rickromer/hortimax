@@ -14,6 +14,7 @@ const store = vi.hoisted(() => ({
   listCheckins: vi.fn(),
   createCheckin: vi.fn(),
   listNotes: vi.fn(),
+  listFollowups: vi.fn(),
   createNote: vi.fn(),
   getNoteById: vi.fn(),
   updateNote: vi.fn(),
@@ -57,9 +58,51 @@ beforeEach(() => {
   store.createNote.mockImplementation(async (values: Record<string, unknown>) => ({ id: 92, ...values }));
   store.listCheckins.mockResolvedValue([]);
   store.listNotes.mockResolvedValue([]);
+  store.listFollowups.mockResolvedValue([]);
 });
 
 describe("flujos de sitio del vendedor", () => {
+  it("permite consulta pública de puntos sin sesión, sin aplicar un filtro de cartera", async () => {
+    store.listSites.mockResolvedValue([ownSite]);
+    store.lastCheckinBySite.mockResolvedValue(new Map());
+    const caller = sitesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+
+    const result = await caller.list({ search: " Rafael " });
+
+    expect(store.listSites).toHaveBeenCalledWith({ search: "Rafael" });
+    expect(result).toEqual([{ ...ownSite, lastCheckinAt: null }]);
+  });
+
+  it("permite ver detalle, notas y agenda del cliente sin sesión", async () => {
+    const caller = sitesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+
+    const detail = await caller.detail({ id: ownSite.id });
+
+    expect(detail).toMatchObject({ site: ownSite, notes: [], followups: [] });
+    expect(store.isUserAssignedToSite).not.toHaveBeenCalled();
+  });
+
+  it("mantiene bloqueada la creación de puntos sin sesión", async () => {
+    const caller = sitesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+
+    await expect(
+      caller.create({ name: "Punto público", latitude: -25.3, longitude: -57.6 })
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    expect(store.createSite).not.toHaveBeenCalled();
+  });
+
   it("limita el listado a los sitios del vendedor y adjunta la última visita", async () => {
     const site = { ...ownSite, id: 44 };
     const lastVisit = new Date("2026-08-22T13:00:00Z");

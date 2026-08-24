@@ -1,5 +1,6 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { FieldShell } from "@/components/FieldShell";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,9 @@ import { Link } from "wouter";
 const ALL = "__todos__";
 
 export default function SiteList() {
-  const geo = useGeolocation();
+  const { user } = useAuth();
+  const canEdit = Boolean(user);
+  const geo = useGeolocation({ enabled: canEdit });
   const utils = trpc.useUtils();
   const [search, setSearch] = useState("");
   const [zone, setZone] = useState<string>(ALL);
@@ -54,13 +57,13 @@ export default function SiteList() {
 
   return (
     <FieldShell
-      title="Mis clientes"
+      title={canEdit ? "Mis clientes" : "Clientes mapeados"}
       subtitle={`${sites.length} sitio${sites.length === 1 ? "" : "s"} registrado${sites.length === 1 ? "" : "s"}`}
-      action={
+      action={canEdit ? (
         <Button variant="ghost" size="icon" className="rounded-full" onClick={exportar}>
           <Download className="h-5 w-5" />
         </Button>
-      }>
+      ) : undefined}>
       <div className="space-y-3">
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -148,12 +151,12 @@ export default function SiteList() {
             <p className="text-sm text-muted-foreground mt-1 mb-4">
               {search || hasFilters
                 ? "Probá con otro criterio de búsqueda."
-                : "Registrá tu primer punto desde el mapa o elegí una ubicación manual."}
+                : "Todavía no hay clientes registrados."}
             </p>
-            <Button onClick={() => setNewSiteOpen(true)}>
+            {canEdit && <Button onClick={() => setNewSiteOpen(true)}>
               <Plus className="h-4 w-4" />
               Nuevo punto
-            </Button>
+            </Button>}
           </div>
         ) : (
           <div className="space-y-2 stagger-in">
@@ -178,13 +181,13 @@ export default function SiteList() {
                       Última visita: {timeAgo(site.lastCheckinAt)}
                     </p>
                   </Link>
-                  <Button
+                  {canEdit && <Button
                     size="sm"
                     variant="secondary"
                     className="shrink-0"
                     onClick={() => setCheckinSite({ id: site.id, name: site.name })}>
                     Check-in
-                  </Button>
+                  </Button>}
                 </div>
               </div>
             ))}
@@ -192,18 +195,18 @@ export default function SiteList() {
         )}
       </div>
 
-      <SiteFormSheet
+      {canEdit && <SiteFormSheet
         open={newSiteOpen}
         onOpenChange={setNewSiteOpen}
         coords={geo.position}
         onRequestLocation={() => geo.request()}
-      />
-      <CheckinDialog
+      />}
+      {canEdit && <CheckinDialog
         open={Boolean(checkinSite)}
         onOpenChange={open => !open && setCheckinSite(null)}
         site={checkinSite}
         coords={geo.position}
-      />
+      />}
     </FieldShell>
   );
 }

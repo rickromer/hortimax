@@ -78,3 +78,9 @@
 - [x] Crear tabla, migración y permisos de próximos relevamientos vinculados a cada cliente
 - [x] Permitir cargar descripción y fecha de próximo relevamiento desde la ficha del cliente
 - [x] Mostrar próximos relevamientos en la ficha y en el panel administrativo
+
+## Consulta pública temporal
+- [x] Permitir ver libremente mapa, puntos, fichas, notas y próximos relevamientos sin inicio de sesión
+- [x] Retirar redirecciones de acceso y controles de cuenta en el recorrido público
+- [x] Ocultar o bloquear acciones de edición, check-in, agenda y administración para visitantes
+- [x] Verificar que el modo público no permita modificar datos

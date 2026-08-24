@@ -55,7 +55,7 @@ export function FieldShell({ children, title, subtitle, bleed, action }: FieldSh
             </p>
           </div>
           {action}
-          <DropdownMenu>
+          {user && <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full shrink-0">
                 <Avatar className="h-8 w-8 border">
@@ -90,7 +90,7 @@ export function FieldShell({ children, title, subtitle, bleed, action }: FieldSh
                 Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu>}
         </div>
       </header>
 

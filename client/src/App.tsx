@@ -16,7 +16,6 @@ import AdminOverview from "./pages/admin/AdminOverview";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import FieldMap from "./pages/FieldMap";
-import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import SiteDetail from "./pages/SiteDetail";
 import SiteList from "./pages/SiteList";
@@ -49,22 +48,15 @@ function Guard({
   return <Component />;
 }
 
-function LoginRoute() {
-  const { user, loading } = useAuth();
-  if (loading) return <Splash />;
-  if (user) return <Redirect to="/" />;
-  return <Login />;
-}
-
 function Router() {
   return (
     <Switch>
-      <Route path="/acceso" component={LoginRoute} />
+      <Route path="/acceso">{() => <Redirect to="/" />}</Route>
 
       {/* Vendedor de campo */}
-      <Route path="/">{() => <Guard component={FieldMap} />}</Route>
-      <Route path="/sitios">{() => <Guard component={SiteList} />}</Route>
-      <Route path="/sitios/:id">{() => <Guard component={SiteDetail} />}</Route>
+      <Route path="/" component={FieldMap} />
+      <Route path="/sitios" component={SiteList} />
+      <Route path="/sitios/:id" component={SiteDetail} />
       <Route path="/notas">{() => <Redirect to="/sitios" />}</Route>
       <Route path="/perfil">{() => <Guard component={Profile} />}</Route>
 

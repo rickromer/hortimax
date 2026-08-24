@@ -1,7 +1,7 @@
 import { DEFAULT_CLIENT_TYPES, DEFAULT_NOTE_CATEGORIES, DEFAULT_ZONES } from "@shared/domain";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, protectedProcedure, router } from "../_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { formatPy, toCsv } from "../csv";
 import * as db from "../db";
 import { generateActivationCode, hashPassword, normalizeUsername } from "../password";
@@ -204,7 +204,7 @@ export const adminRouter = router({
 
   /* ------------------------------ Catálogos ----------------------------- */
 
-  catalog: protectedProcedure.query(async () => {
+  catalog: publicProcedure.query(async () => {
     const [zones, clientTypes, noteCategories] = await Promise.all([
       db.listCatalog("zone"),
       db.listCatalog("clientType"),

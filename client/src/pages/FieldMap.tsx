@@ -1,6 +1,7 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
 import { FieldShell } from "@/components/FieldShell";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { LocationPickerDialog } from "@/components/LocationPickerDialog";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,9 @@ import { toast } from "sonner";
 import { Link } from "wouter";
 
 export default function FieldMap() {
-  const geo = useGeolocation();
+  const { user } = useAuth();
+  const canEdit = Boolean(user);
+  const geo = useGeolocation({ enabled: canEdit });
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -50,7 +53,7 @@ export default function FieldMap() {
     position
       ? { latitude: position.latitude, longitude: position.longitude, radius: 500 }
       : { latitude: 0, longitude: 0 },
-    { enabled: Boolean(position), staleTime: 20_000 }
+    { enabled: canEdit && Boolean(position), staleTime: 20_000 }
   );
 
   const sites = sitesQuery.data ?? [];
@@ -94,7 +97,9 @@ export default function FieldMap() {
       bleed
       title="Mapa de puntos"
       subtitle={
-        geo.loading && !position
+        !canEdit
+          ? "Consulta pública"
+          : geo.loading && !position
           ? "Buscando señal GPS…"
           : position
             ? `GPS activo · ±${position.accuracy} m`
@@ -172,18 +177,16 @@ export default function FieldMap() {
 
         {/* Controles laterales */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2">
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-11 w-11 rounded-full shadow-lg bg-background hover:bg-background"
-            onClick={centerOnMe}
-            aria-label="Centrar en mi ubicación">
-            {geo.loading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Crosshair className="h-5 w-5" />
-            )}
-          </Button>
+          {canEdit && (
+            <Button
+              size="icon"
+              variant="secondary"
+              className="h-11 w-11 rounded-full shadow-lg bg-background hover:bg-background"
+              onClick={centerOnMe}
+              aria-label="Centrar en mi ubicación">
+              {geo.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Crosshair className="h-5 w-5" />}
+            </Button>
+          )}
           <Button
             size="icon"
             variant="secondary"
@@ -195,7 +198,7 @@ export default function FieldMap() {
         </div>
 
         {/* Aviso de GPS */}
-        {geo.error && (
+        {canEdit && geo.error && (
           <div className="absolute top-3 inset-x-3 z-10 rounded-xl bg-destructive/95 text-destructive-foreground px-3 py-2.5 text-sm shadow-lg">
             {geo.error}
           </div>
@@ -236,12 +239,12 @@ export default function FieldMap() {
                 </Button>
               </div>
               <div className="flex gap-2 mt-3">
-                <Button
+                {canEdit && <Button
                   className="flex-1"
                   onClick={() => setCheckinSite({ id: selected.id, name: selected.name })}>
                   <Navigation className="h-4 w-4" />
                   Check-in
-                </Button>
+                </Button>}
                 <Button variant="outline" className="flex-1 bg-background" asChild>
                   <Link href={`/sitios/${selected.id}`}>
                     Ver ficha
@@ -267,12 +270,12 @@ export default function FieldMap() {
                         a {formatDistance(site.distance)} · {site.clientType ?? "Sin tipo"}
                       </p>
                     </div>
-                    <Button
+                    {canEdit && <Button
                       size="sm"
                       variant="secondary"
                       onClick={() => setCheckinSite({ id: site.id, name: site.name })}>
                       Check-in
-                    </Button>
+                    </Button>}
                   </div>
                 ))}
               </div>
@@ -281,7 +284,7 @@ export default function FieldMap() {
         </div>
 
         {/* Botón principal */}
-        <Button
+        {canEdit && <Button
           className={cn(
             "absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 -translate-x-1/2 z-30 h-13 px-6 rounded-full shadow-xl",
             "text-base font-semibold"
@@ -293,10 +296,10 @@ export default function FieldMap() {
           }}>
           <Plus className="h-5 w-5" />
           Nuevo punto
-        </Button>
+        </Button>}
       </div>
 
-      <SiteFormSheet
+      {canEdit && <SiteFormSheet
         open={newSiteOpen}
         onOpenChange={setNewSiteOpen}
         coords={manualCoords ?? position}
@@ -315,9 +318,9 @@ export default function FieldMap() {
           if (savedAt) setFocus({ latitude: savedAt.latitude, longitude: savedAt.longitude });
           setManualCoords(null);
         }}
-      />
+      />}
 
-      <LocationPickerDialog
+      {canEdit && <LocationPickerDialog
         open={locationPickerOpen}
         onOpenChange={setLocationPickerOpen}
         initialCoords={manualCoords ?? position}
@@ -328,14 +331,14 @@ export default function FieldMap() {
           setNewSiteOpen(true);
           toast.success("Ubicación manual seleccionada");
         }}
-      />
+      />}
 
-      <CheckinDialog
+      {canEdit && <CheckinDialog
         open={Boolean(checkinSite)}
         onOpenChange={open => !open && setCheckinSite(null)}
         site={checkinSite}
         coords={position}
-      />
+      />}
     </FieldShell>
   );
 }

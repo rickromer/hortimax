@@ -15,13 +15,14 @@ type State = {
 };
 
 /** Seguimiento continuo del GPS del dispositivo. */
-export function useGeolocation(options?: { watch?: boolean }) {
+export function useGeolocation(options?: { watch?: boolean; enabled?: boolean }) {
   const watch = options?.watch ?? true;
+  const enabled = options?.enabled ?? true;
   const watchIdRef = useRef<number | null>(null);
   const [state, setState] = useState<State>({
     position: null,
     error: null,
-    loading: true,
+    loading: enabled,
     supported: typeof navigator !== "undefined" && "geolocation" in navigator,
   });
 
@@ -53,7 +54,10 @@ export function useGeolocation(options?: { watch?: boolean }) {
   }, []);
 
   useEffect(() => {
-    if (!state.supported || !watch) return;
+    if (!enabled || !state.supported || !watch) {
+      if (!enabled) setState(prev => ({ ...prev, loading: false, error: null }));
+      return;
+    }
     const id = navigator.geolocation.watchPosition(handleSuccess, handleError, {
       enableHighAccuracy: true,
       maximumAge: 10000,
@@ -66,10 +70,11 @@ export function useGeolocation(options?: { watch?: boolean }) {
         watchIdRef.current = null;
       }
     };
-  }, [handleError, handleSuccess, state.supported, watch]);
+  }, [enabled, handleError, handleSuccess, state.supported, watch]);
 
   /** Solicita una lectura puntual de alta precisión. */
   const request = useCallback(() => {
+    if (!enabled) return Promise.resolve<Position | null>(null);
     if (!state.supported) {
       setState(prev => ({ ...prev, error: "Este dispositivo no soporta GPS." }));
       return Promise.resolve<Position | null>(null);
@@ -93,7 +98,7 @@ export function useGeolocation(options?: { watch?: boolean }) {
         { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
       );
     });
-  }, [handleError, handleSuccess, state.supported]);
+  }, [enabled, handleError, handleSuccess, state.supported]);
 
   return { ...state, request };
 }

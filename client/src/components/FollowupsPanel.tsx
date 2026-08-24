@@ -20,6 +20,7 @@ type FollowupItem = {
 type Props = {
   siteId: number;
   followups: FollowupItem[];
+  readOnly?: boolean;
 };
 
 function dateInputToday() {
@@ -37,7 +38,7 @@ function isOverdue(value: Date | string) {
 }
 
 /** Agenda simple de visitas o atenciones futuras que pertenece al cliente actual. */
-export function FollowupsPanel({ siteId, followups }: Props) {
+export function FollowupsPanel({ siteId, followups, readOnly = false }: Props) {
   const utils = trpc.useUtils();
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(dateInputToday);
@@ -93,7 +94,7 @@ export function FollowupsPanel({ siteId, followups }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="surface-card p-3.5 space-y-3">
+      {!readOnly && <div className="surface-card p-3.5 space-y-3">
         <div className="flex items-center gap-2">
           <div className="grid place-items-center h-8 w-8 rounded-lg bg-primary/10 text-primary shrink-0">
             <CalendarPlus className="h-4 w-4" />
@@ -121,7 +122,7 @@ export function FollowupsPanel({ siteId, followups }: Props) {
             Agendar relevamiento
           </Button>
         </div>
-      </div>
+      </div>}
 
       {followups.length === 0 ? (
         <div className="surface-card py-10 px-5 text-center">
@@ -148,7 +149,7 @@ export function FollowupsPanel({ siteId, followups }: Props) {
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-1 shrink-0">
+              {!readOnly && <div className="flex items-center gap-1 shrink-0">
                 <Button
                   size="icon-sm"
                   variant="ghost"
@@ -167,7 +168,7 @@ export function FollowupsPanel({ siteId, followups }: Props) {
                   aria-label="Eliminar relevamiento">
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              </div>
+              </div>}
             </div>
           ))}
         </div>

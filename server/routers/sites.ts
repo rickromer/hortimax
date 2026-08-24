@@ -1,7 +1,7 @@
 import { distanceMeters, NEARBY_RADIUS_METERS } from "@shared/domain";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 const coord = z.object({
@@ -24,9 +24,10 @@ function canSeeAll(role: string) {
   return role === "admin";
 }
 
-async function assertSiteAccess(siteId: number, user: { id: number; role: string }) {
+async function assertSiteAccess(siteId: number, user?: { id: number; role: string } | null) {
   const site = await db.getSiteById(siteId);
   if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
+  if (!user) return site;
   if (!canSeeAll(user.role) && !(await db.isUserAssignedToSite(siteId, user.id))) {
     throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este sitio" });
   }
@@ -35,7 +36,7 @@ async function assertSiteAccess(siteId: number, user: { id: number; role: string
 
 export const sitesRouter = router({
   /** Lista de sitios: el vendedor ve los suyos, el admin ve todos (o filtra por vendedor). */
-  list: protectedProcedure
+  list: publicProcedure
     .input(
       z
         .object({
@@ -54,9 +55,9 @@ export const sitesRouter = router({
         clientType: input?.clientType || undefined,
       };
 
-      if (!canSeeAll(ctx.user.role)) {
+      if (ctx.user && !canSeeAll(ctx.user.role)) {
         filters.siteIds = await db.getAssignedSiteIds(ctx.user.id);
-      } else if (input?.scope === "mine") {
+      } else if (ctx.user && input?.scope === "mine") {
         filters.createdBy = ctx.user.id;
       } else if (input?.sellerId) {
         filters.siteIds = await db.getAssignedSiteIds(input.sellerId);
@@ -71,7 +72,7 @@ export const sitesRouter = router({
     }),
 
   /** Detalle de un cliente con check-ins, notas y agenda de relevamientos. */
-  detail: protectedProcedure
+  detail: publicProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
       const site = await assertSiteAccess(input.id, ctx.user);

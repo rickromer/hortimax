@@ -117,3 +117,8 @@
 - [x] Completar zona automáticamente desde el pin: distrito/municipio y, en ausencia, departamento
 - [x] Permitir editar manualmente la zona automática antes de registrar el punto
 - [x] Actualizar ejemplos del formulario a Invernadero López y productor de tomate
+
+## Corrección visual del selector de ubicación
+- [x] Eliminar el recuadro del diálogo y abrir una capa realmente a pantalla completa
+- [x] Evitar márgenes, transformación de centrado y desbordamiento fuera del viewport móvil
+- [x] Verificar en viewport móvil real que el mapa y los controles queden dentro de la pantalla

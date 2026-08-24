@@ -78,3 +78,8 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La alternancia **Satélite / Mapa** cambia correctamente el tipo de Google Maps dentro del selector.
 - La geocodificación inversa detectó `Villa Hayes` desde el centro del pin. La regla aplicada prioriza distrito, después municipio/localidad y finalmente departamento; la zona se transfiere al campo editable del formulario.
 - El formulario muestra los ejemplos **Invernadero López** y **Productor · planta 10.000 plantas de tomate · usa insumos**. La suite incluye pruebas de la regla territorial y finaliza con 41 pruebas aprobadas.
+
+## Corrección de pantalla completa del selector
+
+- Se eliminó el contenedor de diálogo de Radix y se reemplazó por una capa renderizada directamente sobre `document.body`, con `fixed inset-0` y bloqueo de scroll de fondo.
+- La comprobación interactiva móvil confirma que el selector cubre exactamente el viewport disponible (`500 × 701 px`), sin transformación de centrado, márgenes ni recuadro externo; el mapa, pin, satélite y acciones quedan dentro de esa capa.

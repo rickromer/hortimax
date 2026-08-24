@@ -92,6 +92,18 @@ describe("integración de campo con MariaDB aislado", () => {
     });
     expect(await db.isUserAssignedToSite(created!.id, seller.id)).toBe(true);
 
+    const publicCaller = sitesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+    const publicPoint = await publicCaller.create({
+      name: "Punto público de prueba",
+      latitude: -25.27,
+      longitude: -57.59,
+    });
+    expect(publicPoint).toMatchObject({ createdBy: 0, publicSubmission: true });
+
     const result = await sellerCaller.checkin({
       siteId: created!.id,
       latitude: -25.2638,
@@ -143,6 +155,11 @@ describe("integración de campo con MariaDB aislado", () => {
 
     const adminCaller = adminRouter.createCaller(contextFor({ id: admin.id, role: "admin" }));
     await adminCaller.setSiteAssignments({ siteId: created!.id, userIds: [otherSeller.id] });
+
+    const cleanup = await adminCaller.clearPublicSubmissions();
+    expect(cleanup).toEqual({ removed: 1 });
+    expect(await db.getSiteById(publicPoint!.id)).toBeUndefined();
+    expect(await db.getSiteById(created!.id)).toMatchObject({ id: created!.id });
 
     await expect(sellerCaller.detail({ id: created!.id })).rejects.toMatchObject({
       code: "FORBIDDEN",

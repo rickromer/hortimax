@@ -27,9 +27,11 @@ type FieldShellProps = {
   /** El mapa ocupa toda la pantalla y no necesita padding ni scroll. */
   bleed?: boolean;
   action?: ReactNode;
+  /** Oculta el rótulo contextual bajo la marca, por ejemplo en el mapa público. */
+  hideContext?: boolean;
 };
 
-export function FieldShell({ children, title, subtitle, bleed, action }: FieldShellProps) {
+export function FieldShell({ children, title, subtitle, bleed, action, hideContext }: FieldShellProps) {
   const [location] = useLocation();
   const { user, isAdmin, logout } = useAuth();
 
@@ -50,9 +52,9 @@ export function FieldShell({ children, title, subtitle, bleed, action }: FieldSh
           />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-[13px] leading-tight line-clamp-2">{BRAND_NAME}</p>
-            <p className="text-xs text-muted-foreground truncate">
+            {!hideContext && <p className="text-xs text-muted-foreground truncate">
               {title ?? subtitle ?? user?.name ?? "Vendedor de campo"}
-            </p>
+            </p>}
           </div>
           {action}
           {user && <DropdownMenu>

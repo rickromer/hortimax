@@ -57,4 +57,12 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La vista previa sin cookie de sesión abre directamente el mapa centrado en Paraguay y no muestra el formulario de acceso ni acciones de alta o check-in.
 - El listado `/sitios` abre sin credenciales, permite búsqueda y filtros, y oculta alta, exportación y check-in; en una cartera vacía muestra solo el estado de consulta.
 - Tipos, compilación y 37 pruebas automatizadas pasaron; se comprueba que los procedimientos públicos permiten leer, mientras la creación de puntos sin sesión responde `UNAUTHORIZED`.
+
+## Carga pública temporal
+
+- El encabezado móvil conserva solamente la marca HORTIMAX y el botón flotante de alta se presenta como `+`, separado de la navegación inferior.
+- Las altas sin sesión crean puntos marcados con `publicSubmission=true`; una acción exclusivamente administrativa elimina solo esos puntos junto con sus check-ins, notas, relevamientos y asignaciones vinculadas.
+- Una integración real de MariaDB aislada verificó la creación pública, el marcado temporal y la limpieza administrativa sin afectar un punto interno existente.
+- Prueba interactiva sin sesión: el botón flotante `+` abrió `LocationPickerDialog` sobre la navegación inferior; al confirmar la ubicación manual, se abrió el formulario **Nuevo punto de cliente** con sus coordenadas preseleccionadas.
+- Prueba completa sin sesión: se registró desde la interfaz el punto temporal `Punto UI público temporal 20260824`, se confirmó el mensaje de éxito y la aparición en el mapa; luego se eliminó únicamente ese punto y una consulta verificó que quedaron `0` registros coincidentes.
 - Capturas revisadas en escritorio y móvil para panel de administración, clientes, notas, perfil y usuarios.

@@ -52,6 +52,12 @@ export const adminRouter = router({
       return { checkins };
     }),
 
+  /** Elimina los puntos identificados como altas públicas temporales y sus registros relacionados. */
+  clearPublicSubmissions: adminProcedure.mutation(async () => {
+    const removed = await db.deletePublicSubmissionSites();
+    return { removed };
+  }),
+
   /* ------------------------------ Usuarios ------------------------------ */
 
   listUsers: adminProcedure.query(async () => {

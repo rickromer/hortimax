@@ -63,6 +63,8 @@ export const sites = mysqlTable(
     accuracy: int("accuracy"),
     address: text("address"),
     createdBy: int("createdBy").notNull(),
+    /** Identifica puntos enviados durante el modo temporal de carga pública. */
+    publicSubmission: boolean("publicSubmission").default(false).notNull(),
     active: boolean("active").default(true).notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -70,6 +72,7 @@ export const sites = mysqlTable(
   table => ({
     createdByIdx: index("sites_createdBy_idx").on(table.createdBy),
     zoneIdx: index("sites_zone_idx").on(table.zone),
+    publicSubmissionIdx: index("sites_publicSubmission_idx").on(table.publicSubmission),
   })
 );
 

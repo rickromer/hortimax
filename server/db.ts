@@ -235,6 +235,22 @@ export async function updateSite(id: number, values: Partial<InsertSite>) {
   return getSiteById(id);
 }
 
+/** Borra puntos creados durante el modo público y sus registros vinculados. Uso exclusivo de administración. */
+export async function deletePublicSubmissionSites() {
+  const db = await requireDb();
+  const rows = await db.select({ id: sites.id }).from(sites).where(eq(sites.publicSubmission, true));
+  const ids = rows.map(row => row.id);
+  if (!ids.length) return 0;
+  await db.transaction(async tx => {
+    await tx.delete(siteAssignments).where(inArray(siteAssignments.siteId, ids));
+    await tx.delete(followups).where(inArray(followups.siteId, ids));
+    await tx.delete(notes).where(inArray(notes.siteId, ids));
+    await tx.delete(checkins).where(inArray(checkins.siteId, ids));
+    await tx.delete(sites).where(inArray(sites.id, ids));
+  });
+  return ids.length;
+}
+
 export async function countSites(filters: SiteFilters = {}) {
   const db = await getDb();
   if (!db) return 0;

@@ -90,17 +90,23 @@ describe("flujos de sitio del vendedor", () => {
     expect(store.isUserAssignedToSite).not.toHaveBeenCalled();
   });
 
-  it("mantiene bloqueada la creación de puntos sin sesión", async () => {
+  it("permite crear puntos públicos y los identifica para limpieza posterior", async () => {
     const caller = sitesRouter.createCaller({
       user: null,
       req: {} as TrpcContext["req"],
       res: {} as TrpcContext["res"],
     } as TrpcContext);
 
-    await expect(
-      caller.create({ name: "Punto público", latitude: -25.3, longitude: -57.6 })
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-    expect(store.createSite).not.toHaveBeenCalled();
+    await caller.create({ name: "Punto público", latitude: -25.3, longitude: -57.6 });
+
+    expect(store.createSite).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Punto público",
+        createdBy: 0,
+        publicSubmission: true,
+      })
+    );
+    expect(store.replaceSiteAssignments).not.toHaveBeenCalled();
   });
 
   it("limita el listado a los sitios del vendedor y adjunta la última visita", async () => {

@@ -106,8 +106,8 @@ export const sitesRouter = router({
         .slice(0, 10);
     }),
 
-  /** Crea un nuevo sitio con las coordenadas del GPS. */
-  create: protectedProcedure
+  /** Crea un punto. Durante el modo temporal, también admite envíos sin sesión. */
+  create: publicProcedure
     .input(siteInput.merge(coord))
     .mutation(async ({ ctx, input }) => {
       const created = await db.createSite({
@@ -121,12 +121,13 @@ export const sitesRouter = router({
         accuracy: input.accuracy ?? null,
         latitude: input.latitude.toFixed(7),
         longitude: input.longitude.toFixed(7),
-        createdBy: ctx.user.id,
+        createdBy: ctx.user?.id ?? 0,
+        publicSubmission: !ctx.user,
       });
       if (!created) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear el sitio" });
       }
-      if (!canSeeAll(ctx.user.role)) {
+      if (ctx.user && !canSeeAll(ctx.user.role)) {
         await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
       }
       return created;

@@ -84,3 +84,21 @@
 - [x] Retirar redirecciones de acceso y controles de cuenta en el recorrido público
 - [x] Ocultar o bloquear acciones de edición, check-in, agenda y administración para visitantes
 - [x] Verificar que el modo público no permita modificar datos
+
+## Botón de nuevo punto en móvil
+- [x] Reemplazar el CTA móvil de Nuevo punto por un botón flotante compacto con símbolo +
+- [x] Mantener el botón visible sobre la navegación inferior y conservar etiqueta accesible
+- [x] Verificar que el botón abra el selector de ubicación en móvil
+- [x] Definir que el botón + permita altas sin sesión durante el modo público temporal
+- [x] Verificar el flujo público del botón + y selector de ubicación sobre la navegación inferior en móvil
+
+## Carga pública temporal y limpieza futura
+- [x] Habilitar el botón + y el flujo completo de alta de puntos sin sesión
+- [x] Marcar los puntos creados públicamente para facilitar su limpieza posterior
+- [x] Retirar el texto Mapa de puntos del encabezado de campo
+- [x] Preparar una acción administrativa protegida para limpiar datos de prueba públicos
+- [x] Verificar que solo la administración pueda ejecutar la limpieza futura
+- [x] Probar en móvil público el tap sobre + y la apertura del selector por encima de la navegación inferior
+- [x] Validar de punta a punta selector → formulario → creación pública y limpieza posterior de un punto de prueba
+- [x] Enviar desde la interfaz pública un punto de prueba y confirmar el resultado visible
+- [x] Limpiar únicamente el punto público de prueba creado en la validación de interfaz

@@ -29,6 +29,7 @@ import { Link } from "wouter";
 export default function FieldMap() {
   const { user } = useAuth();
   const canEdit = Boolean(user);
+  const canCreatePoint = true;
   const geo = useGeolocation({ enabled: canEdit });
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -95,7 +96,7 @@ export default function FieldMap() {
   return (
     <FieldShell
       bleed
-      title="Mapa de puntos"
+      hideContext
       subtitle={
         !canEdit
           ? "Consulta pública"
@@ -284,22 +285,22 @@ export default function FieldMap() {
         </div>
 
         {/* Botón principal */}
-        {canEdit && <Button
+        {canCreatePoint && <Button
           className={cn(
-            "absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 -translate-x-1/2 z-30 h-13 px-6 rounded-full shadow-xl",
-            "text-base font-semibold"
+            "absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 -translate-x-1/2 z-30 h-14 w-14 p-0 rounded-full shadow-xl",
+            "sm:w-auto sm:px-6 text-base font-semibold"
           )}
-          style={{ height: "3.25rem" }}
+          aria-label="Nuevo punto"
           onClick={() => {
             setManualCoords(null);
             setLocationPickerOpen(true);
           }}>
-          <Plus className="h-5 w-5" />
-          Nuevo punto
+          <Plus className="h-6 w-6" />
+          <span className="sr-only sm:not-sr-only">Nuevo punto</span>
         </Button>}
       </div>
 
-      {canEdit && <SiteFormSheet
+      {canCreatePoint && <SiteFormSheet
         open={newSiteOpen}
         onOpenChange={setNewSiteOpen}
         coords={manualCoords ?? position}
@@ -320,7 +321,7 @@ export default function FieldMap() {
         }}
       />}
 
-      {canEdit && <LocationPickerDialog
+      {canCreatePoint && <LocationPickerDialog
         open={locationPickerOpen}
         onOpenChange={setLocationPickerOpen}
         initialCoords={manualCoords ?? position}

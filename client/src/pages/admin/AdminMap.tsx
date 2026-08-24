@@ -1,5 +1,6 @@
 import { AdminShell } from "@/components/AdminShell";
 import { ClientMap } from "@/components/ClientMap";
+import { MapReferencePanel } from "@/components/MapReferencePanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
-import { Layers, Loader2, Search, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 
@@ -23,7 +24,7 @@ export default function AdminMap() {
   const [zone, setZone] = useState(ALL);
   const [clientType, setClientType] = useState(ALL);
   const [sellerId, setSellerId] = useState(ALL);
-  const [mapType, setMapType] = useState<"roadmap" | "hybrid">("roadmap");
+  const [mapType, setMapType] = useState<"roadmap" | "hybrid">("hybrid");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [focus, setFocus] = useState<{ latitude: number; longitude: number } | null>(null);
 
@@ -182,13 +183,11 @@ export default function AdminMap() {
             </div>
           </div>
 
-          <Button
-            size="icon"
-            variant="secondary"
-            className="absolute right-3 top-3 h-10 w-10 rounded-full shadow-lg bg-background hover:bg-background z-10"
-            onClick={() => setMapType(t => (t === "roadmap" ? "hybrid" : "roadmap"))}>
-            <Layers className="h-4.5 w-4.5" />
-          </Button>
+          <MapReferencePanel
+            mapType={mapType}
+            onMapTypeChange={setMapType}
+            className="absolute right-3 top-16 md:top-3 z-20"
+          />
 
           {selected && (
             <div className="absolute bottom-4 inset-x-4 md:left-auto md:right-4 md:w-80 z-20 surface-card surface-lift p-4">

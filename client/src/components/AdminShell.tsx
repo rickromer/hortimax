@@ -189,6 +189,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
             </div>
             {actions}
           </div>
+          <div className="brand-spectrum" aria-hidden="true" />
         </header>
 
         <main className={cn("flex-1 min-h-0", fill ? "relative" : "px-4 lg:px-8 py-6")}>

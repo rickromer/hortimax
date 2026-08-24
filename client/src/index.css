@@ -45,31 +45,39 @@
 }
 
 :root {
-  /* Paleta: verde profundo agroindustrial + arena cálida + ámbar de acento */
+  /* Paleta corporativa HORTIMAX: amarillo, rojo, verde y turquesa. */
   --radius: 0.85rem;
+  --brand-yellow: #E3A008;
+  --brand-red: #CE0A0A;
+  --brand-green: #3AA44B;
+  --brand-teal: #0BA4A6;
+  --brand-yellow-soft: color-mix(in srgb, var(--brand-yellow) 13%, white);
+  --brand-red-soft: color-mix(in srgb, var(--brand-red) 10%, white);
+  --brand-green-soft: color-mix(in srgb, var(--brand-green) 12%, white);
+  --brand-teal-soft: color-mix(in srgb, var(--brand-teal) 12%, white);
   --background: oklch(0.985 0.006 95);
   --foreground: oklch(0.24 0.028 155);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.24 0.028 155);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.24 0.028 155);
-  --primary: oklch(0.38 0.072 158);
-  --primary-foreground: oklch(0.98 0.012 120);
+  --primary: oklch(0.64 0.11 195);
+  --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.955 0.014 105);
   --secondary-foreground: oklch(0.34 0.04 155);
   --muted: oklch(0.955 0.011 110);
   --muted-foreground: oklch(0.52 0.022 145);
-  --accent: oklch(0.93 0.048 92);
-  --accent-foreground: oklch(0.32 0.06 90);
-  --destructive: oklch(0.55 0.2 27);
+  --accent: oklch(0.91 0.10 88);
+  --accent-foreground: oklch(0.32 0.06 80);
+  --destructive: oklch(0.48 0.18 28);
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.9 0.012 120);
   --input: oklch(0.9 0.012 120);
-  --ring: oklch(0.55 0.1 158);
-  --chart-1: oklch(0.45 0.09 158);
-  --chart-2: oklch(0.62 0.13 95);
-  --chart-3: oklch(0.55 0.1 220);
-  --chart-4: oklch(0.68 0.14 55);
+  --ring: oklch(0.64 0.11 195);
+  --chart-1: oklch(0.64 0.11 195);
+  --chart-2: oklch(0.62 0.14 142);
+  --chart-3: oklch(0.76 0.16 82);
+  --chart-4: oklch(0.48 0.18 28);
   --chart-5: oklch(0.4 0.06 300);
   --sidebar: oklch(0.24 0.032 158);
   --sidebar-foreground: oklch(0.93 0.014 120);
@@ -80,7 +88,7 @@
   --sidebar-border: oklch(0.34 0.032 158);
   --sidebar-ring: oklch(0.72 0.14 92);
   /* Tokens propios */
-  --brand-deep: oklch(0.28 0.045 158);
+  --brand-deep: oklch(0.25 0.035 195);
   --brand-amber: oklch(0.76 0.148 78);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -209,6 +217,11 @@
 
   .surface-lift {
     box-shadow: var(--shadow-lift);
+  }
+
+  .brand-spectrum {
+    height: 3px;
+    background: linear-gradient(90deg, var(--brand-yellow) 0 25%, var(--brand-red) 25% 50%, var(--brand-green) 50% 75%, var(--brand-teal) 75% 100%);
   }
 
   /* Zona segura para la barra inferior en celulares con notch */

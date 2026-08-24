@@ -94,6 +94,7 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
             </DropdownMenuContent>
           </DropdownMenu>}
         </div>
+        <div className="brand-spectrum" aria-hidden="true" />
       </header>
 
       <main className={cn("flex-1 min-h-0", bleed ? "relative" : "px-4 py-4 pb-24")}>

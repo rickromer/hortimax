@@ -3,6 +3,7 @@ import { ClientMap } from "@/components/ClientMap";
 import { FieldShell } from "@/components/FieldShell";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { LocationPickerDialog } from "@/components/LocationPickerDialog";
+import { MapReferencePanel } from "@/components/MapReferencePanel";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,6 @@ import { cn } from "@/lib/utils";
 import {
   ChevronRight,
   Crosshair,
-  Layers,
   Loader2,
   MapPin,
   Navigation,
@@ -35,7 +35,7 @@ export default function FieldMap() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [focus, setFocus] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [mapType, setMapType] = useState<"roadmap" | "hybrid">("roadmap");
+  const [mapType, setMapType] = useState<"roadmap" | "hybrid">("hybrid");
   const [newSiteOpen, setNewSiteOpen] = useState(false);
   const [manualCoords, setManualCoords] = useState<{
     latitude: number;
@@ -189,14 +189,7 @@ export default function FieldMap() {
               {geo.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Crosshair className="h-5 w-5" />}
             </Button>
           )}
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-11 w-11 rounded-full shadow-lg bg-background hover:bg-background"
-            onClick={() => setMapType(t => (t === "roadmap" ? "hybrid" : "roadmap"))}
-            aria-label="Cambiar tipo de mapa">
-            <Layers className="h-5 w-5" />
-          </Button>
+          <MapReferencePanel mapType={mapType} onMapTypeChange={setMapType} />
         </div>
 
         {/* Aviso de GPS */}

@@ -83,3 +83,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 
 - Se eliminó el contenedor de diálogo de Radix y se reemplazó por una capa renderizada directamente sobre `document.body`, con `fixed inset-0` y bloqueo de scroll de fondo.
 - La comprobación interactiva móvil confirma que el selector cubre exactamente el viewport disponible (`500 × 701 px`), sin transformación de centrado, márgenes ni recuadro externo; el mapa, pin, satélite y acciones quedan dentro de esa capa.
+
+## Identidad corporativa y mapa satelital
+
+- La muestra corporativa confirma cuatro acentos: amarillo, rojo, verde y turquesa. Se aplicaron como tokens de interfaz, franja de marca, pines y estados de mapa.
+- El modo satelital usa la capa híbrida de Google Maps para conservar referencias: imágenes, rutas, nombres y lugares. Los iconos de lugar se habilitaron para permitir interacción con referencias nativas del mapa.
+- El panel **Capas y referencias** fue probado de forma interactiva: muestra Satélite, Mapa vial, leyenda con Productor, Revendedor, Cooperativa y Acopio, además de la explicación de rutas y lugares.
+- Revisión de escritorio: la franja corporativa recorre los encabezados con los cuatro colores, mientras el mapa híbrido presenta imágenes satelitales con nombres, rutas, límites y lugares visibles. El panel desplegado mantiene contraste suficiente sobre el mapa y separa claramente capas, leyenda y acciones.

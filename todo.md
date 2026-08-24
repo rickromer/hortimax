@@ -122,3 +122,12 @@
 - [x] Eliminar el recuadro del diálogo y abrir una capa realmente a pantalla completa
 - [x] Evitar márgenes, transformación de centrado y desbordamiento fuera del viewport móvil
 - [x] Verificar en viewport móvil real que el mapa y los controles queden dentro de la pantalla
+
+## Identidad visual y referencias satelitales
+- [x] Aplicar los cuatro colores corporativos amarillo, rojo, verde y turquesa como tokens de interfaz
+- [x] Añadir referencias y etiquetas útiles sobre el modo satelital del mapa
+- [x] Incorporar una leyenda de tipos de punto y un panel de capas claro
+- [x] Dar mayor presencia visual a encabezados, puntos, controles y estados de interfaz
+- [x] Verificar contraste y legibilidad de la nueva identidad en móvil y escritorio
+- [x] Verificar en escritorio franja corporativa, panel de referencias, pines y controles del mapa
+- [x] Capturar evidencia del modo satelital híbrido con referencias visibles y panel de capas desplegado en escritorio

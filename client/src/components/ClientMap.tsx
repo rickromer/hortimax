@@ -74,16 +74,16 @@ type ClientMapProps = {
 };
 
 const PIN_COLORS: Record<string, string> = {
-  Productor: "#1F7A4D",
-  Revendedor: "#C77A0A",
-  Cooperativa: "#2563A8",
-  Acopio: "#7A4DBF",
-  Prospecto: "#6B7280",
+  Productor: "#3AA44B",
+  Revendedor: "#E3A008",
+  Cooperativa: "#0BA4A6",
+  Acopio: "#CE0A0A",
+  Prospecto: "#53666A",
 };
 
 function colorFor(type?: string | null) {
-  if (!type) return "#4B5563";
-  return PIN_COLORS[type] ?? "#0F5132";
+  if (!type) return "#53666A";
+  return PIN_COLORS[type] ?? "#0BA4A6";
 }
 
 function buildPin(marker: MapMarker) {
@@ -158,7 +158,8 @@ export function ClientMap({
       fullscreenControl: false,
       streetViewControl: false,
       zoomControl: false,
-      clickableIcons: false,
+      clickableIcons: true,
+      scaleControl: true,
       gestureHandling: "greedy",
     });
 

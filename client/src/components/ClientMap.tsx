@@ -1,6 +1,7 @@
 /// <reference types="@types/google.maps" />
 
 import { usePersistFn } from "@/hooks/usePersistFn";
+import { mapClickToCoordinates } from "@/lib/mapClick";
 import { cn } from "@/lib/utils";
 import { PARAGUAY_CENTER, PARAGUAY_DEFAULT_ZOOM } from "@shared/domain";
 import { useEffect, useRef, useState } from "react";
@@ -159,8 +160,8 @@ export function ClientMap({
 
     if (onMapClick) {
       mapRef.current.addListener("click", (event: google.maps.MapMouseEvent) => {
-        if (!event.latLng) return;
-        onMapClick({ latitude: event.latLng.lat(), longitude: event.latLng.lng() });
+        const coordinates = mapClickToCoordinates(event);
+        if (coordinates) onMapClick(coordinates);
       });
     }
 

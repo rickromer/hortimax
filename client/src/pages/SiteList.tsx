@@ -148,11 +148,11 @@ export default function SiteList() {
             <p className="text-sm text-muted-foreground mt-1 mb-4">
               {search || hasFilters
                 ? "Probá con otro criterio de búsqueda."
-                : "Registrá tu primer sitio desde el mapa cuando llegues al lugar."}
+                : "Registrá tu primer punto desde el mapa o elegí una ubicación manual."}
             </p>
             <Button onClick={() => setNewSiteOpen(true)}>
               <Plus className="h-4 w-4" />
-              Nuevo sitio
+              Nuevo punto
             </Button>
           </div>
         ) : (

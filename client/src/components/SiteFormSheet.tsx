@@ -18,8 +18,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCoords } from "@/lib/format";
+import { parsePointCoordinates } from "@/lib/locationLinks";
 import { trpc } from "@/lib/trpc";
-import { Crosshair, Loader2, MapPin } from "lucide-react";
+import { Crosshair, Loader2, MapPin, MousePointer2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -48,28 +49,58 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   coords: { latitude: number; longitude: number; accuracy?: number } | null;
+  locationSource?: "gps" | "manual";
   initial?: Partial<SiteFormValues>;
   mode?: "create" | "edit";
   onSaved?: (siteId: number) => void;
   onRequestLocation?: () => void;
+  onSelectOnMap?: () => void;
 };
 
 export function SiteFormSheet({
   open,
   onOpenChange,
   coords,
+  locationSource = "gps",
   initial,
   mode = "create",
   onSaved,
   onRequestLocation,
+  onSelectOnMap,
 }: Props) {
   const utils = trpc.useUtils();
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const [values, setValues] = useState<SiteFormValues>({ ...EMPTY, ...initial });
+  const [selectedCoords, setSelectedCoords] = useState<Props["coords"]>(coords);
+  const [selectedSource, setSelectedSource] = useState<"gps" | "manual">(locationSource);
+  const [showCoordinates, setShowCoordinates] = useState(false);
+  const [latitudeInput, setLatitudeInput] = useState("");
+  const [longitudeInput, setLongitudeInput] = useState("");
 
   useEffect(() => {
-    if (open) setValues({ ...EMPTY, ...initial });
+    if (!open) return;
+    setValues({ ...EMPTY, ...initial });
+    setSelectedCoords(coords);
+    setSelectedSource(locationSource);
+    setLatitudeInput(coords ? String(coords.latitude) : "");
+    setLongitudeInput(coords ? String(coords.longitude) : "");
+    setShowCoordinates(false);
   }, [open, initial]);
+
+  useEffect(() => {
+    if (!open || locationSource !== "manual") return;
+    setSelectedCoords(coords);
+    setSelectedSource("manual");
+    setLatitudeInput(coords ? String(coords.latitude) : "");
+    setLongitudeInput(coords ? String(coords.longitude) : "");
+  }, [coords, locationSource, open]);
+
+  useEffect(() => {
+    if (!open || locationSource !== "gps" || selectedSource !== "gps") return;
+    setSelectedCoords(coords);
+    setLatitudeInput(coords ? String(coords.latitude) : "");
+    setLongitudeInput(coords ? String(coords.longitude) : "");
+  }, [coords, locationSource, open, selectedSource]);
 
   const invalidate = async () => {
     await Promise.all([utils.sites.list.invalidate(), utils.sites.nearby.invalidate()]);
@@ -78,7 +109,7 @@ export function SiteFormSheet({
   const createSite = trpc.sites.create.useMutation({
     onSuccess: async site => {
       await invalidate();
-      toast.success("Sitio registrado en el mapa");
+      toast.success("Punto registrado en el mapa");
       onOpenChange(false);
       if (site?.id) onSaved?.(site.id);
     },
@@ -99,6 +130,17 @@ export function SiteFormSheet({
   const busy = createSite.isPending || updateSite.isPending;
   const set = (key: keyof SiteFormValues, value: string) =>
     setValues(prev => ({ ...prev, [key]: value }));
+
+  const applyManualCoordinates = () => {
+    const parsed = parsePointCoordinates(latitudeInput, longitudeInput);
+    if (!parsed) {
+      toast.error("Ingresá coordenadas válidas: latitud entre -90 y 90, longitud entre -180 y 180");
+      return;
+    }
+    setSelectedCoords(parsed);
+    setSelectedSource("manual");
+    toast.success("Coordenadas aplicadas al punto");
+  };
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -122,17 +164,16 @@ export function SiteFormSheet({
       return;
     }
 
-    if (!coords) {
-      toast.error("Necesitamos tu ubicación GPS para registrar el sitio");
-      onRequestLocation?.();
+    if (!selectedCoords) {
+      toast.error("Elegí una ubicación con GPS, el mapa o las coordenadas");
       return;
     }
 
     createSite.mutate({
       ...payload,
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      accuracy: coords.accuracy ?? null,
+      latitude: selectedCoords.latitude,
+      longitude: selectedCoords.longitude,
+      accuracy: selectedSource === "gps" ? selectedCoords.accuracy ?? null : null,
     });
   };
 
@@ -141,38 +182,95 @@ export function SiteFormSheet({
       <DialogContent className="sm:max-w-lg max-h-[92dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {mode === "edit" ? "Editar sitio" : "Nuevo sitio de cliente"}
+            {mode === "edit" ? "Editar punto" : "Nuevo punto de cliente"}
           </DialogTitle>
           <DialogDescription>
             {mode === "edit"
               ? "Actualizá los datos del cliente."
-              : "Se guarda con las coordenadas GPS de tu ubicación actual."}
+              : "Podés usar tu GPS, elegir el lugar en el mapa o ingresar coordenadas."}
           </DialogDescription>
         </DialogHeader>
 
         {mode === "create" && (
-          <div className="flex items-center gap-2.5 rounded-lg bg-secondary px-3 py-2.5 text-sm">
+          <div className="rounded-lg bg-secondary px-3 py-2.5 text-sm space-y-2.5">
+            <div className="flex items-center gap-2.5">
             <MapPin className="h-4 w-4 text-primary shrink-0" />
-            {coords ? (
-              <span className="font-mono text-xs">
-                {formatCoords(coords.latitude, coords.longitude)}
-                {coords.accuracy ? (
-                  <span className="text-muted-foreground"> · ±{coords.accuracy} m</span>
-                ) : null}
+            {selectedCoords ? (
+              <span className="font-mono text-xs min-w-0 flex-1 truncate">
+                {formatCoords(selectedCoords.latitude, selectedCoords.longitude)}
+                {selectedSource === "gps" && selectedCoords.accuracy ? (
+                  <span className="text-muted-foreground"> · GPS ±{selectedCoords.accuracy} m</span>
+                ) : (
+                  <span className="text-muted-foreground"> · ubicación manual</span>
+                )}
               </span>
             ) : (
-              <span className="text-muted-foreground flex-1">Ubicación no disponible</span>
+              <span className="text-muted-foreground flex-1">Todavía no elegiste una ubicación</span>
             )}
-            {onRequestLocation && (
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {onRequestLocation && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-8 bg-background"
+                  onClick={() => {
+                    setSelectedSource("gps");
+                    onRequestLocation();
+                  }}>
+                  <Crosshair className="h-3.5 w-3.5" />
+                  Usar GPS
+                </Button>
+              )}
+              {onSelectOnMap && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-8 bg-background"
+                  onClick={onSelectOnMap}>
+                  <MousePointer2 className="h-3.5 w-3.5" />
+                  Elegir en mapa
+                </Button>
+              )}
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="ml-auto h-7 px-2"
-                onClick={onRequestLocation}>
-                <Crosshair className="h-3.5 w-3.5" />
-                Actualizar
+                className="h-8"
+                onClick={() => setShowCoordinates(show => !show)}>
+                Coordenadas
               </Button>
+            </div>
+            {showCoordinates && (
+              <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end pt-1">
+                <div className="space-y-1">
+                  <Label htmlFor="point-lat" className="text-xs">Latitud</Label>
+                  <Input
+                    id="point-lat"
+                    inputMode="decimal"
+                    value={latitudeInput}
+                    onChange={event => setLatitudeInput(event.target.value)}
+                    placeholder="-25.2637"
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="point-lng" className="text-xs">Longitud</Label>
+                  <Input
+                    id="point-lng"
+                    inputMode="decimal"
+                    value={longitudeInput}
+                    onChange={event => setLongitudeInput(event.target.value)}
+                    placeholder="-57.5759"
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <Button type="button" size="sm" className="h-9" onClick={applyManualCoordinates}>
+                  Usar
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -283,7 +381,7 @@ export function SiteFormSheet({
             </Button>
             <Button type="submit" disabled={busy}>
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-              {mode === "edit" ? "Guardar cambios" : "Registrar sitio"}
+              {mode === "edit" ? "Guardar cambios" : "Registrar punto"}
             </Button>
           </DialogFooter>
         </form>

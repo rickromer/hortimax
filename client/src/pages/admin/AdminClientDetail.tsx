@@ -1,6 +1,7 @@
 import { AdminShell } from "@/components/AdminShell";
 import { ClientMap } from "@/components/ClientMap";
 import { ClientAssignmentsDialog } from "@/components/ClientAssignmentsDialog";
+import { PointLocationActions } from "@/components/PointLocationActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +11,6 @@ import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
   CalendarClock,
-  ExternalLink,
   MapPin,
   Navigation,
   Phone,
@@ -58,18 +58,7 @@ export default function AdminClientDetail() {
   return (
     <AdminShell
       title={site.name}
-      description={[site.clientType, site.zone].filter(Boolean).join(" · ") || "Sin clasificar"}
-      actions={
-        <Button variant="outline" className="bg-background" asChild>
-          <a
-            href={`https://www.google.com/maps?q=${site.latitude},${site.longitude}`}
-            target="_blank"
-            rel="noreferrer">
-            <ExternalLink className="h-4 w-4" />
-            <span className="hidden sm:inline">Abrir en Google Maps</span>
-          </a>
-        </Button>
-      }>
+      description={[site.clientType, site.zone].filter(Boolean).join(" · ") || "Sin clasificar"}>
       <div className="space-y-5 max-w-6xl">
         <Button variant="ghost" size="sm" className="-ml-2" asChild>
           <Link href="/admin/clientes">
@@ -140,6 +129,14 @@ export default function AdminClientDetail() {
                 <span className="text-muted-foreground">Alta:</span>
                 <span>{formatDateTime(site.createdAt)}</span>
               </div>
+            </div>
+
+            <div className="pt-1">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Ubicación del punto</p>
+              <PointLocationActions
+                name={site.name}
+                coords={{ latitude: site.latitude, longitude: site.longitude }}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-3 pt-1">

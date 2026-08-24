@@ -56,3 +56,12 @@
 - [x] Verificar en escritorio detalle de cliente, usuarios, actividad y controles de mapa tras los ajustes responsive
 - [x] Revisar explícitamente en escritorio mapa admin, detalles, usuarios y actividad; documentar layout y solapamientos
 - [x] Documentar por pantalla los resultados de la revisión responsive de escritorio
+
+## Puntos y ubicación compartible
+- [x] Reemplazar la etiqueta visible “Nuevo sitio” por “Nuevo punto” en la experiencia de campo
+- [x] Permitir crear un punto mediante GPS, selección manual en el mapa o ingreso de coordenadas
+- [x] Mostrar el modo de ubicación elegido y la precisión cuando se use GPS
+- [x] Añadir acciones para abrir cada punto en Google Maps y Waze
+- [x] Añadir compartir por WhatsApp y Web Share cuando el dispositivo lo soporte
+- [x] Verificar e implementar la captura de toque en el mapa para elegir el punto manual
+- [x] Verificar el flujo Elegir en mapa → coordenadas → formulario de punto

@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Link } from "wouter";
 
 export default function FieldMap() {
@@ -31,6 +32,11 @@ export default function FieldMap() {
   const [focus, setFocus] = useState<{ latitude: number; longitude: number } | null>(null);
   const [mapType, setMapType] = useState<"roadmap" | "hybrid">("roadmap");
   const [newSiteOpen, setNewSiteOpen] = useState(false);
+  const [manualCoords, setManualCoords] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [pickingPoint, setPickingPoint] = useState(false);
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
 
   const sitesQuery = trpc.sites.list.useQuery(
@@ -53,9 +59,8 @@ export default function FieldMap() {
     [sites, selectedId]
   );
 
-  const markers = useMemo(
-    () =>
-      sites.map(site => ({
+  const markers = useMemo(() => {
+    const mapped = sites.map(site => ({
         id: site.id,
         name: site.name,
         latitude: site.latitude,
@@ -63,9 +68,20 @@ export default function FieldMap() {
         clientType: site.clientType,
         zone: site.zone,
         selected: site.id === selectedId,
-      })),
-    [sites, selectedId]
-  );
+      }));
+    if (manualCoords) {
+      mapped.push({
+        id: -1,
+        name: "Nuevo punto",
+        latitude: manualCoords.latitude,
+        longitude: manualCoords.longitude,
+        clientType: "Prospecto",
+        zone: null,
+        selected: true,
+      });
+    }
+    return mapped;
+  }, [sites, selectedId, manualCoords]);
 
   const centerOnMe = async () => {
     const pos = position ?? (await geo.request());
@@ -101,11 +117,29 @@ export default function FieldMap() {
           fitToMarkers
           mapTypeId={mapType}
           onMarkerClick={id => {
+            if (id === -1) return;
             setSelectedId(id);
             const site = sites.find(s => s.id === id);
-            if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
+              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
+          }}
+          onMapClick={coordinates => {
+            if (!pickingPoint) return;
+            setManualCoords(coordinates);
+            setFocus(coordinates);
+            setPickingPoint(false);
+            setNewSiteOpen(true);
+            toast.success("Ubicación manual seleccionada");
           }}
         />
+
+        {pickingPoint && (
+          <div className="absolute top-3 inset-x-3 z-30 rounded-xl bg-primary text-primary-foreground px-4 py-3 shadow-xl flex items-center justify-between gap-3">
+            <p className="text-sm font-medium">Tocá el mapa en la ubicación del nuevo punto.</p>
+            <Button size="sm" variant="secondary" onClick={() => setPickingPoint(false)}>
+              Cancelar
+            </Button>
+          </div>
+        )}
 
         {/* Buscador flotante */}
         {searchOpen && (
@@ -269,20 +303,29 @@ export default function FieldMap() {
             "text-base font-semibold"
           )}
           style={{ height: "3.25rem" }}
-          onClick={async () => {
-            if (!position) await geo.request();
+          onClick={() => {
+            setManualCoords(null);
+            setPickingPoint(false);
             setNewSiteOpen(true);
           }}>
           <Plus className="h-5 w-5" />
-          Nuevo sitio
+          Nuevo punto
         </Button>
       </div>
 
       <SiteFormSheet
         open={newSiteOpen}
         onOpenChange={setNewSiteOpen}
-        coords={position}
-        onRequestLocation={() => geo.request()}
+        coords={manualCoords ?? position}
+        locationSource={manualCoords ? "manual" : "gps"}
+        onRequestLocation={async () => {
+          setManualCoords(null);
+          await geo.request();
+        }}
+        onSelectOnMap={() => {
+          setNewSiteOpen(false);
+          setPickingPoint(true);
+        }}
         onSaved={id => {
           setSelectedId(id);
           if (position) setFocus({ latitude: position.latitude, longitude: position.longitude });

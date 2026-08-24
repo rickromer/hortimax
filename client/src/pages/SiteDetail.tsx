@@ -1,6 +1,7 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
 import { FieldShell } from "@/components/FieldShell";
+import { PointLocationActions } from "@/components/PointLocationActions";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,6 @@ import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
   CalendarClock,
-  ExternalLink,
   Loader2,
   MapPin,
   Navigation,
@@ -90,10 +90,10 @@ export default function SiteDetail() {
 
   if (!detailQuery.data) {
     return (
-      <FieldShell title="Sitio no encontrado">
+      <FieldShell title="Punto no encontrado">
         <div className="surface-card p-8 text-center space-y-3">
           <p className="text-muted-foreground">
-            El sitio no existe o no tenés permiso para verlo.
+            El punto no existe o no tenés permiso para verlo.
           </p>
           <Button asChild variant="outline" className="bg-background">
             <Link href="/sitios">
@@ -130,7 +130,7 @@ export default function SiteDetail() {
           </Link>
         </Button>
 
-        {/* Mapa del sitio */}
+        {/* Mapa del punto */}
         <div className="surface-card overflow-hidden">
           <div className="h-44">
             <ClientMap
@@ -192,16 +192,11 @@ export default function SiteDetail() {
                 <Navigation className="h-4 w-4" />
                 Check-in
               </Button>
-              <Button variant="outline" className="bg-background" asChild>
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${site.latitude},${site.longitude}`}
-                  target="_blank"
-                  rel="noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Cómo llegar
-                </a>
-              </Button>
             </div>
+            <PointLocationActions
+              name={site.name}
+              coords={{ latitude: site.latitude, longitude: site.longitude }}
+            />
           </div>
         </div>
 

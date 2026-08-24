@@ -65,3 +65,9 @@
 - [x] Añadir compartir por WhatsApp y Web Share cuando el dispositivo lo soporte
 - [x] Verificar e implementar la captura de toque en el mapa para elegir el punto manual
 - [x] Verificar el flujo Elegir en mapa → coordenadas → formulario de punto
+
+## Selector centrado de ubicación
+- [x] Corregir el botón Nuevo punto para abrir el selector de ubicación sin depender de GPS ni de un toque inicial
+- [x] Implementar un pin fijo en el centro del mapa mientras el usuario desplaza el mapa
+- [x] Confirmar la posición central elegida y abrir el formulario con esas coordenadas
+- [x] Conservar una acción opcional para centrar el selector en el GPS actual

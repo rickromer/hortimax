@@ -1,6 +1,7 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
 import { FieldShell } from "@/components/FieldShell";
+import { LocationPickerDialog } from "@/components/LocationPickerDialog";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,7 @@ export default function FieldMap() {
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [pickingPoint, setPickingPoint] = useState(false);
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
 
   const sitesQuery = trpc.sites.list.useQuery(
@@ -122,24 +123,7 @@ export default function FieldMap() {
             const site = sites.find(s => s.id === id);
               if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
           }}
-          onMapClick={coordinates => {
-            if (!pickingPoint) return;
-            setManualCoords(coordinates);
-            setFocus(coordinates);
-            setPickingPoint(false);
-            setNewSiteOpen(true);
-            toast.success("Ubicación manual seleccionada");
-          }}
         />
-
-        {pickingPoint && (
-          <div className="absolute top-3 inset-x-3 z-30 rounded-xl bg-primary text-primary-foreground px-4 py-3 shadow-xl flex items-center justify-between gap-3">
-            <p className="text-sm font-medium">Tocá el mapa en la ubicación del nuevo punto.</p>
-            <Button size="sm" variant="secondary" onClick={() => setPickingPoint(false)}>
-              Cancelar
-            </Button>
-          </div>
-        )}
 
         {/* Buscador flotante */}
         {searchOpen && (
@@ -305,8 +289,7 @@ export default function FieldMap() {
           style={{ height: "3.25rem" }}
           onClick={() => {
             setManualCoords(null);
-            setPickingPoint(false);
-            setNewSiteOpen(true);
+            setLocationPickerOpen(true);
           }}>
           <Plus className="h-5 w-5" />
           Nuevo punto
@@ -324,11 +307,26 @@ export default function FieldMap() {
         }}
         onSelectOnMap={() => {
           setNewSiteOpen(false);
-          setPickingPoint(true);
+          setLocationPickerOpen(true);
         }}
         onSaved={id => {
           setSelectedId(id);
-          if (position) setFocus({ latitude: position.latitude, longitude: position.longitude });
+          const savedAt = manualCoords ?? position;
+          if (savedAt) setFocus({ latitude: savedAt.latitude, longitude: savedAt.longitude });
+          setManualCoords(null);
+        }}
+      />
+
+      <LocationPickerDialog
+        open={locationPickerOpen}
+        onOpenChange={setLocationPickerOpen}
+        initialCoords={manualCoords ?? position}
+        onRequestLocation={geo.request}
+        onConfirm={coordinates => {
+          setManualCoords(coordinates);
+          setFocus(coordinates);
+          setNewSiteOpen(true);
+          toast.success("Ubicación manual seleccionada");
         }}
       />
 

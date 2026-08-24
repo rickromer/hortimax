@@ -39,4 +39,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - `ClientMap` registra el evento nativo `click` de Google Maps y convierte el `latLng` en coordenadas validadas.
 - En modo **Elegir en mapa**, `FieldMap` toma esas coordenadas, muestra el pin temporal, abre el formulario y marca la fuente como **ubicación manual**.
 - Las coordenadas tipeadas admiten coma decimal, se validan por rango geográfico y se cubren con pruebas unitarias, junto con los enlaces de Google Maps, Waze y WhatsApp.
+
+## Selector centrado de ubicación
+
+- **Nuevo punto** abre el selector sin solicitar previamente GPS ni requerir tocar una zona puntual del mapa.
+- El pin permanece fijo en el centro; el evento `idle` de Google Maps actualiza la coordenada central cuando el usuario arrastra o hace zoom.
+- **Usar esta ubicación** devuelve esa coordenada al formulario como ubicación manual; **Mi ubicación** recentra opcionalmente el selector mediante GPS.
 - Capturas revisadas en escritorio y móvil para panel de administración, clientes, notas, perfil y usuarios.

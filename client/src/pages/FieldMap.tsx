@@ -40,6 +40,7 @@ export default function FieldMap() {
   const [manualCoords, setManualCoords] = useState<{
     latitude: number;
     longitude: number;
+    zone?: string | null;
   } | null>(null);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
@@ -305,6 +306,7 @@ export default function FieldMap() {
         onOpenChange={setNewSiteOpen}
         coords={manualCoords ?? position}
         locationSource={manualCoords ? "manual" : "gps"}
+        autoZone={manualCoords?.zone ?? undefined}
         onRequestLocation={async () => {
           setManualCoords(null);
           await geo.request();
@@ -326,11 +328,11 @@ export default function FieldMap() {
         onOpenChange={setLocationPickerOpen}
         initialCoords={manualCoords ?? position}
         onRequestLocation={geo.request}
-        onConfirm={coordinates => {
-          setManualCoords(coordinates);
-          setFocus(coordinates);
+        onConfirm={selection => {
+          setManualCoords(selection);
+          setFocus(selection);
           setNewSiteOpen(true);
-          toast.success("Ubicación manual seleccionada");
+          toast.success(selection.zone ? `Ubicación seleccionada · ${selection.zone}` : "Ubicación manual seleccionada");
         }}
       />}
 

@@ -71,3 +71,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - Los registros de producción no muestran errores de aplicación ni despliegue fallido; el servicio se reinició correctamente y solo registra solicitudes sin cookie de sesión, coherentes con el modo público temporal.
 - Tras la sincronización/reinicio, la raíz publicada `mapaclientes-cqpci7xz.manus.space` respondió HTTP 200 y la vista previa también respondió HTTP 200. La causa probable fue una indisponibilidad transitoria durante la sincronización del servidor de desarrollo, no un error persistente de la aplicación publicada.
 - Capturas revisadas en escritorio y móvil para panel de administración, clientes, notas, perfil y usuarios.
+
+## Selector, satélite y zona automática
+
+- El selector de ubicación se comprobó de forma interactiva en viewport móvil: el diálogo ocupa exactamente el ancho y alto disponibles (`500 × 701 px`), con pin fijo al centro.
+- La alternancia **Satélite / Mapa** cambia correctamente el tipo de Google Maps dentro del selector.
+- La geocodificación inversa detectó `Villa Hayes` desde el centro del pin. La regla aplicada prioriza distrito, después municipio/localidad y finalmente departamento; la zona se transfiere al campo editable del formulario.
+- El formulario muestra los ejemplos **Invernadero López** y **Productor · planta 10.000 plantas de tomate · usa insumos**. La suite incluye pruebas de la regla territorial y finaliza con 41 pruebas aprobadas.

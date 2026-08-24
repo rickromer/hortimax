@@ -50,6 +50,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   coords: { latitude: number; longitude: number; accuracy?: number } | null;
   locationSource?: "gps" | "manual";
+  autoZone?: string;
   initial?: Partial<SiteFormValues>;
   mode?: "create" | "edit";
   onSaved?: (siteId: number) => void;
@@ -62,6 +63,7 @@ export function SiteFormSheet({
   onOpenChange,
   coords,
   locationSource = "gps",
+  autoZone,
   initial,
   mode = "create",
   onSaved,
@@ -70,7 +72,7 @@ export function SiteFormSheet({
 }: Props) {
   const utils = trpc.useUtils();
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
-  const [values, setValues] = useState<SiteFormValues>({ ...EMPTY, ...initial });
+  const [values, setValues] = useState<SiteFormValues>({ ...EMPTY, ...initial, zone: autoZone ?? initial?.zone ?? "" });
   const [selectedCoords, setSelectedCoords] = useState<Props["coords"]>(coords);
   const [selectedSource, setSelectedSource] = useState<"gps" | "manual">(locationSource);
   const [showCoordinates, setShowCoordinates] = useState(false);
@@ -79,13 +81,13 @@ export function SiteFormSheet({
 
   useEffect(() => {
     if (!open) return;
-    setValues({ ...EMPTY, ...initial });
+    setValues({ ...EMPTY, ...initial, zone: autoZone ?? initial?.zone ?? "" });
     setSelectedCoords(coords);
     setSelectedSource(locationSource);
     setLatitudeInput(coords ? String(coords.latitude) : "");
     setLongitudeInput(coords ? String(coords.longitude) : "");
     setShowCoordinates(false);
-  }, [open, initial]);
+  }, [open, initial, autoZone]);
 
   useEffect(() => {
     if (!open || locationSource !== "manual") return;
@@ -282,7 +284,7 @@ export function SiteFormSheet({
               id="site-name"
               value={values.name}
               onChange={e => set("name", e.target.value)}
-              placeholder="Ej. Estancia San Rafael"
+              placeholder="Ej. Invernadero López"
               required
               className="h-11"
             />
@@ -307,19 +309,18 @@ export function SiteFormSheet({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Zona</Label>
-              <Select value={values.zone || undefined} onValueChange={value => set("zone", value)}>
-                <SelectTrigger className="h-11 w-full">
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(catalog.data?.zones ?? []).map(zone => (
-                    <SelectItem key={zone} value={zone}>
-                      {zone}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="site-zone">Zona {autoZone && mode === "create" ? "· detectada por ubicación" : ""}</Label>
+              <Input
+                id="site-zone"
+                list="zone-suggestions"
+                value={values.zone}
+                onChange={e => set("zone", e.target.value)}
+                placeholder="Distrito, municipio o departamento"
+                className="h-11"
+              />
+              <datalist id="zone-suggestions">
+                {(catalog.data?.zones ?? []).map(zone => <option key={zone} value={zone} />)}
+              </datalist>
             </div>
           </div>
 
@@ -354,7 +355,7 @@ export function SiteFormSheet({
               id="site-desc"
               value={values.description}
               onChange={e => set("description", e.target.value)}
-              placeholder="Ej. Productor de soja, 400 ha, compra insumos por campaña"
+              placeholder="Ej. Productor · planta 10.000 plantas de tomate · usa insumos"
               rows={3}
             />
           </div>

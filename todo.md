@@ -110,3 +110,10 @@
 - [x] Documentar el resultado del diagnóstico de producción y la causa probable de la incidencia temporal
 - [x] Confirmar nuevamente que la raíz publicada y la vista previa respondan después de la sincronización
 - [x] Guardar y confirmar el diagnóstico de acceso temporal, la acción correctiva y las respuestas HTTP 200
+
+## Selector y zona automática de puntos
+- [x] Mostrar el selector de ubicación como pantalla completa en móvil y escritorio
+- [x] Ofrecer vista satelital y mapa normal dentro del selector
+- [x] Completar zona automáticamente desde el pin: distrito/municipio y, en ausencia, departamento
+- [x] Permitir editar manualmente la zona automática antes de registrar el punto
+- [x] Actualizar ejemplos del formulario a Invernadero López y productor de tomate

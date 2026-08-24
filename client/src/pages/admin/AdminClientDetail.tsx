@@ -1,6 +1,7 @@
 import { AdminShell } from "@/components/AdminShell";
 import { ClientMap } from "@/components/ClientMap";
 import { ClientAssignmentsDialog } from "@/components/ClientAssignmentsDialog";
+import { FollowupsPanel } from "@/components/FollowupsPanel";
 import { PointLocationActions } from "@/components/PointLocationActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ export default function AdminClientDetail() {
     );
   }
 
-  const { site, checkins, notes, assignees } = detailQuery.data;
+  const { site, checkins, notes, assignees, followups } = detailQuery.data;
 
   return (
     <AdminShell
@@ -183,6 +184,7 @@ export default function AdminClientDetail() {
         <Tabs defaultValue="notas">
           <TabsList>
             <TabsTrigger value="notas">Planilla de notas ({notes.length})</TabsTrigger>
+            <TabsTrigger value="relevamientos">Próximos relevamientos ({followups.length})</TabsTrigger>
             <TabsTrigger value="visitas">Historial de visitas ({checkins.length})</TabsTrigger>
           </TabsList>
 
@@ -214,6 +216,10 @@ export default function AdminClientDetail() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="relevamientos" className="mt-4">
+            <FollowupsPanel siteId={site.id} followups={followups} />
           </TabsContent>
 
           <TabsContent value="visitas" className="mt-4">

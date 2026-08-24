@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { BRAND_NAME } from "@/lib/brand";
 import NotFound from "@/pages/NotFound";
 import { MapPinned } from "lucide-react";
 import type { ComponentType } from "react";
@@ -27,7 +28,7 @@ function Splash() {
         <div className="grid place-items-center h-12 w-12 rounded-2xl bg-primary text-primary-foreground animate-pulse">
           <MapPinned className="h-6 w-6" />
         </div>
-        <p className="text-sm text-muted-foreground">Cargando MapaClientes…</p>
+        <p className="text-sm text-muted-foreground">Cargando {BRAND_NAME}…</p>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
 import { FieldShell } from "@/components/FieldShell";
+import { FollowupsPanel } from "@/components/FollowupsPanel";
 import { PointLocationActions } from "@/components/PointLocationActions";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
@@ -106,7 +107,7 @@ export default function SiteDetail() {
     );
   }
 
-  const { site, checkins, notes } = detailQuery.data;
+  const { site, checkins, notes, followups } = detailQuery.data;
 
   return (
     <FieldShell
@@ -205,6 +206,9 @@ export default function SiteDetail() {
             <TabsTrigger value="notas" className="flex-1">
               Notas ({notes.length})
             </TabsTrigger>
+            <TabsTrigger value="relevamientos" className="flex-1">
+              Próximos ({followups.length})
+            </TabsTrigger>
             <TabsTrigger value="visitas" className="flex-1">
               Visitas ({checkins.length})
             </TabsTrigger>
@@ -297,6 +301,10 @@ export default function SiteDetail() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="relevamientos" className="mt-3">
+            <FollowupsPanel siteId={site.id} followups={followups} />
           </TabsContent>
 
           <TabsContent value="visitas" className="mt-3">

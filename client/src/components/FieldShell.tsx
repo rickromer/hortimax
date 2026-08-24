@@ -10,7 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ListTree, LogOut, Map, MapPinned } from "lucide-react";
+import { BRAND_LOGO_URL, BRAND_NAME } from "@/lib/brand";
+import { LayoutDashboard, ListTree, LogOut, Map } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -41,16 +42,16 @@ export function FieldShell({ children, title, subtitle, bleed, action }: FieldSh
   return (
     <div className="min-h-dvh flex flex-col bg-background">
       <header className="sticky top-0 z-30 safe-top border-b border-border/70 bg-background/85 backdrop-blur-lg">
-        <div className="flex items-center gap-3 px-4 pb-2.5 pt-2">
-          <div className="grid place-items-center h-9 w-9 rounded-xl bg-primary text-primary-foreground shrink-0">
-            <MapPinned className="h-5 w-5" />
-          </div>
+        <div className="flex items-center gap-3 px-4 py-2.5">
+          <img
+            src={BRAND_LOGO_URL}
+            alt="HORTIMAX"
+            className="h-8 w-[104px] object-contain object-left shrink-0"
+          />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold leading-tight truncate">
-              {title ?? "MapaClientes PY"}
-            </p>
+            <p className="font-semibold text-[13px] leading-tight line-clamp-2">{BRAND_NAME}</p>
             <p className="text-xs text-muted-foreground truncate">
-              {subtitle ?? user?.name ?? "Vendedor de campo"}
+              {title ?? subtitle ?? user?.name ?? "Vendedor de campo"}
             </p>
           </div>
           {action}

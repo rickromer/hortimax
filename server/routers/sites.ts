@@ -70,17 +70,18 @@ export const sitesRouter = router({
       }));
     }),
 
-  /** Detalle de un sitio con su historial de check-ins y notas. */
+  /** Detalle de un cliente con check-ins, notas y agenda de relevamientos. */
   detail: protectedProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
       const site = await assertSiteAccess(input.id, ctx.user);
-      const [checkins, notes, assignees] = await Promise.all([
+      const [checkins, notes, assignees, followups] = await Promise.all([
         db.listCheckins({ siteId: site.id, limit: 100 }),
         db.listNotes({ siteId: site.id, limit: 200 }),
         db.listSiteAssignees(site.id),
+        db.listFollowups({ siteId: site.id, status: "pending", limit: 100 }),
       ]);
-      return { site, checkins, notes, assignees };
+      return { site, checkins, notes, assignees, followups };
     }),
 
   /** Sitios cercanos a una coordenada, para evitar duplicados y ofrecer check-in. */

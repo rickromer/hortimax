@@ -2,7 +2,7 @@ import { AdminShell } from "@/components/AdminShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDateTime, timeAgo } from "@/lib/format";
+import { formatDateLong, formatDateTime, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
 import {
   Activity,
@@ -46,6 +46,7 @@ function StatCard({
 export default function AdminOverview() {
   const statsQuery = trpc.admin.stats.useQuery();
   const activityQuery = trpc.admin.activity.useQuery({ limit: 8 });
+  const followupsQuery = trpc.followups.list.useQuery({ limit: 8 });
   const stats = statsQuery.data;
 
   return (
@@ -91,6 +92,36 @@ export default function AdminOverview() {
                 icon={Users}
               />
             </>
+          )}
+        </div>
+
+        <div className="surface-card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <CalendarClock className="h-4 w-4 text-primary" />
+            <p className="font-semibold">Próximos relevamientos</p>
+            <span className="text-xs text-muted-foreground">Agenda de visitas y atenciones</span>
+          </div>
+          {followupsQuery.isLoading ? (
+            <Skeleton className="h-28" />
+          ) : (followupsQuery.data?.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              No hay relevamientos agendados.
+            </p>
+          ) : (
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              {followupsQuery.data!.map(followup => (
+                <Link
+                  key={followup.id}
+                  href={`/admin/clientes/${followup.siteId}`}
+                  className="rounded-lg bg-secondary/60 p-3 hover:bg-secondary transition-colors">
+                  <p className="text-xs font-medium text-primary capitalize truncate">
+                    {formatDateLong(followup.scheduledFor)}
+                  </p>
+                  <p className="text-sm font-semibold truncate mt-1">{followup.siteName}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{followup.description}</p>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
 

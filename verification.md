@@ -45,4 +45,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - **Nuevo punto** abre el selector sin solicitar previamente GPS ni requerir tocar una zona puntual del mapa.
 - El pin permanece fijo en el centro; el evento `idle` de Google Maps actualiza la coordenada central cuando el usuario arrastra o hace zoom.
 - **Usar esta ubicación** devuelve esa coordenada al formulario como ubicación manual; **Mi ubicación** recentra opcionalmente el selector mediante GPS.
+
+## Marca HORTIMAX y agenda de relevamientos
+
+- Se verificó el logo HORTIMAX proporcionado (940 × 174 px) y se publicó como activo estático administrado en los encabezados de campo, acceso y administración.
+- La identidad visible ahora es **Portal de Seguimiento a Clientes**; el panel administrativo muestra también la agenda global de próximos relevamientos.
+- La integración real de MariaDB aislada cubre cliente → check-in → nota → próximo relevamiento → lectura en detalle, incluidos los permisos de cartera.
 - Capturas revisadas en escritorio y móvil para panel de administración, clientes, notas, perfil y usuarios.

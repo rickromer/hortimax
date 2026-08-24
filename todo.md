@@ -71,3 +71,10 @@
 - [x] Implementar un pin fijo en el centro del mapa mientras el usuario desplaza el mapa
 - [x] Confirmar la posición central elegida y abrir el formulario con esas coordenadas
 - [x] Conservar una acción opcional para centrar el selector en el GPS actual
+
+## Marca HORTIMAX y próximos relevamientos
+- [x] Subir y usar el logo HORTIMAX en los encabezados de campo y administración
+- [x] Cambiar el nombre visible a Portal de Seguimiento a Clientes
+- [x] Crear tabla, migración y permisos de próximos relevamientos vinculados a cada cliente
+- [x] Permitir cargar descripción y fecha de próximo relevamiento desde la ficha del cliente
+- [x] Mostrar próximos relevamientos en la ficha y en el panel administrativo

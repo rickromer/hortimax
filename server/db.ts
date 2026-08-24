@@ -3,8 +3,10 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   catalogs,
   checkins,
+  followups,
   InsertCatalog,
   InsertCheckin,
+  InsertFollowup,
   InsertNote,
   InsertSite,
   InsertUser,
@@ -464,6 +466,74 @@ export async function countNotes(options: { since?: Date; userId?: number } = {}
     .from(notes)
     .where(conditions.length ? and(...conditions) : undefined);
   return Number(rows[0]?.total ?? 0);
+}
+
+/* ----------------------- Próximos relevamientos ----------------------- */
+
+export async function createFollowup(values: InsertFollowup) {
+  const db = await requireDb();
+  const result = await db.insert(followups).values(values);
+  const insertId = Number((result as any).insertId ?? (result as any)[0]?.insertId);
+  return getFollowupById(insertId);
+}
+
+export async function getFollowupById(id: number) {
+  const db = await requireDb();
+  const rows = await db.select().from(followups).where(eq(followups.id, id)).limit(1);
+  return rows[0];
+}
+
+export async function updateFollowup(id: number, values: Partial<InsertFollowup>) {
+  const db = await requireDb();
+  await db.update(followups).set(values).where(eq(followups.id, id));
+  return getFollowupById(id);
+}
+
+export async function deleteFollowup(id: number) {
+  const db = await requireDb();
+  await db.delete(followups).where(eq(followups.id, id));
+}
+
+export async function listFollowups(options: {
+  siteId?: number;
+  siteIds?: number[];
+  createdBy?: number;
+  status?: "pending" | "completed" | "cancelled";
+  limit?: number;
+} = {}) {
+  const db = await requireDb();
+  const conditions = [] as any[];
+  if (options.siteId) conditions.push(eq(followups.siteId, options.siteId));
+  if (options.siteIds) {
+    conditions.push(
+      options.siteIds.length ? inArray(followups.siteId, options.siteIds) : eq(followups.siteId, -1)
+    );
+  }
+  if (options.createdBy) conditions.push(eq(followups.createdBy, options.createdBy));
+  if (options.status) conditions.push(eq(followups.status, options.status));
+
+  const rows = await db
+    .select({
+      followup: followups,
+      siteName: sites.name,
+      siteZone: sites.zone,
+      userName: users.name,
+      username: users.username,
+    })
+    .from(followups)
+    .leftJoin(sites, eq(sites.id, followups.siteId))
+    .leftJoin(users, eq(users.id, followups.createdBy))
+    .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(asc(followups.scheduledFor), desc(followups.createdAt))
+    .limit(options.limit ?? 200);
+
+  return rows.map(row => ({
+    ...row.followup,
+    siteName: row.siteName,
+    siteZone: row.siteZone,
+    userName: row.userName,
+    username: row.username,
+  }));
 }
 
 /* ------------------------------- Catálogos ------------------------------ */

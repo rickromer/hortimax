@@ -142,6 +142,30 @@ export const notes = mysqlTable(
 export type Note = typeof notes.$inferSelect;
 export type InsertNote = typeof notes.$inferInsert;
 
+/** Agenda de próximas visitas o atenciones programadas para un cliente. */
+export const followups = mysqlTable(
+  "followups",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    siteId: int("siteId").notNull(),
+    createdBy: int("createdBy").notNull(),
+    description: text("description").notNull(),
+    scheduledFor: timestamp("scheduledFor").notNull(),
+    status: mysqlEnum("status", ["pending", "completed", "cancelled"]).default("pending").notNull(),
+    completedAt: timestamp("completedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => ({
+    siteIdx: index("followups_site_idx").on(table.siteId),
+    scheduledIdx: index("followups_scheduled_idx").on(table.scheduledFor),
+    statusIdx: index("followups_status_idx").on(table.status),
+  })
+);
+
+export type Followup = typeof followups.$inferSelect;
+export type InsertFollowup = typeof followups.$inferInsert;
+
 /** Catálogos configurables: zonas y tipos de cliente. */
 export const catalogs = mysqlTable(
   "catalogs",

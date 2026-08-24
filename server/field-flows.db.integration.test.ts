@@ -1,8 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import { checkins, notes, siteAssignments, sites, users } from "../drizzle/schema";
+import { checkins, followups, notes, siteAssignments, sites, users } from "../drizzle/schema";
 import type { TrpcContext } from "./_core/context";
 import * as db from "./db";
 import { adminRouter } from "./routers/admin";
+import { followupsRouter } from "./routers/followups";
 import { notesRouter } from "./routers/notes";
 import { sitesRouter } from "./routers/sites";
 
@@ -21,6 +22,7 @@ async function cleanDatabase() {
   const database = await db.getDb();
   if (!database) throw new Error("La base de pruebas no está disponible");
   await database.delete(siteAssignments);
+  await database.delete(followups);
   await database.delete(notes);
   await database.delete(checkins);
   await database.delete(sites);
@@ -117,6 +119,22 @@ describe("integración de campo con MariaDB aislado", () => {
     const board = await noteCaller.list({ search: "fertilizante" });
     expect(board).toHaveLength(1);
     expect(board[0]?.siteName).toBe("Estancia de integración");
+
+    const followupCaller = followupsRouter.createCaller(contextFor({ id: seller.id, role: "user" }));
+    const followup = await followupCaller.create({
+      siteId: created!.id,
+      description: "Revisar la respuesta al fertilizante en siete días",
+      scheduledFor: "2026-09-15",
+    });
+    expect(followup).toMatchObject({
+      siteId: created!.id,
+      createdBy: seller.id,
+      status: "pending",
+    });
+
+    const detailWithAgenda = await sellerCaller.detail({ id: created!.id });
+    expect(detailWithAgenda.followups).toHaveLength(1);
+    expect(detailWithAgenda.followups[0]?.description).toContain("fertilizante");
 
     const otherCaller = sitesRouter.createCaller(contextFor({ id: otherSeller.id, role: "user" }));
     await expect(otherCaller.detail({ id: created!.id })).rejects.toMatchObject({

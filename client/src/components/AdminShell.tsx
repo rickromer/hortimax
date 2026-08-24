@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { BRAND_LOGO_URL, BRAND_NAME, BRAND_SHORT_NAME } from "@/lib/brand";
 import {
   Activity,
   LayoutDashboard,
@@ -81,15 +82,15 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-3 px-5 h-16 shrink-0">
-        <div className="grid place-items-center h-9 w-9 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
-          <MapPinned className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <p className="font-bold text-sidebar-foreground leading-tight truncate">
-            MapaClientes
-          </p>
-          <p className="text-[11px] text-sidebar-foreground/55">Panel de administración</p>
+      <div className="flex flex-col items-start gap-1.5 px-5 py-3 shrink-0">
+        <img
+          src={BRAND_LOGO_URL}
+          alt="HORTIMAX"
+          className="h-8 w-[116px] object-contain object-left bg-white rounded-md px-1.5"
+        />
+        <div className="w-full min-w-0">
+          <p className="font-bold text-sidebar-foreground text-sm leading-tight">{BRAND_NAME}</p>
+          <p className="text-[11px] text-sidebar-foreground/55 mt-0.5">{BRAND_SHORT_NAME} · Administración</p>
         </div>
         <Button
           variant="ghost"
@@ -175,6 +176,11 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
               onClick={() => setMobileOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
+            <img
+              src={BRAND_LOGO_URL}
+              alt="HORTIMAX"
+              className="h-7 w-[84px] object-contain object-left shrink-0 lg:hidden"
+            />
             <div className="min-w-0 flex-1">
               <h1 className="font-semibold text-lg leading-tight truncate">{title}</h1>
               {description && (

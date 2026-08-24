@@ -1,0 +1,177 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { formatDateLong } from "@/lib/format";
+import { trpc } from "@/lib/trpc";
+import { CalendarPlus, CheckCircle2, Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+type FollowupItem = {
+  id: number;
+  description: string;
+  scheduledFor: Date | string;
+  createdAt: Date | string;
+  userName?: string | null;
+  username?: string | null;
+};
+
+type Props = {
+  siteId: number;
+  followups: FollowupItem[];
+};
+
+function dateInputToday() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  return new Date(now.getTime() - offset * 60_000).toISOString().slice(0, 10);
+}
+
+function isOverdue(value: Date | string) {
+  const scheduled = new Date(value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  scheduled.setHours(0, 0, 0, 0);
+  return scheduled < today;
+}
+
+/** Agenda simple de visitas o atenciones futuras que pertenece al cliente actual. */
+export function FollowupsPanel({ siteId, followups }: Props) {
+  const utils = trpc.useUtils();
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState(dateInputToday);
+
+  const invalidate = async () => {
+    await Promise.all([
+      utils.sites.detail.invalidate({ id: siteId }),
+      utils.followups.list.invalidate(),
+    ]);
+  };
+
+  const create = trpc.followups.create.useMutation({
+    onSuccess: async () => {
+      setDescription("");
+      setDate(dateInputToday());
+      await invalidate();
+      toast.success("Próximo relevamiento agendado");
+    },
+    onError: error => toast.error(error.message),
+  });
+
+  const update = trpc.followups.update.useMutation({
+    onSuccess: async () => {
+      await invalidate();
+      toast.success("Relevamiento marcado como realizado");
+    },
+    onError: error => toast.error(error.message),
+  });
+
+  const remove = trpc.followups.remove.useMutation({
+    onSuccess: async () => {
+      await invalidate();
+      toast.success("Relevamiento eliminado");
+    },
+    onError: error => toast.error(error.message),
+  });
+
+  const schedule = () => {
+    if (description.trim().length < 2) {
+      toast.error("Escribí una descripción para el próximo relevamiento");
+      return;
+    }
+    if (!date) {
+      toast.error("Elegí una fecha");
+      return;
+    }
+    create.mutate({
+      siteId,
+      description: description.trim(),
+      scheduledFor: new Date(`${date}T12:00:00`),
+    });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="surface-card p-3.5 space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="grid place-items-center h-8 w-8 rounded-lg bg-primary/10 text-primary shrink-0">
+            <CalendarPlus className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold">Agendar próximo relevamiento</p>
+            <p className="text-xs text-muted-foreground">Visita, atención o seguimiento pendiente de este cliente.</p>
+          </div>
+        </div>
+        <Textarea
+          value={description}
+          onChange={event => setDescription(event.target.value)}
+          placeholder="Ej. Revisar respuesta al fertilizante y coordinar próxima aplicación"
+          rows={3}
+        />
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            type="date"
+            value={date}
+            onChange={event => setDate(event.target.value)}
+            className="h-10 sm:max-w-48"
+          />
+          <Button className="sm:ml-auto" onClick={schedule} disabled={create.isPending}>
+            {create.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            Agendar relevamiento
+          </Button>
+        </div>
+      </div>
+
+      {followups.length === 0 ? (
+        <div className="surface-card py-10 px-5 text-center">
+          <CalendarPlus className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-sm font-medium">No hay próximos relevamientos</p>
+          <p className="text-xs text-muted-foreground mt-1">Agendá una fecha para volver a atender este cliente.</p>
+        </div>
+      ) : (
+        <div className="space-y-2 stagger-in">
+          {followups.map(followup => (
+            <div key={followup.id} className="surface-card p-3.5 flex items-start gap-3">
+              <div className="grid place-items-center h-9 w-9 rounded-lg bg-primary/10 text-primary shrink-0">
+                <CalendarPlus className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold capitalize">{formatDateLong(followup.scheduledFor)}</p>
+                  {isOverdue(followup.scheduledFor) && <Badge variant="destructive">Vencido</Badge>}
+                </div>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap mt-1">{followup.description}</p>
+                {(followup.userName ?? followup.username) && (
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Agendado por {followup.userName ?? followup.username}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  className="text-primary hover:text-primary"
+                  disabled={update.isPending}
+                  onClick={() => update.mutate({ id: followup.id, status: "completed" })}
+                  aria-label="Marcar relevamiento realizado">
+                  <CheckCircle2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-destructive"
+                  disabled={remove.isPending}
+                  onClick={() => remove.mutate({ id: followup.id })}
+                  aria-label="Eliminar relevamiento">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

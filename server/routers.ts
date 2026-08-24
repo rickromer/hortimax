@@ -2,6 +2,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { router } from "./_core/trpc";
 import { adminRouter } from "./routers/admin";
 import { authRouter } from "./routers/auth";
+import { followupsRouter } from "./routers/followups";
 import { notesRouter } from "./routers/notes";
 import { sitesRouter } from "./routers/sites";
 
@@ -10,6 +11,7 @@ export const appRouter = router({
   auth: authRouter,
   sites: sitesRouter,
   notes: notesRouter,
+  followups: followupsRouter,
   admin: adminRouter,
 });
 

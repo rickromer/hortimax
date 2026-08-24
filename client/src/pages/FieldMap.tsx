@@ -92,7 +92,7 @@ export default function FieldMap() {
   return (
     <FieldShell
       bleed
-      title="Mapa de clientes"
+      title="Mapa de puntos"
       subtitle={
         geo.loading && !position
           ? "Buscando señal GPS…"

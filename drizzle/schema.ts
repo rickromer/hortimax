@@ -5,6 +5,7 @@ import {
   int,
   mysqlEnum,
   mysqlTable,
+  primaryKey,
   text,
   timestamp,
   varchar,
@@ -74,6 +75,25 @@ export const sites = mysqlTable(
 
 export type Site = typeof sites.$inferSelect;
 export type InsertSite = typeof sites.$inferInsert;
+
+/** Cartera comercial: un sitio puede estar asignado a uno o varios vendedores. */
+export const siteAssignments = mysqlTable(
+  "site_assignments",
+  {
+    siteId: int("siteId").notNull(),
+    userId: int("userId").notNull(),
+    assignedBy: int("assignedBy").notNull(),
+    assignedAt: timestamp("assignedAt").defaultNow().notNull(),
+  },
+  table => ({
+    pk: primaryKey({ columns: [table.siteId, table.userId] }),
+    siteIdx: index("site_assignments_site_idx").on(table.siteId),
+    userIdx: index("site_assignments_user_idx").on(table.userId),
+  })
+);
+
+export type SiteAssignment = typeof siteAssignments.$inferSelect;
+export type InsertSiteAssignment = typeof siteAssignments.$inferInsert;
 
 /** Registro de visitas (check-in) a un sitio. */
 export const checkins = mysqlTable(

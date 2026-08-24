@@ -77,7 +77,7 @@ export default function AdminClients() {
               className="pl-9 h-10"
             />
           </div>
-          <div className="grid grid-cols-3 sm:flex gap-2">
+          <div className="grid grid-cols-2 sm:flex gap-2">
             <Select value={zone} onValueChange={setZone}>
               <SelectTrigger className="h-10 sm:w-40 w-full">
                 <SelectValue />
@@ -105,15 +105,15 @@ export default function AdminClients() {
               </SelectContent>
             </Select>
             <Select value={sellerId} onValueChange={setSellerId}>
-              <SelectTrigger className="h-10 sm:w-44 w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>Vendedor</SelectItem>
-                {(usersQuery.data ?? []).map(user => (
-                  <SelectItem key={user.id} value={String(user.id)}>
-                    {user.name ?? user.username}
-                  </SelectItem>
+              <SelectTrigger className="h-10 sm:w-44 w-full col-span-2 sm:col-auto">
+                <SelectValue placeholder="Asignado a" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Todos los comerciales</SelectItem>
+                  {(usersQuery.data ?? []).filter(user => user.role === "user" && user.active).map(user => (
+                    <SelectItem key={user.id} value={String(user.id)}>
+                      {user.name ?? user.username}
+                    </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -153,7 +153,7 @@ export default function AdminClients() {
                     <TableHead>Cliente</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Zona</TableHead>
-                    <TableHead>Vendedor</TableHead>
+                    <TableHead>Registrado por</TableHead>
                     <TableHead>Última visita</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>

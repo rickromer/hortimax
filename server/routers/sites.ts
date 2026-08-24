@@ -27,7 +27,7 @@ function canSeeAll(role: string) {
 async function assertSiteAccess(siteId: number, user: { id: number; role: string }) {
   const site = await db.getSiteById(siteId);
   if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
-  if (!canSeeAll(user.role) && site.createdBy !== user.id) {
+  if (!canSeeAll(user.role) && !(await db.isUserAssignedToSite(siteId, user.id))) {
     throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este sitio" });
   }
   return site;
@@ -54,10 +54,12 @@ export const sitesRouter = router({
         clientType: input?.clientType || undefined,
       };
 
-      if (!canSeeAll(ctx.user.role) || input?.scope === "mine") {
+      if (!canSeeAll(ctx.user.role)) {
+        filters.siteIds = await db.getAssignedSiteIds(ctx.user.id);
+      } else if (input?.scope === "mine") {
         filters.createdBy = ctx.user.id;
       } else if (input?.sellerId) {
-        filters.createdBy = input.sellerId;
+        filters.siteIds = await db.getAssignedSiteIds(input.sellerId);
       }
 
       const sites = await db.listSites(filters);
@@ -73,11 +75,12 @@ export const sitesRouter = router({
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
       const site = await assertSiteAccess(input.id, ctx.user);
-      const [checkins, notes] = await Promise.all([
+      const [checkins, notes, assignees] = await Promise.all([
         db.listCheckins({ siteId: site.id, limit: 100 }),
         db.listNotes({ siteId: site.id, limit: 200 }),
+        db.listSiteAssignees(site.id),
       ]);
-      return { site, checkins, notes };
+      return { site, checkins, notes, assignees };
     }),
 
   /** Sitios cercanos a una coordenada, para evitar duplicados y ofrecer check-in. */
@@ -85,7 +88,7 @@ export const sitesRouter = router({
     .input(coord.extend({ radius: z.number().int().min(50).max(5000).optional() }))
     .query(async ({ ctx, input }) => {
       const filters: db.SiteFilters = {};
-      if (!canSeeAll(ctx.user.role)) filters.createdBy = ctx.user.id;
+      if (!canSeeAll(ctx.user.role)) filters.siteIds = await db.getAssignedSiteIds(ctx.user.id);
       const sites = await db.listSites(filters);
       const radius = input.radius ?? NEARBY_RADIUS_METERS;
       return sites
@@ -120,6 +123,9 @@ export const sitesRouter = router({
       });
       if (!created) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear el sitio" });
+      }
+      if (!canSeeAll(ctx.user.role)) {
+        await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
       }
       return created;
     }),

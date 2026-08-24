@@ -22,4 +22,15 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - `pnpm check`: aprobado.
 - `pnpm test`: 25 pruebas aprobadas en 6 archivos.
 - Flujo de integración real comprobado en MariaDB aislado: crear sitio → registrar check-in → crear nota vinculada → leer detalle/planilla → validar restricción de acceso entre vendedores.
+- Reasignación de cartera comprobada en MariaDB aislado: el comercial inicial pierde acceso al cliente y el comercial recién asignado obtiene acceso al detalle.
+- En móvil, el botón de nuevo sitio queda separado de la navegación inferior; las notas ya no aparecen como sección independiente y se gestionan desde la ficha del cliente.
+- Revisión responsive explícita: en escritorio, mapa admin, usuarios y actividad mantienen paneles y acciones sin solaparse; en móvil, el mapa reserva altura para el CTA y la navegación, y los filtros de clientes apilan el selector de comerciales a ancho completo.
+
+| Vista verificada en escritorio | Resultado de la revisión |
+|---|---|
+| `/admin/mapa` | Panel lateral, filtros, selector de comerciales y control de capas ocupan zonas separadas; no se superponen. |
+| `/sitios/:id` | El estado de ficha inexistente mantiene el botón de regreso por encima de la navegación inferior y sin cruces. |
+| `/admin/clientes/:id` | El estado de carga y la estructura de ficha respetan el panel lateral sin invadir el contenido. |
+| `/admin/usuarios` | Botón de alta, tabla y acción de acceso mantienen columnas y espaciado legible. |
+| `/admin/actividad` | Tarjetas, exportación de check-ins y lista de visitas quedan en filas independientes; no hay panel global de notas. |
 - Capturas revisadas en escritorio y móvil para panel de administración, clientes, notas, perfil y usuarios.

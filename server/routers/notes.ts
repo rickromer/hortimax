@@ -27,16 +27,17 @@ export const notesRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const scopeMine = ctx.user.role !== "admin" || input?.scope === "mine";
+      const assignedSiteIds = scopeMine ? await db.getAssignedSiteIds(ctx.user.id) : undefined;
       if (input?.siteId) {
         const site = await db.getSiteById(input.siteId);
         if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
-        if (ctx.user.role !== "admin" && site.createdBy !== ctx.user.id) {
+        if (ctx.user.role !== "admin" && !(await db.isUserAssignedToSite(site.id, ctx.user.id))) {
           throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este sitio" });
         }
       }
       return db.listNotes({
         siteId: input?.siteId,
-        userId: scopeMine ? ctx.user.id : undefined,
+        siteIds: assignedSiteIds,
         search: input?.search?.trim() || undefined,
         limit: input?.limit,
       });
@@ -55,7 +56,7 @@ export const notesRouter = router({
     .mutation(async ({ ctx, input }) => {
       const site = await db.getSiteById(input.siteId);
       if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
-      if (ctx.user.role !== "admin" && site.createdBy !== ctx.user.id) {
+      if (ctx.user.role !== "admin" && !(await db.isUserAssignedToSite(site.id, ctx.user.id))) {
         throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este sitio" });
       }
       return db.createNote({
@@ -91,4 +92,3 @@ export const notesRouter = router({
       return { success: true } as const;
     }),
 });
-

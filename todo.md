@@ -44,3 +44,15 @@
 - [x] Pruebas de integración reales de sitios, check-ins y notas con MariaDB aislado
 - [x] Verificación visual en móvil y escritorio
 - [x] Verificación de Google Maps en la vista previa pública (SDK y lienzo de mapa cargados)
+
+## Ajustes solicitados después del preliminar
+- [x] Corregir solapamientos de botones, controles flotantes y navegación en vistas móviles y desktop
+- [x] Permitir asignar cada cliente a uno o varios comerciales desde la administración
+- [x] Restringir listados, mapa, detalle, check-ins y exportaciones de cada comercial a su cartera asignada
+- [x] Presentar notas exclusivamente dentro de la ficha del cliente y mantener su relación visible con el cliente
+- [x] Verificar y corregir controles y acciones en detalle de cliente, administración y usuarios en móvil y escritorio
+- [x] Adaptar la actividad administrativa para no exponer una planilla global de notas fuera de los clientes
+- [x] Verificar que toda consulta de notas navegue y muestre el cliente relacionado
+- [x] Verificar en escritorio detalle de cliente, usuarios, actividad y controles de mapa tras los ajustes responsive
+- [x] Revisar explícitamente en escritorio mapa admin, detalles, usuarios y actividad; documentar layout y solapamientos
+- [x] Documentar por pantalla los resultados de la revisión responsive de escritorio

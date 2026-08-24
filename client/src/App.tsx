@@ -11,13 +11,11 @@ import AdminActivity from "./pages/admin/AdminActivity";
 import AdminClientDetail from "./pages/admin/AdminClientDetail";
 import AdminClients from "./pages/admin/AdminClients";
 import AdminMap from "./pages/admin/AdminMap";
-import AdminNotes from "./pages/admin/AdminNotes";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import FieldMap from "./pages/FieldMap";
 import Login from "./pages/Login";
-import NotesBoard from "./pages/NotesBoard";
 import Profile from "./pages/Profile";
 import SiteDetail from "./pages/SiteDetail";
 import SiteList from "./pages/SiteList";
@@ -66,7 +64,7 @@ function Router() {
       <Route path="/">{() => <Guard component={FieldMap} />}</Route>
       <Route path="/sitios">{() => <Guard component={SiteList} />}</Route>
       <Route path="/sitios/:id">{() => <Guard component={SiteDetail} />}</Route>
-      <Route path="/notas">{() => <Guard component={NotesBoard} />}</Route>
+      <Route path="/notas">{() => <Redirect to="/sitios" />}</Route>
       <Route path="/perfil">{() => <Guard component={Profile} />}</Route>
 
       {/* Administración */}
@@ -76,7 +74,7 @@ function Router() {
       <Route path="/admin/clientes/:id">
         {() => <Guard component={AdminClientDetail} adminOnly />}
       </Route>
-      <Route path="/admin/notas">{() => <Guard component={AdminNotes} adminOnly />}</Route>
+      <Route path="/admin/notas">{() => <Redirect to="/admin/clientes" />}</Route>
       <Route path="/admin/actividad">{() => <Guard component={AdminActivity} adminOnly />}</Route>
       <Route path="/admin/usuarios">{() => <Guard component={AdminUsers} adminOnly />}</Route>
       <Route path="/admin/configuracion">

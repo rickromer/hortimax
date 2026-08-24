@@ -1,5 +1,6 @@
 import { AdminShell } from "@/components/AdminShell";
 import { ClientMap } from "@/components/ClientMap";
+import { ClientAssignmentsDialog } from "@/components/ClientAssignmentsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +15,9 @@ import {
   Navigation,
   Phone,
   User,
+  UsersRound,
 } from "lucide-react";
+import { useState } from "react";
 import { Link, useRoute } from "wouter";
 
 export default function AdminClientDetail() {
@@ -24,6 +27,7 @@ export default function AdminClientDetail() {
     { id: siteId },
     { enabled: Number.isFinite(siteId) && siteId > 0 }
   );
+  const [assignmentsOpen, setAssignmentsOpen] = useState(false);
 
   if (detailQuery.isLoading) {
     return (
@@ -49,7 +53,7 @@ export default function AdminClientDetail() {
     );
   }
 
-  const { site, checkins, notes } = detailQuery.data;
+  const { site, checkins, notes, assignees } = detailQuery.data;
 
   return (
     <AdminShell
@@ -148,6 +152,34 @@ export default function AdminClientDetail() {
                 <p className="text-xs text-muted-foreground">Notas</p>
               </div>
             </div>
+
+            <div className="pt-1 border-t border-border/70">
+              <div className="flex items-center justify-between gap-2 pt-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">Cartera comercial</p>
+                  <p className="text-xs text-muted-foreground">Quiénes pueden operar este cliente</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-background shrink-0"
+                  onClick={() => setAssignmentsOpen(true)}>
+                  <UsersRound className="h-3.5 w-3.5" />
+                  Asignar
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {assignees.length ? (
+                  assignees.map(assignee => (
+                    <Badge key={assignee.id} variant="secondary">
+                      {assignee.name ?? assignee.username}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground">Sin comerciales asignados.</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -218,7 +250,13 @@ export default function AdminClientDetail() {
           </TabsContent>
         </Tabs>
       </div>
+      <ClientAssignmentsDialog
+        open={assignmentsOpen}
+        onOpenChange={setAssignmentsOpen}
+        siteId={site.id}
+        clientName={site.name}
+        assignedIds={assignees.map(assignee => assignee.id)}
+      />
     </AdminShell>
   );
 }
-

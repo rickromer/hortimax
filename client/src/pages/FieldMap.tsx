@@ -184,7 +184,7 @@ export default function FieldMap() {
         )}
 
         {/* Tarjeta inferior: sitio seleccionado o sitios cercanos */}
-        <div className="absolute bottom-24 inset-x-3 z-20 space-y-2">
+        <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+9rem)] inset-x-3 z-20 space-y-2">
           {selected ? (
             <div className="surface-card surface-lift p-4 stagger-in">
               <div className="flex items-start gap-3">
@@ -265,7 +265,7 @@ export default function FieldMap() {
         {/* Botón principal */}
         <Button
           className={cn(
-            "absolute bottom-6 left-1/2 -translate-x-1/2 z-30 h-13 px-6 rounded-full shadow-xl",
+            "absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 -translate-x-1/2 z-30 h-13 px-6 rounded-full shadow-xl",
             "text-base font-semibold"
           )}
           style={{ height: "3.25rem" }}

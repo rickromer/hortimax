@@ -9,6 +9,7 @@ import {
   InsertSite,
   InsertUser,
   notes,
+  siteAssignments,
   sites,
   users,
 } from "../drizzle/schema";
@@ -149,6 +150,7 @@ export type SiteFilters = {
   zone?: string;
   clientType?: string;
   createdBy?: number;
+  siteIds?: number[];
   onlyActive?: boolean;
 };
 
@@ -156,6 +158,11 @@ function siteConditions(filters: SiteFilters) {
   const conditions = [] as any[];
   if (filters.onlyActive !== false) conditions.push(eq(sites.active, true));
   if (filters.createdBy) conditions.push(eq(sites.createdBy, filters.createdBy));
+  if (filters.siteIds) {
+    conditions.push(
+      filters.siteIds.length ? inArray(sites.id, filters.siteIds) : eq(sites.id, -1)
+    );
+  }
   if (filters.zone) conditions.push(eq(sites.zone, filters.zone));
   if (filters.clientType) conditions.push(eq(sites.clientType, filters.clientType));
   if (filters.search) {
@@ -236,6 +243,66 @@ export async function countSites(filters: SiteFilters = {}) {
   return Number(rows[0]?.total ?? 0);
 }
 
+/* -------------------------- Asignación de cartera ------------------------- */
+
+export async function listSiteAssignments(options: { siteId?: number; userId?: number } = {}) {
+  const database = await requireDb();
+  const conditions = [] as any[];
+  if (options.siteId) conditions.push(eq(siteAssignments.siteId, options.siteId));
+  if (options.userId) conditions.push(eq(siteAssignments.userId, options.userId));
+  return database
+    .select()
+    .from(siteAssignments)
+    .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(desc(siteAssignments.assignedAt));
+}
+
+export async function getAssignedSiteIds(userId: number) {
+  const assignments = await listSiteAssignments({ userId });
+  return assignments.map(assignment => assignment.siteId);
+}
+
+export async function isUserAssignedToSite(siteId: number, userId: number) {
+  const database = await requireDb();
+  const rows = await database
+    .select({ siteId: siteAssignments.siteId })
+    .from(siteAssignments)
+    .where(and(eq(siteAssignments.siteId, siteId), eq(siteAssignments.userId, userId)))
+    .limit(1);
+  return rows.length > 0;
+}
+
+export async function listSiteAssignees(siteId: number) {
+  const database = await requireDb();
+  return database
+    .select({
+      id: users.id,
+      name: users.name,
+      username: users.username,
+      zone: users.zone,
+      active: users.active,
+      assignedAt: siteAssignments.assignedAt,
+    })
+    .from(siteAssignments)
+    .innerJoin(users, eq(users.id, siteAssignments.userId))
+    .where(eq(siteAssignments.siteId, siteId))
+    .orderBy(asc(users.name));
+}
+
+export async function replaceSiteAssignments(siteId: number, userIds: number[], assignedBy: number) {
+  const database = await requireDb();
+  const uniqueUserIds = Array.from(new Set(userIds));
+  await database.transaction(async tx => {
+    await tx.delete(siteAssignments).where(eq(siteAssignments.siteId, siteId));
+    if (uniqueUserIds.length) {
+      await tx.insert(siteAssignments).values(
+        uniqueUserIds.map(userId => ({ siteId, userId, assignedBy }))
+      );
+    }
+  });
+  return listSiteAssignees(siteId);
+}
+
 /* ------------------------------- Check-ins ------------------------------ */
 
 export async function createCheckin(values: InsertCheckin) {
@@ -248,6 +315,7 @@ export async function createCheckin(values: InsertCheckin) {
 
 export async function listCheckins(options: {
   siteId?: number;
+  siteIds?: number[];
   userId?: number;
   since?: Date;
   limit?: number;
@@ -255,6 +323,11 @@ export async function listCheckins(options: {
   const db = await requireDb();
   const conditions = [] as any[];
   if (options.siteId) conditions.push(eq(checkins.siteId, options.siteId));
+  if (options.siteIds) {
+    conditions.push(
+      options.siteIds.length ? inArray(checkins.siteId, options.siteIds) : eq(checkins.siteId, -1)
+    );
+  }
   if (options.userId) conditions.push(eq(checkins.userId, options.userId));
   if (options.since) conditions.push(gte(checkins.createdAt, options.since));
 
@@ -342,6 +415,7 @@ export async function getNoteById(id: number) {
 
 export async function listNotes(options: {
   siteId?: number;
+  siteIds?: number[];
   userId?: number;
   search?: string;
   limit?: number;
@@ -349,6 +423,9 @@ export async function listNotes(options: {
   const db = await requireDb();
   const conditions = [] as any[];
   if (options.siteId) conditions.push(eq(notes.siteId, options.siteId));
+  if (options.siteIds) {
+    conditions.push(options.siteIds.length ? inArray(notes.siteId, options.siteIds) : eq(notes.siteId, -1));
+  }
   if (options.userId) conditions.push(eq(notes.userId, options.userId));
   if (options.search) conditions.push(like(notes.content, `%${options.search}%`));
 

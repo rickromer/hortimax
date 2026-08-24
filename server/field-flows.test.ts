@@ -3,8 +3,12 @@ import type { TrpcContext } from "./_core/context";
 
 const store = vi.hoisted(() => ({
   listSites: vi.fn(),
+  getAssignedSiteIds: vi.fn(),
   lastCheckinBySite: vi.fn(),
   getSiteById: vi.fn(),
+  isUserAssignedToSite: vi.fn(),
+  listSiteAssignees: vi.fn(),
+  replaceSiteAssignments: vi.fn(),
   createSite: vi.fn(),
   updateSite: vi.fn(),
   listCheckins: vi.fn(),
@@ -42,8 +46,12 @@ function contextFor(userId: number, role: "user" | "admin" = "user") {
 beforeEach(() => {
   vi.clearAllMocks();
   store.listSites.mockResolvedValue([]);
+  store.getAssignedSiteIds.mockResolvedValue([ownSite.id]);
   store.lastCheckinBySite.mockResolvedValue(new Map());
   store.getSiteById.mockResolvedValue(ownSite);
+  store.isUserAssignedToSite.mockResolvedValue(true);
+  store.listSiteAssignees.mockResolvedValue([]);
+  store.replaceSiteAssignments.mockResolvedValue([]);
   store.createSite.mockImplementation(async (values: Record<string, unknown>) => ({ id: 77, ...values }));
   store.createCheckin.mockResolvedValue({ id: 91, siteId: ownSite.id, userId: 10 });
   store.createNote.mockImplementation(async (values: Record<string, unknown>) => ({ id: 92, ...values }));
@@ -56,12 +64,13 @@ describe("flujos de sitio del vendedor", () => {
     const site = { ...ownSite, id: 44 };
     const lastVisit = new Date("2026-08-22T13:00:00Z");
     store.listSites.mockResolvedValue([site]);
+    store.getAssignedSiteIds.mockResolvedValue([site.id]);
     store.lastCheckinBySite.mockResolvedValue(new Map([[44, lastVisit]]));
 
     const caller = sitesRouter.createCaller(contextFor(10));
     const result = await caller.list({ search: "  Rafael  " });
 
-    expect(store.listSites).toHaveBeenCalledWith({ search: "Rafael", createdBy: 10 });
+    expect(store.listSites).toHaveBeenCalledWith({ search: "Rafael", siteIds: [site.id] });
     expect(result).toEqual([{ ...site, lastCheckinAt: lastVisit }]);
   });
 
@@ -91,6 +100,7 @@ describe("flujos de sitio del vendedor", () => {
       })
     );
     expect(created).toMatchObject({ id: 77, name: "Estancia San Rafael" });
+    expect(store.replaceSiteAssignments).toHaveBeenCalledWith(77, [10], 10);
   });
 
   it("crea un check-in con GPS y genera la nota opcional vinculada", async () => {
@@ -125,7 +135,7 @@ describe("flujos de sitio del vendedor", () => {
   });
 
   it("bloquea el check-in de un vendedor en sitios que no le pertenecen", async () => {
-    store.getSiteById.mockResolvedValue({ ...ownSite, createdBy: 99 });
+    store.isUserAssignedToSite.mockResolvedValue(false);
     const caller = sitesRouter.createCaller(contextFor(10));
 
     await expect(caller.checkin({ siteId: ownSite.id })).rejects.toMatchObject({

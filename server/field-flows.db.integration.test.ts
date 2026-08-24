@@ -1,7 +1,8 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import { checkins, notes, sites, users } from "../drizzle/schema";
+import { checkins, notes, siteAssignments, sites, users } from "../drizzle/schema";
 import type { TrpcContext } from "./_core/context";
 import * as db from "./db";
+import { adminRouter } from "./routers/admin";
 import { notesRouter } from "./routers/notes";
 import { sitesRouter } from "./routers/sites";
 
@@ -19,6 +20,7 @@ function contextFor(user: { id: number; role: "user" | "admin" }) {
 async function cleanDatabase() {
   const database = await db.getDb();
   if (!database) throw new Error("La base de pruebas no está disponible");
+  await database.delete(siteAssignments);
   await database.delete(notes);
   await database.delete(checkins);
   await database.delete(sites);
@@ -58,7 +60,16 @@ describe("integración de campo con MariaDB aislado", () => {
       mustChangePassword: false,
       active: true,
     });
-    if (!seller || !otherSeller) throw new Error("No se pudieron crear usuarios de prueba");
+    const admin = await db.createAppUser({
+      openId: `admin_${suffix}`,
+      username: `admin${suffix}`.slice(0, 60),
+      name: "Administrador de prueba",
+      loginMethod: "password",
+      role: "admin",
+      mustChangePassword: false,
+      active: true,
+    });
+    if (!seller || !otherSeller || !admin) throw new Error("No se pudieron crear usuarios de prueba");
 
     const sellerCaller = sitesRouter.createCaller(contextFor({ id: seller.id, role: "user" }));
     const created = await sellerCaller.create({
@@ -77,6 +88,7 @@ describe("integración de campo con MariaDB aislado", () => {
       zone: "Central",
       createdBy: seller.id,
     });
+    expect(await db.isUserAssignedToSite(created!.id, seller.id)).toBe(true);
 
     const result = await sellerCaller.checkin({
       siteId: created!.id,
@@ -109,6 +121,16 @@ describe("integración de campo con MariaDB aislado", () => {
     const otherCaller = sitesRouter.createCaller(contextFor({ id: otherSeller.id, role: "user" }));
     await expect(otherCaller.detail({ id: created!.id })).rejects.toMatchObject({
       code: "FORBIDDEN",
+    });
+
+    const adminCaller = adminRouter.createCaller(contextFor({ id: admin.id, role: "admin" }));
+    await adminCaller.setSiteAssignments({ siteId: created!.id, userIds: [otherSeller.id] });
+
+    await expect(sellerCaller.detail({ id: created!.id })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    await expect(otherCaller.detail({ id: created!.id })).resolves.toMatchObject({
+      site: { id: created!.id },
     });
   });
 });

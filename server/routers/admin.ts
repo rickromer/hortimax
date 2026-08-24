@@ -48,19 +48,18 @@ export const adminRouter = router({
     .input(z.object({ limit: z.number().int().min(1).max(200).optional() }).optional())
     .query(async ({ input }) => {
       const limit = input?.limit ?? 40;
-      const [checkins, notes] = await Promise.all([
-        db.listCheckins({ limit }),
-        db.listNotes({ limit }),
-      ]);
-      return { checkins, notes };
+      const checkins = await db.listCheckins({ limit });
+      return { checkins };
     }),
 
   /* ------------------------------ Usuarios ------------------------------ */
 
   listUsers: adminProcedure.query(async () => {
-    const users = await db.listUsers();
-    const sites = await db.listSites();
-    const checkins = await db.listCheckins({ limit: 1000 });
+    const [users, assignments, checkins] = await Promise.all([
+      db.listUsers(),
+      db.listSiteAssignments(),
+      db.listCheckins({ limit: 1000 }),
+    ]);
     return users.map(user => ({
       id: user.id,
       name: user.name,
@@ -73,10 +72,34 @@ export const adminRouter = router({
       activationCode: user.activationCode,
       lastSignedIn: user.lastSignedIn,
       createdAt: user.createdAt,
-      sitesCount: sites.filter(s => s.createdBy === user.id).length,
+      sitesCount: assignments.filter(assignment => assignment.userId === user.id).length,
       checkinsCount: checkins.filter(c => c.userId === user.id).length,
     }));
   }),
+
+  /** Asigna un cliente a uno o varios vendedores; un arreglo vacío lo deja sin cartera. */
+  setSiteAssignments: adminProcedure
+    .input(
+      z.object({
+        siteId: z.number().int().positive(),
+        userIds: z.array(z.number().int().positive()).max(200),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const site = await db.getSiteById(input.siteId);
+      if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
+      const users = await db.listUsers();
+      const validSellerIds = new Set(
+        users.filter(user => user.role === "user" && user.active).map(user => user.id)
+      );
+      if (input.userIds.some(userId => !validSellerIds.has(userId))) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Solo se pueden asignar vendedores activos",
+        });
+      }
+      return db.replaceSiteAssignments(site.id, input.userIds, ctx.user.id);
+    }),
 
   createUser: adminProcedure
     .input(
@@ -243,10 +266,11 @@ export const adminRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const mine = ctx.user.role !== "admin" || input.scope === "mine";
+      const assignedSiteIds = mine ? await db.getAssignedSiteIds(ctx.user.id) : undefined;
       const stamp = new Date().toISOString().slice(0, 10);
 
       if (input.dataset === "sites") {
-        const sites = await db.listSites(mine ? { createdBy: ctx.user.id } : {});
+        const sites = await db.listSites(mine ? { siteIds: assignedSiteIds } : {});
         const csv = toCsv(
           [
             "ID",
@@ -286,7 +310,7 @@ export const adminRouter = router({
 
       if (input.dataset === "checkins") {
         const rows = await db.listCheckins({
-          userId: mine ? ctx.user.id : undefined,
+          siteIds: assignedSiteIds,
           limit: 5000,
         });
         const csv = toCsv(
@@ -304,7 +328,7 @@ export const adminRouter = router({
         return { filename: `checkins_${stamp}.csv`, csv };
       }
 
-      const rows = await db.listNotes({ userId: mine ? ctx.user.id : undefined, limit: 5000 });
+      const rows = await db.listNotes({ siteIds: assignedSiteIds, limit: 5000 });
       const csv = toCsv(
         ["ID", "Fecha y hora", "Sitio", "Zona", "Vendedor", "Categoría", "Nota"],
         rows.map(n => [

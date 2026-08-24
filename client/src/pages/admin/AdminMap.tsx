@@ -98,13 +98,13 @@ export default function AdminMap() {
                 </SelectContent>
               </Select>
             </div>
-            <Select value={sellerId} onValueChange={setSellerId}>
-              <SelectTrigger className="h-9 text-xs w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>Todos los vendedores</SelectItem>
-                {(usersQuery.data ?? []).map(user => (
+              <Select value={sellerId} onValueChange={setSellerId}>
+                <SelectTrigger className="h-9 text-xs w-full">
+                  <SelectValue placeholder="Asignado a" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Todos los comerciales</SelectItem>
+                {(usersQuery.data ?? []).filter(user => user.role === "user" && user.active).map(user => (
                   <SelectItem key={user.id} value={String(user.id)}>
                     {user.name ?? user.username}
                   </SelectItem>
@@ -228,4 +228,3 @@ export default function AdminMap() {
     </AdminShell>
   );
 }
-

@@ -102,3 +102,11 @@
 - [x] Validar de punta a punta selector → formulario → creación pública y limpieza posterior de un punto de prueba
 - [x] Enviar desde la interfaz pública un punto de prueba y confirmar el resultado visible
 - [x] Limpiar únicamente el punto público de prueba creado en la validación de interfaz
+
+## Incidencia de acceso
+- [x] Diagnosticar por qué no se puede acceder al dominio publicado o a la vista previa
+- [x] Restaurar el servicio publicado sin perder la versión vigente
+- [x] Verificar acceso externo por dominio y vista previa después de la corrección
+- [x] Documentar el resultado del diagnóstico de producción y la causa probable de la incidencia temporal
+- [x] Confirmar nuevamente que la raíz publicada y la vista previa respondan después de la sincronización
+- [x] Guardar y confirmar el diagnóstico de acceso temporal, la acción correctiva y las respuestas HTTP 200

@@ -65,4 +65,9 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - Una integración real de MariaDB aislada verificó la creación pública, el marcado temporal y la limpieza administrativa sin afectar un punto interno existente.
 - Prueba interactiva sin sesión: el botón flotante `+` abrió `LocationPickerDialog` sobre la navegación inferior; al confirmar la ubicación manual, se abrió el formulario **Nuevo punto de cliente** con sus coordenadas preseleccionadas.
 - Prueba completa sin sesión: se registró desde la interfaz el punto temporal `Punto UI público temporal 20260824`, se confirmó el mensaje de éxito y la aparición en el mapa; luego se eliminó únicamente ese punto y una consulta verificó que quedaron `0` registros coincidentes.
+
+## Incidencia de acceso
+
+- Los registros de producción no muestran errores de aplicación ni despliegue fallido; el servicio se reinició correctamente y solo registra solicitudes sin cookie de sesión, coherentes con el modo público temporal.
+- Tras la sincronización/reinicio, la raíz publicada `mapaclientes-cqpci7xz.manus.space` respondió HTTP 200 y la vista previa también respondió HTTP 200. La causa probable fue una indisponibilidad transitoria durante la sincronización del servidor de desarrollo, no un error persistente de la aplicación publicada.
 - Capturas revisadas en escritorio y móvil para panel de administración, clientes, notas, perfil y usuarios.

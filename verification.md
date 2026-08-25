@@ -147,3 +147,18 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La migración agregó el índice de departamento y corrigió los datos existentes: **Comite de Productores RI3** conserva `R. I. Tres Corrales` como referencia local y queda asignado al departamento **Caaguazú**. Los demás valores que repetían el departamento se dejaron vacíos como localidad para evitar etiquetas duplicadas.
 - Los filtros de campo, clientes administrativos y mapa administrativo usan **Departamento**; las tarjetas y fichas presentan primero el departamento y, solo si existe, el distrito o municipio como dato secundario.
 - La suite aprobó `pnpm check` y 46 pruebas automatizadas (1 integración opcional omitida); la compilación de producción fue exitosa. Las capturas responsive verificaron el filtro Departamento y las tarjetas de R.I. 3 Corrales bajo Caaguazú en móvil y escritorio.
+
+## Calendario público del equipo
+
+- Se añadió el tercer acceso fijo **Calendario** al menú inferior de campo, junto a Mapa y Clientes.
+- La ruta pública `/calendario` consolida sin filtro de usuario o cartera todas las visitas realizadas, próximos relevamientos pendientes y notas. Cada registro enlaza directamente a la ficha pública del cliente.
+- La agenda ordena los registros por fecha, los agrupa por día y distingue visualmente Visita realizada, Próxima visita/Recordatorio/Atención y Nota; muestra autor, fecha/hora, distancia cuando existe y ubicación Departamento · localidad.
+- La prueba de calendario confirma que la consulta pública no aplica filtro de cartera y solicita las tres fuentes globales. `pnpm check`, 47 pruebas automatizadas (1 integración opcional omitida) y la compilación de producción aprobaron. Las capturas verificaron la agenda con actividad real y la barra móvil de tres accesos.
+- Si la consulta pública falla, Calendario presenta un mensaje visible de error y la acción **Reintentar**; la prueba de estado confirma que un fallo no se confunda con una agenda vacía. Tras esta cobertura, `pnpm check`, 49 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron.
+- La prueba interactiva del componente simula `trpc.calendar.timeline` en error, confirma el mensaje de fallo y pulsa **Reintentar**, verificando que ejecuta `refetch()`.
+
+## Corrección de centrado en Nuevo punto
+
+- El selector toma la ubicación inicial solo al abrirse. Las lecturas GPS posteriores del mapa general ya no cambian el foco mientras el selector permanece abierto y el usuario mueve manualmente el mapa.
+- La acción **Mi ubicación** sigue siendo el único modo explícito de recentrar el selector con GPS después de abrirlo.
+- Una prueba interactiva de DOM abre el selector con una posición, simula una actualización GPS distinta y confirma que `ClientMap` conserva el foco inicial. `pnpm check`, 53 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron. Falta la confirmación física final en teléfono y computadora.

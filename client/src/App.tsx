@@ -19,6 +19,7 @@ import FieldMap from "./pages/FieldMap";
 import Profile from "./pages/Profile";
 import SiteDetail from "./pages/SiteDetail";
 import SiteList from "./pages/SiteList";
+import TeamCalendar from "./pages/TeamCalendar";
 
 function Splash() {
   return (
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/" component={FieldMap} />
       <Route path="/sitios" component={SiteList} />
       <Route path="/sitios/:id" component={SiteDetail} />
+      <Route path="/calendario" component={TeamCalendar} />
       <Route path="/notas">{() => <Redirect to="/sitios" />}</Route>
       <Route path="/perfil">{() => <Guard component={Profile} />}</Route>
 

@@ -1,10 +1,11 @@
 import { ClientMap } from "@/components/ClientMap";
 import { Button } from "@/components/ui/button";
 import { formatCoords } from "@/lib/format";
+import { shouldApplyInitialPickerPosition } from "@/lib/locationPickerFocus";
 import { territoryFromGeocode } from "@/lib/zoneFromGeocode";
 import { PARAGUAY_CENTER } from "@shared/domain";
 import { Check, Crosshair, Layers, Loader2, MapPin, Satellite, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type Coordinates = { latitude: number; longitude: number; accuracy?: number };
@@ -40,15 +41,20 @@ export function LocationPickerDialog({
   });
   const [lookingUpTerritory, setLookingUpTerritory] = useState(false);
   const lookupRequest = useRef(0);
+  const wasOpen = useRef(false);
 
   useEffect(() => {
-    if (open) {
-      const start = initialCoords ?? DEFAULT_CENTER;
-      setCenter(start);
-      setMapFocus(start);
-      setTerritory({ department: null, locality: null });
+    if (!open) {
+      wasOpen.current = false;
+      return;
     }
-  }, [open, initialCoords]);
+    if (!shouldApplyInitialPickerPosition(open, wasOpen.current)) return;
+    wasOpen.current = true;
+    const start = initialCoords ?? DEFAULT_CENTER;
+    setCenter(start);
+    setMapFocus(start);
+    setTerritory({ department: null, locality: null });
+  }, [open, initialCoords?.latitude, initialCoords?.longitude]);
 
   useEffect(() => {
     if (!open || !window.google?.maps?.Geocoder) return;

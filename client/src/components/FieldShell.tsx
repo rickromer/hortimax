@@ -11,13 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { BRAND_LOGO_URL, BRAND_NAME } from "@/lib/brand";
-import { LayoutDashboard, ListTree, LogOut, Map } from "lucide-react";
+import { CalendarDays, LayoutDashboard, ListTree, LogOut, Map } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 
 const TABS = [
   { href: "/", label: "Mapa", icon: Map },
   { href: "/sitios", label: "Clientes", icon: ListTree },
+  { href: "/calendario", label: "Calendario", icon: CalendarDays },
 ];
 
 type FieldShellProps = {
@@ -102,7 +103,7 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
       </main>
 
       <nav className="fixed bottom-0 inset-x-0 z-40 safe-bottom border-t border-border/70 bg-background/92 backdrop-blur-lg">
-        <div className="grid grid-cols-2 max-w-sm mx-auto px-2 pt-1.5">
+        <div className="grid grid-cols-3 max-w-md mx-auto px-2 pt-1.5">
           {TABS.map(tab => {
             const active =
               tab.href === "/" ? location === "/" : location.startsWith(tab.href);

@@ -195,3 +195,20 @@
 - [x] Migrar o corregir los datos existentes afectados, incluido R.I. 3 Corrales → Caaguazú
 - [x] Cambiar los filtros y listados para agrupar por departamento
 - [x] Cubrir la nueva regla territorial con pruebas y validación visual
+
+## Calendario público del equipo
+- [x] Añadir un tercer menú inferior llamado Calendario
+- [x] Consolidar visitas, próximas visitas y notas de todo el equipo en una vista pública
+- [x] Organizar la agenda cronológicamente y distinguir cada tipo de actividad
+- [x] Permitir abrir la ficha del cliente desde cada registro del calendario
+- [x] Cubrir el calendario con pruebas y verificación visual móvil y escritorio
+- [x] Mostrar un estado de error con reintento si no se puede cargar el calendario público
+- [x] Verificar el manejo de error de la consulta de calendario
+- [x] Verificar en la interfaz el error real del calendario público y el botón Reintentar
+- [x] Probar en interfaz el estado de error público de Calendario con la consulta fallida
+- [x] Verificar que el botón Reintentar del calendario ejecute refetch al pulsarlo
+
+## Corrección de selector de Nuevo punto
+- [x] Evitar que lecturas GPS posteriores vuelvan a centrar el selector durante la elección manual
+- [x] Conservar el centrado GPS únicamente al abrir o al pulsar explícitamente Usar GPS
+- [ ] Cubrir la regla de no recentering con pruebas y validación móvil/escritorio

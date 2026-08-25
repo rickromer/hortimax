@@ -78,6 +78,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePersistFn } from "@/hooks/usePersistFn";
+import { READ_ONLY_MAP_REFERENCE_OPTIONS } from "@/lib/mapReferenceOptions";
 import { cn } from "@/lib/utils";
 
 declare global {
@@ -139,6 +140,7 @@ export function MapView({
       zoomControl: true,
       streetViewControl: true,
       mapId: "DEMO_MAP_ID",
+      ...READ_ONLY_MAP_REFERENCE_OPTIONS,
     });
     if (onMapReady) {
       onMapReady(map.current);

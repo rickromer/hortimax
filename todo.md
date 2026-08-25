@@ -261,6 +261,15 @@
 - [x] Mantener Administración, Usuarios y acciones de borrado protegidos
 - [x] Probar la edición pública de un cliente sin habilitar cambios administrativos
 
+## Referencias de mapa de solo lectura
+- [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa
+- [x] Mantener visibles rutas, nombres y referencias sin exponer acciones de compartir
+- [ ] Verificar en mapa general, ficha y selector de punto la lectura pasiva de referencias
+- [ ] Confirmar en el dominio publicado que los negocios locales no abran ventanas ni acciones al tocarlos
+- [ ] Verificar o descartar la carga intermitente del mapa observada en la captura de vista previa
+- [x] Reintentar automáticamente la carga del SDK de Google Maps tras un fallo transitorio
+- [x] Ofrecer una acción visible para reintentar el mapa cuando el SDK no se recupere solo
+
 ## Incidencia de enlace en Chrome
 - [x] Comprobar en Chrome el estado HTTPS y la redirección del dominio publicado
 - [x] Identificar si el enlace falla por certificado/proxy o por la carga de la aplicación

@@ -2,6 +2,8 @@
 
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { mapClickToCoordinates } from "@/lib/mapClick";
+import { canRetryMapLoadAutomatically } from "@/lib/mapLoadRecovery";
+import { READ_ONLY_MAP_REFERENCE_OPTIONS } from "@/lib/mapReferenceOptions";
 import { cn } from "@/lib/utils";
 import { PARAGUAY_CENTER, PARAGUAY_DEFAULT_ZOOM } from "@shared/domain";
 import { useEffect, useRef, useState } from "react";
@@ -40,6 +42,7 @@ function loadMapScript(): Promise<void> {
     if (!ownKey) script.crossOrigin = "anonymous";
     script.onload = () => resolve();
     script.onerror = () => {
+      script.remove();
       window.__mapsLoader__ = undefined;
       reject(new Error("No se pudo cargar Google Maps"));
     };
@@ -135,7 +138,20 @@ export function ClientMap({
   const accuracyRef = useRef<google.maps.Circle | null>(null);
   const readyRef = useRef(false);
   const didFitRef = useRef(false);
+  const automaticRetryAttemptsRef = useRef(0);
   const [loadError, setLoadError] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
+
+  const retryMap = usePersistFn((automatic = false) => {
+    if (automatic) {
+      if (!canRetryMapLoadAutomatically(automaticRetryAttemptsRef.current)) return;
+      automaticRetryAttemptsRef.current += 1;
+    } else {
+      automaticRetryAttemptsRef.current = 0;
+    }
+    setLoadError(false);
+    setRetryToken(token => token + 1);
+  });
 
   const init = usePersistFn(async () => {
     try {
@@ -143,6 +159,7 @@ export function ClientMap({
     } catch (error) {
       console.error(error);
       setLoadError(true);
+      window.setTimeout(() => retryMap(true), 900);
       return;
     }
     if (!containerRef.current || mapRef.current) return;
@@ -158,7 +175,7 @@ export function ClientMap({
       fullscreenControl: false,
       streetViewControl: false,
       zoomControl: false,
-      clickableIcons: true,
+      ...READ_ONLY_MAP_REFERENCE_OPTIONS,
       scaleControl: true,
       gestureHandling: "greedy",
     });
@@ -179,6 +196,8 @@ export function ClientMap({
     }
 
     readyRef.current = true;
+    automaticRetryAttemptsRef.current = 0;
+    setLoadError(false);
     onReady?.(mapRef.current);
     syncMarkers();
     syncUser();
@@ -274,7 +293,7 @@ export function ClientMap({
 
   useEffect(() => {
     init();
-  }, [init]);
+  }, [init, retryToken]);
 
   useEffect(() => {
     if (readyRef.current) syncMarkers();
@@ -305,6 +324,12 @@ export function ClientMap({
               Verificá tu conexión y recargá la página. Si el problema persiste, avisá a la
               administración.
             </p>
+            <button
+              type="button"
+              onClick={() => retryMap(false)}
+              className="mx-auto mt-3 inline-flex h-8 items-center rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-muted">
+              Reintentar mapa
+            </button>
           </div>
         </div>
       )}

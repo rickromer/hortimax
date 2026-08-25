@@ -194,3 +194,8 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La ficha pública ahora muestra el icono **Editar sitio** y abre el formulario **Editar punto** sin sesión. La validación visual en vista previa confirmó la carga de nombre, tipo, departamento, distrito/municipio, contacto, teléfono, descripción y referencia, junto a Guardar cambios.
 - La actualización básica de cliente quedó temporalmente habilitada para visitantes; archivo de clientes, check-in directo, gestión de usuarios y Administración permanecen bajo permisos autenticados.
 - La prueba de flujo confirma que una actualización anónima alcanza `updateSite`; las restricciones de un Representante autenticado sobre puntos ajenos y el acceso total de gerencia se conservan. `pnpm check`, 52 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron. No se guardó una modificación de datos reales durante la verificación visual.
+
+## Referencias locales de solo lectura
+
+- Los mapas compartidos usan `clickableIcons: false`: los nombres, rutas, negocios y lugares de Google se conservan como referencia visual, pero ya no deben abrir sus paneles, enlaces de compartir o acciones de dirección al tocarlos. Los pines propios de HORTIMAX mantienen su interacción normal.
+- Ante un fallo transitorio del SDK, el mapa realiza un reintento automático único. Si no se recupera, muestra la acción **Reintentar mapa**; la captura de vista previa verificó ese control de recuperación y las pruebas cubren el límite de reintento y las referencias pasivas. `pnpm check`, 54 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron.

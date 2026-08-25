@@ -97,3 +97,17 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La verificación interactiva confirma que, sobre la imagen aérea, se conservan rutas, nombres de lugares e íconos de referencias cercanas; el control cambia a **Mapa vial** al activar el modo híbrido.
 - La captura de verificación del selector híbrido muestra explícitamente la etiqueta **DRQProducciones** y su ícono azul de lugar de Google Maps sobre la imagen aérea. También se ven referencias adicionales por iconos circulares y la escala de Google, elementos ausentes en la vista satelital pura reportada inicialmente.
 - En la captura de comprobación del selector híbrido se ve la etiqueta de lugar **DRQProducciones** junto con su ícono azul de Google Maps, además de marcadores circulares de referencias cercanas y la atribución/escala de Google. Estas referencias no estaban disponibles en el modo satelital puro reportado por el usuario.
+
+## Notas, historial y recordatorios
+
+- La ficha de cliente ahora permite añadir notas sin sesión en el modo público. Cada nota se persiste con `createdAt` del servidor y se muestra en el **Historial de notas** con fecha y hora automáticas.
+- El botón **Sheets** descarga un CSV UTF-8 con BOM y columnas de fecha/hora, cliente, zona, categoría, nota y autor; el archivo se puede abrir o importar directamente en Google Sheets.
+- La agenda incorpora tipo **Recordatorio**, además de Visita y Atención. La integración real de MariaDB aislada validó nota pública, recordatorio público tipificado y permisos de cartera; la prueba de interfaz verificó nota → historial y recordatorio → agenda, y el punto temporal fue eliminado después.
+- Validación de escritorio: desde la ficha pública se cargó una nota, se verificó su presencia inmediata en Historial de notas con cabecera de fecha/hora, y se agendó un Recordatorio que apareció en Próximos. El botón **Sheets** invocó la exportación y confirmó “Planilla descargada. Podés abrirla o importarla en Google Sheets.”; el endpoint devuelve CSV UTF-8 con los campos de la planilla.
+- Confirmación física de exportación: una interacción de mouse real sobre **Sheets** descargó `notas-punto-qa-escritorio-notas-20260825.csv`. El archivo contiene BOM UTF-8 y la cabecera `Fecha y hora, Cliente, Zona, Categoría, Nota, Registrado por`, por lo que está listo para abrirse o importarse en Google Sheets.
+
+### Evidencia final de escritorio
+
+- En la ficha pública de prueba se creó una nota y apareció de inmediato dentro de **Historial de notas**, con la cabecera automática de fecha y hora.
+- En la pestaña **Próximos** se agendó un elemento de tipo **Recordatorio** y se confirmó su aparición en la agenda.
+- Con un gesto real de mouse sobre **Sheets**, Chrome descargó el CSV de la planilla; se comprobó su nombre, su BOM UTF-8 y sus columnas compatibles con Google Sheets.

@@ -138,3 +138,16 @@
 - [x] Verificar interactivamente que al alternar el selector aparezcan referencias sobre la imagen satelital
 - [x] Documentar referencias concretas visibles en la captura del selector híbrido
 - [x] Confirmar en el documento de verificación la etiqueta visible del modo híbrido
+
+## Notas, exportación y recordatorios
+- [x] Diagnosticar y habilitar la creación de notas en el modo de uso actual
+- [x] Guardar fecha, hora e historial cronológico de cada nota dentro del cliente
+- [x] Añadir exportación CSV de notas compatible con Google Sheets
+- [x] Agregar tipo Recordatorio a la agenda de próximos relevamientos
+- [x] Verificar altas, historial, exportación y recordatorios en móvil y escritorio
+- [x] Verificar en escritorio la creación de notas, historial y agenda de recordatorios
+- [x] Probar desde la interfaz el botón Sheets y confirmar la descarga de la planilla
+- [x] Documentar la evidencia específica de escritorio y exportación en la verificación
+- [x] Confirmar físicamente el archivo CSV descargado por el botón Sheets en escritorio
+- [x] Confirmar en el documento de verificación la evidencia de nota, recordatorio y exportación
+- [x] Guardar y releer la evidencia final de escritorio para notas, recordatorios y Sheets

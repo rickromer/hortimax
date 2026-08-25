@@ -195,6 +195,54 @@ describe("flujos de sitio del vendedor", () => {
 });
 
 describe("planilla de notas", () => {
+  it("permite registrar una nota pública con autor de carga temporal", async () => {
+    const caller = notesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+
+    await caller.create({
+      siteId: ownSite.id,
+      content: "Aplicación de fertilizante foliar 10:00",
+    });
+
+    expect(store.createNote).toHaveBeenCalledWith({
+      siteId: ownSite.id,
+      userId: 0,
+      checkinId: null,
+      category: null,
+      content: "Aplicación de fertilizante foliar 10:00",
+    });
+  });
+
+  it("exporta el historial de notas del cliente en CSV compatible con Sheets", async () => {
+    store.listNotes.mockResolvedValue([
+      {
+        id: 18,
+        createdAt: new Date("2026-08-25T13:00:00Z"),
+        siteName: ownSite.name,
+        siteZone: ownSite.zone,
+        category: "Aplicación",
+        content: "Aplicación de foliar",
+        userName: null,
+        username: null,
+      },
+    ]);
+    const caller = notesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+
+    const result = await caller.exportCsv({ siteId: ownSite.id });
+
+    expect(result.filename).toMatch(/^notas-estancia-san-rafael\.csv$/);
+    expect(result.csv).toContain("Fecha y hora");
+    expect(result.csv).toContain("Aplicación de foliar");
+    expect(result.csv).toContain("Carga pública");
+  });
+
   it("guarda una nota manual con categoría y contenido limpio", async () => {
     const caller = notesRouter.createCaller(contextFor(10));
 

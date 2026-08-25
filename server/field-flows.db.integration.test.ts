@@ -104,6 +104,30 @@ describe("integración de campo con MariaDB aislado", () => {
     });
     expect(publicPoint).toMatchObject({ createdBy: 0, publicSubmission: true });
 
+    const publicNotes = notesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+    const publicNote = await publicNotes.create({
+      siteId: publicPoint!.id,
+      content: "Nota pública con fecha y hora automática",
+    });
+    expect(publicNote).toMatchObject({ siteId: publicPoint!.id, userId: 0 });
+
+    const publicFollowups = followupsRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+    const publicReminder = await publicFollowups.create({
+      siteId: publicPoint!.id,
+      description: "Recordatorio público de prueba",
+      scheduledFor: "2026-09-20",
+      type: "reminder",
+    });
+    expect(publicReminder).toMatchObject({ siteId: publicPoint!.id, createdBy: 0, type: "reminder" });
+
     const result = await sellerCaller.checkin({
       siteId: created!.id,
       latitude: -25.2638,
@@ -141,6 +165,7 @@ describe("integración de campo con MariaDB aislado", () => {
     expect(followup).toMatchObject({
       siteId: created!.id,
       createdBy: seller.id,
+      type: "reminder",
       status: "pending",
     });
 

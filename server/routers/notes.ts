@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { formatPy, toCsv } from "../csv";
 
 async function assertNoteAccess(noteId: number, user: { id: number; role: string }) {
   const note = await db.getNoteById(noteId);
@@ -44,7 +45,7 @@ export const notesRouter = router({
     }),
 
   /** Nueva nota con cabecera automática de fecha y hora. */
-  create: protectedProcedure
+  create: publicProcedure
     .input(
       z.object({
         siteId: z.number().int().positive(),
@@ -56,16 +57,39 @@ export const notesRouter = router({
     .mutation(async ({ ctx, input }) => {
       const site = await db.getSiteById(input.siteId);
       if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
-      if (ctx.user.role !== "admin" && !(await db.isUserAssignedToSite(site.id, ctx.user.id))) {
+      if (ctx.user && ctx.user.role !== "admin" && !(await db.isUserAssignedToSite(site.id, ctx.user.id))) {
         throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este sitio" });
       }
       return db.createNote({
         siteId: input.siteId,
-        userId: ctx.user.id,
+        userId: ctx.user?.id ?? 0,
         checkinId: input.checkinId ?? null,
         category: input.category?.trim() || null,
         content: input.content.trim(),
       });
+    }),
+
+  /** Descarga la planilla de notas del cliente para abrirla o importarla en Google Sheets. */
+  exportCsv: publicProcedure
+    .input(z.object({ siteId: z.number().int().positive() }))
+    .query(async ({ input }) => {
+      const site = await db.getSiteById(input.siteId);
+      if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
+      const rows = await db.listNotes({ siteId: site.id, limit: 1000 });
+      return {
+        filename: `notas-${site.name.toLowerCase().replace(/[^a-z0-9]+/gi, "-") || site.id}.csv`,
+        csv: toCsv(
+          ["Fecha y hora", "Cliente", "Zona", "Categoría", "Nota", "Registrado por"],
+          rows.map(note => [
+            formatPy(note.createdAt),
+            note.siteName ?? site.name,
+            note.siteZone,
+            note.category,
+            note.content,
+            note.userName ?? note.username ?? "Carga pública",
+          ])
+        ),
+      };
     }),
 
   update: protectedProcedure

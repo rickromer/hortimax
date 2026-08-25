@@ -51,12 +51,32 @@ describe("próximos relevamientos", () => {
       expect.objectContaining({
         siteId: site.id,
         createdBy: 10,
+        type: "reminder",
         description: "Revisar respuesta al fertilizante y preparar visita.",
         status: "pending",
         scheduledFor: expect.any(Date),
       })
     );
     expect(result).toMatchObject({ id: 8, siteId: site.id, status: "pending" });
+  });
+
+  it("permite agendar un recordatorio público y lo identifica por tipo", async () => {
+    const caller = followupsRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+
+    await caller.create({
+      siteId: site.id,
+      description: "Llamar para coordinar nueva visita",
+      scheduledFor: "2026-09-16",
+      type: "reminder",
+    });
+
+    expect(store.createFollowup).toHaveBeenCalledWith(
+      expect.objectContaining({ createdBy: 0, type: "reminder", status: "pending" })
+    );
   });
 
   it("limita la agenda general del vendedor a los clientes de su cartera", async () => {

@@ -1,0 +1,1 @@
+ALTER TABLE `followups` ADD `type` enum('reminder','visit','attention') DEFAULT 'reminder' NOT NULL;

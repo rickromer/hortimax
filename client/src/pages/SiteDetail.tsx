@@ -18,11 +18,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { formatCoords, formatDateTime, formatDistance, timeAgo } from "@/lib/format";
+import { downloadCsv, formatCoords, formatDateTime, formatDistance, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
   CalendarClock,
+  Download,
   Loader2,
   MapPin,
   Navigation,
@@ -42,6 +43,7 @@ export default function SiteDetail() {
   const siteId = Number(params?.id);
   const { user } = useAuth();
   const canEdit = Boolean(user);
+  const canContribute = true;
   const geo = useGeolocation({ enabled: canEdit });
   const utils = trpc.useUtils();
 
@@ -82,6 +84,16 @@ export default function SiteDetail() {
     },
     onError: error => toast.error(error.message),
   });
+
+  const exportNotes = async () => {
+    try {
+      const result = await utils.notes.exportCsv.fetch({ siteId });
+      downloadCsv(result.filename, result.csv);
+      toast.success("Planilla descargada. Podés abrirla o importarla en Google Sheets.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No se pudo exportar la planilla");
+    }
+  };
 
   if (detailQuery.isLoading) {
     return (
@@ -221,7 +233,17 @@ export default function SiteDetail() {
           </TabsList>
 
           <TabsContent value="notas" className="space-y-3 mt-3">
-            {canEdit && <div className="surface-card p-3.5 space-y-3">
+            <div className="flex items-center justify-between gap-3 px-1">
+              <div>
+                <p className="text-sm font-semibold">Historial de notas</p>
+                <p className="text-xs text-muted-foreground">Cada registro conserva fecha y hora automáticas.</p>
+              </div>
+              <Button variant="outline" size="sm" className="shrink-0 bg-background" onClick={exportNotes}>
+                <Download className="h-4 w-4" />
+                Sheets
+              </Button>
+            </div>
+            {canContribute && <div className="surface-card p-3.5 space-y-3">
               <div className="flex items-center gap-2">
                 <NotebookPen className="h-4 w-4 text-primary" />
                 <p className="text-sm font-medium">Nueva nota</p>
@@ -310,7 +332,7 @@ export default function SiteDetail() {
           </TabsContent>
 
           <TabsContent value="relevamientos" className="mt-3">
-            <FollowupsPanel siteId={site.id} followups={followups} readOnly={!canEdit} />
+            <FollowupsPanel siteId={site.id} followups={followups} readOnly={!canEdit} canCreate={canContribute} />
           </TabsContent>
 
           <TabsContent value="visitas" className="mt-3">

@@ -152,6 +152,8 @@ export const followups = mysqlTable(
     id: int("id").autoincrement().primaryKey(),
     siteId: int("siteId").notNull(),
     createdBy: int("createdBy").notNull(),
+    /** Tipo de agenda: recordatorio, visita o atención. */
+    type: mysqlEnum("type", ["reminder", "visit", "attention"]).default("reminder").notNull(),
     description: text("description").notNull(),
     scheduledFor: timestamp("scheduledFor").notNull(),
     status: mysqlEnum("status", ["pending", "completed", "cancelled"]).default("pending").notNull(),

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 async function assertFollowupAccess(siteId: number, user: { id: number; role: string }) {
@@ -15,6 +15,7 @@ async function assertFollowupAccess(siteId: number, user: { id: number; role: st
 const scheduleInput = z.object({
   description: z.string().trim().min(2).max(2000),
   scheduledFor: z.coerce.date(),
+  type: z.enum(["reminder", "visit", "attention"]).default("reminder"),
 });
 
 export const followupsRouter = router({
@@ -32,13 +33,14 @@ export const followupsRouter = router({
       });
     }),
 
-  create: protectedProcedure
+  create: publicProcedure
     .input(scheduleInput.extend({ siteId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      await assertFollowupAccess(input.siteId, ctx.user);
+      if (ctx.user) await assertFollowupAccess(input.siteId, ctx.user);
       return db.createFollowup({
         siteId: input.siteId,
-        createdBy: ctx.user.id,
+        createdBy: ctx.user?.id ?? 0,
+        type: input.type,
         description: input.description,
         scheduledFor: input.scheduledFor,
         status: "pending",
@@ -59,6 +61,7 @@ export const followupsRouter = router({
       const values: Record<string, unknown> = {};
       if (input.description !== undefined) values.description = input.description;
       if (input.scheduledFor !== undefined) values.scheduledFor = input.scheduledFor;
+      if (input.type !== undefined) values.type = input.type;
       if (input.status !== undefined) {
         values.status = input.status;
         values.completedAt = input.status === "completed" ? new Date() : null;

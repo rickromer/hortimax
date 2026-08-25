@@ -69,8 +69,10 @@ export function downloadCsv(filename: string, csv: string) {
   const link = document.createElement("a");
   link.href = url;
   link.download = filename;
+  link.style.display = "none";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  // En navegadores móviles la descarga puede iniciar un instante después del click.
+  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
 }

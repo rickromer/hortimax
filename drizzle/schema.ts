@@ -22,7 +22,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["field", "manager", "admin"]).default("field").notNull(),
   /** Nombre de usuario para iniciar sesión (único, en minúsculas). */
   username: varchar("username", { length: 64 }).unique(),
   /** Hash scrypt de la contraseña. Null hasta que el usuario la define. */

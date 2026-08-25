@@ -42,8 +42,6 @@ export default function SiteDetail() {
   const [, params] = useRoute("/sitios/:id");
   const siteId = Number(params?.id);
   const { user } = useAuth();
-  const canEdit = Boolean(user);
-  const canContribute = true;
   const geo = useGeolocation({ enabled: true });
   const utils = trpc.useUtils();
 
@@ -130,7 +128,9 @@ export default function SiteDetail() {
     );
   }
 
-  const { site, checkins, notes, followups } = detailQuery.data;
+  const { site, checkins, notes, followups, canEditSite } = detailQuery.data;
+  const canEdit = Boolean(user && canEditSite);
+  const canContribute = canEdit;
 
   return (
     <FieldShell

@@ -1,7 +1,8 @@
 import { DEFAULT_CLIENT_TYPES, DEFAULT_NOTE_CATEGORIES, DEFAULT_ZONES } from "@shared/domain";
 import { TRPCError } from "@trpc/server";
+import { canManageAll } from "@shared/permissions";
 import { z } from "zod";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { adminProcedure, managementProcedure, protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { formatPy, toCsv } from "../csv";
 import * as db from "../db";
 import { generateActivationCode, hashPassword, normalizeUsername } from "../password";
@@ -10,7 +11,7 @@ const catalogKind = z.enum(["zone", "clientType", "noteCategory"]);
 
 export const adminRouter = router({
   /** Métricas del panel principal. */
-  stats: adminProcedure.query(async () => {
+  stats: managementProcedure.query(async () => {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const [totalSites, totalCheckins, weekCheckins, totalNotes, users] = await Promise.all([
       db.countSites(),
@@ -33,7 +34,7 @@ export const adminRouter = router({
       totalCheckins,
       weekCheckins,
       totalNotes,
-      totalSellers: users.filter(u => u.role === "user" && u.active).length,
+      totalSellers: users.filter(u => u.role === "field" && u.active).length,
       byDepartment: Array.from(byDepartment, ([department, count]) => ({ department, count })).sort(
         (a, b) => b.count - a.count
       ),
@@ -44,7 +45,7 @@ export const adminRouter = router({
   }),
 
   /** Actividad reciente de los vendedores. */
-  activity: adminProcedure
+  activity: managementProcedure
     .input(z.object({ limit: z.number().int().min(1).max(200).optional() }).optional())
     .query(async ({ input }) => {
       const limit = input?.limit ?? 40;
@@ -60,7 +61,7 @@ export const adminRouter = router({
 
   /* ------------------------------ Usuarios ------------------------------ */
 
-  listUsers: adminProcedure.query(async () => {
+  listUsers: managementProcedure.query(async ({ ctx }) => {
     const [users, assignments, checkins] = await Promise.all([
       db.listUsers(),
       db.listSiteAssignments(),
@@ -75,7 +76,7 @@ export const adminRouter = router({
       phone: user.phone,
       active: user.active,
       mustChangePassword: user.mustChangePassword,
-      activationCode: user.activationCode,
+      activationCode: ctx.user.role === "admin" ? user.activationCode : null,
       lastSignedIn: user.lastSignedIn,
       createdAt: user.createdAt,
       sitesCount: assignments.filter(assignment => assignment.userId === user.id).length,
@@ -84,7 +85,7 @@ export const adminRouter = router({
   }),
 
   /** Asigna un cliente a uno o varios vendedores; un arreglo vacío lo deja sin cartera. */
-  setSiteAssignments: adminProcedure
+  setSiteAssignments: managementProcedure
     .input(
       z.object({
         siteId: z.number().int().positive(),
@@ -96,7 +97,7 @@ export const adminRouter = router({
       if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
       const users = await db.listUsers();
       const validSellerIds = new Set(
-        users.filter(user => user.role === "user" && user.active).map(user => user.id)
+        users.filter(user => user.role === "field" && user.active).map(user => user.id)
       );
       if (input.userIds.some(userId => !validSellerIds.has(userId))) {
         throw new TRPCError({
@@ -112,7 +113,7 @@ export const adminRouter = router({
       z.object({
         name: z.string().min(2).max(120),
         username: z.string().min(3).max(64),
-        role: z.enum(["user", "admin"]).default("user"),
+        role: z.enum(["field", "manager", "admin"]).default("field"),
         zone: z.string().max(120).optional(),
         phone: z.string().max(40).optional(),
       })
@@ -150,7 +151,7 @@ export const adminRouter = router({
         id: z.number().int().positive(),
         name: z.string().min(2).max(120).optional(),
         username: z.string().min(3).max(64).optional(),
-        role: z.enum(["user", "admin"]).optional(),
+        role: z.enum(["field", "manager", "admin"]).optional(),
         zone: z.string().max(120).optional().nullable(),
         phone: z.string().max(40).optional().nullable(),
         active: z.boolean().optional(),
@@ -272,7 +273,7 @@ export const adminRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const mine = ctx.user.role !== "admin" || input.scope === "mine";
+      const mine = !canManageAll(ctx.user.role) || input.scope === "mine";
       const assignedSiteIds = mine ? await db.getAssignedSiteIds(ctx.user.id) : undefined;
       const stamp = new Date().toISOString().slice(0, 10);
 

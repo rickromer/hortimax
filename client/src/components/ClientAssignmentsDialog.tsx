@@ -50,7 +50,7 @@ export function ClientAssignmentsDialog({
     onError: error => toast.error(error.message),
   });
 
-  const sellers = (usersQuery.data ?? []).filter(user => user.role === "user" && user.active);
+  const sellers = (usersQuery.data ?? []).filter(user => user.role === "field" && user.active);
   const toggle = (userId: number) => {
     setSelected(current =>
       current.includes(userId) ? current.filter(id => id !== userId) : [...current, userId]

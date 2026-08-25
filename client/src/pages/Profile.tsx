@@ -58,7 +58,7 @@ export default function Profile() {
             <UserCog className="h-4 w-4 text-primary" />
             <p className="font-medium">Datos personales</p>
             <Badge variant="secondary" className="ml-auto">
-              {user?.role === "admin" ? "Administrador" : "Vendedor"}
+              {user?.role === "admin" ? "Administrador" : user?.role === "manager" ? "Gerente comercial" : "Representante de campo"}
             </Badge>
           </div>
           <form
@@ -160,4 +160,3 @@ export default function Profile() {
     </FieldShell>
   );
 }
-

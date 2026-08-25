@@ -110,7 +110,7 @@ export default function AdminClients() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>Todos los comerciales</SelectItem>
-                  {(usersQuery.data ?? []).filter(user => user.role === "user" && user.active).map(user => (
+                  {(usersQuery.data ?? []).filter(user => user.role === "field" && user.active).map(user => (
                     <SelectItem key={user.id} value={String(user.id)}>
                       {user.name ?? user.username}
                     </SelectItem>

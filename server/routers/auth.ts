@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getSessionCookieOptions } from "../_core/cookies";
 import { sdk } from "../_core/sdk";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import type { AppRole } from "@shared/permissions";
 import * as db from "../db";
 import { hashPassword, normalizeUsername, verifyPassword } from "../password";
 
@@ -13,7 +14,7 @@ function publicUser(user: {
   id: number;
   name: string | null;
   username: string | null;
-  role: "user" | "admin";
+  role: AppRole;
   zone: string | null;
   phone: string | null;
   mustChangePassword: boolean;
@@ -48,7 +49,7 @@ export const authRouter = router({
   /** Indica si todavía no existe ninguna cuenta administradora. */
   needsSetup: publicProcedure.query(async () => {
     const users = await db.listUsers();
-    const hasAdmin = users.some(u => u.role === "admin" && u.username);
+    const hasAdmin = users.some(u => u.role === "admin" && u.username && u.passwordHash);
     return { needsSetup: !hasAdmin };
   }),
 
@@ -63,7 +64,7 @@ export const authRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const existing = await db.listUsers();
-      if (existing.some(u => u.role === "admin" && u.username)) {
+      if (existing.some(u => u.role === "admin" && u.username && u.passwordHash)) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "El sistema ya tiene un administrador configurado",
@@ -78,18 +79,29 @@ export const authRouter = router({
         throw new TRPCError({ code: "CONFLICT", message: "Ese usuario ya existe" });
       }
 
-      const openId = `local_${username}_${Date.now().toString(36)}`;
-      const created = await db.createAppUser({
-        openId,
-        name: input.name.trim(),
-        username,
-        role: "admin",
-        loginMethod: "password",
-        passwordHash: await hashPassword(input.password),
-        mustChangePassword: false,
-        active: true,
-        lastSignedIn: new Date(),
-      });
+      const bootstrapAdmin = existing.find(user => user.role === "admin" && !user.username);
+      const created = bootstrapAdmin
+        ? await db.updateUser(bootstrapAdmin.id, {
+            name: input.name.trim(),
+            username,
+            loginMethod: "password",
+            passwordHash: await hashPassword(input.password),
+            mustChangePassword: false,
+            activationCode: null,
+            active: true,
+            lastSignedIn: new Date(),
+          })
+        : await db.createAppUser({
+            openId: `local_${username}_${Date.now().toString(36)}`,
+            name: input.name.trim(),
+            username,
+            role: "admin",
+            loginMethod: "password",
+            passwordHash: await hashPassword(input.password),
+            mustChangePassword: false,
+            active: true,
+            lastSignedIn: new Date(),
+          });
 
       if (!created) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear la cuenta" });

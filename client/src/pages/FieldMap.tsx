@@ -12,6 +12,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { formatDistance, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
+import { canManageAll } from "@shared/permissions";
 import {
   ChevronRight,
   Crosshair,
@@ -29,7 +30,7 @@ import { Link } from "wouter";
 export default function FieldMap() {
   const { user } = useAuth();
   const canEdit = Boolean(user);
-  const canCreatePoint = true;
+  const canCreatePoint = Boolean(user);
   const geo = useGeolocation({ enabled: true });
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -70,6 +71,9 @@ export default function FieldMap() {
   const selected = useMemo(
     () => sites.find(site => site.id === selectedId) ?? null,
     [sites, selectedId]
+  );
+  const canEditSelected = Boolean(
+    user && selected && (canManageAll(user.role) || selected.createdBy === user.id)
   );
 
   const markers = useMemo(() => {
@@ -244,7 +248,7 @@ export default function FieldMap() {
                 </Button>
               </div>
               <div className="flex gap-2 mt-3">
-                {canEdit && <Button
+                {canEditSelected && <Button
                   className="flex-1"
                   onClick={() => setCheckinSite({ id: selected.id, name: selected.name })}>
                   <Navigation className="h-4 w-4" />
@@ -275,7 +279,7 @@ export default function FieldMap() {
                         a {formatDistance(site.distance)} · {site.clientType ?? "Sin tipo"}
                       </p>
                     </div>
-                    {canEdit && <Button
+                    {user && (canManageAll(user.role) || site.createdBy === user.id) && <Button
                       size="sm"
                       variant="secondary"
                       onClick={() => setCheckinSite({ id: site.id, name: site.name })}>

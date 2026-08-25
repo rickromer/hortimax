@@ -59,9 +59,9 @@ describe("calendar.timeline", () => {
     ]);
   });
 
-  it("expone sin filtro de cartera las visitas, próximos y notas de todo el equipo en orden cronológico", async () => {
+  it("expone a un usuario autenticado las visitas, próximos y notas de todo el equipo en orden cronológico", async () => {
     const caller = calendarRouter.createCaller({
-      user: null,
+      user: { id: 10, role: "field" },
       req: {} as TrpcContext["req"],
       res: {} as TrpcContext["res"],
     } as TrpcContext);

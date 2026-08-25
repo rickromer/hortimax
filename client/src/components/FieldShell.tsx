@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { BRAND_LOGO_URL, BRAND_NAME } from "@/lib/brand";
-import { CalendarDays, LayoutDashboard, ListTree, LogOut, Map } from "lucide-react";
+import { CalendarDays, LayoutDashboard, ListTree, LogIn, LogOut, Map } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -34,7 +34,7 @@ type FieldShellProps = {
 
 export function FieldShell({ children, title, subtitle, bleed, action, hideContext }: FieldShellProps) {
   const [location] = useLocation();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, canManageAll, logout } = useAuth();
 
   const initials = (user?.name ?? user?.username ?? "?")
     .split(" ")
@@ -58,7 +58,7 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
             </p>}
           </div>
           {action}
-          {user && <DropdownMenu>
+          {user ? <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full shrink-0">
                 <Avatar className="h-8 w-8 border">
@@ -74,11 +74,11 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
                 <p className="text-xs text-muted-foreground">@{user?.username}</p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {isAdmin && (
+              {canManageAll && (
                 <DropdownMenuItem asChild>
                   <Link href="/admin">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Panel de administración
+                    {isAdmin ? "Panel de administración" : "Gestión comercial"}
                   </Link>
                 </DropdownMenuItem>
               )}
@@ -93,7 +93,11 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
                 Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>}
+          </DropdownMenu> : (
+            <Button variant="outline" size="sm" className="bg-background" asChild>
+              <Link href="/acceso"><LogIn className="h-4 w-4" />Ingresar</Link>
+            </Button>
+          )}
         </div>
         <div className="brand-spectrum" aria-hidden="true" />
       </header>

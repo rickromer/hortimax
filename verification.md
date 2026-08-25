@@ -151,7 +151,7 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 ## Calendario público del equipo
 
 - Se añadió el tercer acceso fijo **Calendario** al menú inferior de campo, junto a Mapa y Clientes.
-- La ruta pública `/calendario` consolida sin filtro de usuario o cartera todas las visitas realizadas, próximos relevamientos pendientes y notas. Cada registro enlaza directamente a la ficha pública del cliente.
+- La ruta `/calendario` consolidada está disponible para toda persona con sesión, sin filtro de usuario o cartera; cada registro enlaza directamente a la ficha del cliente.
 - La agenda ordena los registros por fecha, los agrupa por día y distingue visualmente Visita realizada, Próxima visita/Recordatorio/Atención y Nota; muestra autor, fecha/hora, distancia cuando existe y ubicación Departamento · localidad.
 - La prueba de calendario confirma que la consulta pública no aplica filtro de cartera y solicita las tres fuentes globales. `pnpm check`, 47 pruebas automatizadas (1 integración opcional omitida) y la compilación de producción aprobaron. Las capturas verificaron la agenda con actividad real y la barra móvil de tres accesos.
 - Si la consulta pública falla, Calendario presenta un mensaje visible de error y la acción **Reintentar**; la prueba de estado confirma que un fallo no se confunda con una agenda vacía. Tras esta cobertura, `pnpm check`, 49 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron.
@@ -162,3 +162,12 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - El selector toma la ubicación inicial solo al abrirse. Las lecturas GPS posteriores del mapa general ya no cambian el foco mientras el selector permanece abierto y el usuario mueve manualmente el mapa.
 - La acción **Mi ubicación** sigue siendo el único modo explícito de recentrar el selector con GPS después de abrirlo.
 - Una prueba interactiva de DOM abre el selector con una posición, simula una actualización GPS distinta y confirma que `ClientMap` conserva el foco inicial. `pnpm check`, 53 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron. Falta la confirmación física final en teléfono y computadora.
+
+## Acceso, edición y privilegios
+
+- El acceso por **usuario y contraseña** quedó habilitado en `/acceso`; las rutas de mapa, clientes y calendario exigen una sesión iniciada.
+- La cuenta administrativa existente sin credenciales se conserva. En el primer acceso se muestra **Configuración inicial** para que el propietario defina su usuario y contraseña sin crear una cuenta paralela.
+- Se implementaron tres roles: **Administrador** (administración, usuarios y operación total), **Gerente comercial** (ve y edita todos los puntos) y **Representante de campo** (ve todos los puntos y solo edita, registra visitas o carga notas/relevamientos en los puntos que creó).
+- La ficha recibe el permiso de edición desde el backend, evitando mostrar acciones editables sobre puntos ajenos. La gestión de usuarios permite crear y asignar los tres roles, incluidos más administradores y gerentes comerciales.
+- La migración convirtió el rol anterior `user` en `field`. `pnpm check`, 45 pruebas automatizadas (1 integración opcional omitida) y compilación de producción aprobaron; las pruebas cubren sesión requerida, vista global, propietario bloqueado en puntos ajenos y acceso total del gerente.
+- El alcance del **Gerente comercial** incluye Resumen, Mapa general, Clientes, detalle de cliente y Actividad globales; Usuarios y Configuración permanecen exclusivamente para Administrador. Las pruebas de rutas y permisos confirman ese acceso, junto con la edición total de clientes por gerente. `pnpm check`, 49 pruebas automatizadas (1 integración opcional omitida) y la compilación final aprobaron.

@@ -212,3 +212,14 @@
 - [x] Evitar que lecturas GPS posteriores vuelvan a centrar el selector durante la elección manual
 - [x] Conservar el centrado GPS únicamente al abrir o al pulsar explícitamente Usar GPS
 - [ ] Cubrir la regla de no recentering con pruebas y validación móvil/escritorio
+
+## Edición de clientes, acceso y privilegios
+- [x] Diagnosticar y reparar la edición básica de clientes
+- [x] Habilitar acceso real con usuario y contraseña
+- [x] Definir roles Administrador, Gerente comercial y Representante de campo
+- [x] Permitir designar más administradores y gerentes desde la gestión de usuarios
+- [x] Delimitar y verificar el acceso total del Gerente comercial en la operación de clientes
+- [x] Dar a Representante de campo visibilidad total y edición solo de sus propios puntos
+- [ ] Verificar con cuentas reales inicio de sesión, edición y restricciones de cada rol
+- [ ] Probar desde la interfaz la edición como propietario, gerente comercial y usuario sin permiso
+- [x] Cubrir en pruebas las rutas operativas y la edición de clientes por Gerente comercial

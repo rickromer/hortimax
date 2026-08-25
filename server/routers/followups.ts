@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { canManageAll } from "@shared/permissions";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
@@ -6,8 +7,8 @@ import * as db from "../db";
 async function assertFollowupAccess(siteId: number, user: { id: number; role: string }) {
   const site = await db.getSiteById(siteId);
   if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
-  if (user.role !== "admin" && !(await db.isUserAssignedToSite(siteId, user.id))) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este cliente" });
+  if (!canManageAll(user.role) && site.createdBy !== user.id) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés gestionar tus propios puntos" });
   }
   return site;
 }
@@ -24,22 +25,21 @@ export const followupsRouter = router({
     .input(z.object({ siteId: z.number().int().positive().optional(), limit: z.number().int().min(1).max(300).optional() }).optional())
     .query(async ({ ctx, input }) => {
       if (input?.siteId) await assertFollowupAccess(input.siteId, ctx.user);
-      const siteIds = ctx.user.role === "admin" ? undefined : await db.getAssignedSiteIds(ctx.user.id);
       return db.listFollowups({
         siteId: input?.siteId,
-        siteIds: input?.siteId ? undefined : siteIds,
+        siteIds: undefined,
         status: "pending",
         limit: input?.limit,
       });
     }),
 
-  create: publicProcedure
+  create: protectedProcedure
     .input(scheduleInput.extend({ siteId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user) await assertFollowupAccess(input.siteId, ctx.user);
+      await assertFollowupAccess(input.siteId, ctx.user);
       return db.createFollowup({
         siteId: input.siteId,
-        createdBy: ctx.user?.id ?? 0,
+        createdBy: ctx.user.id,
         type: input.type,
         description: input.description,
         scheduledFor: input.scheduledFor,

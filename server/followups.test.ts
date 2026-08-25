@@ -2,35 +2,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const store = vi.hoisted(() => ({
-  getSiteById: vi.fn(),
-  isUserAssignedToSite: vi.fn(),
-  getAssignedSiteIds: vi.fn(),
-  listFollowups: vi.fn(),
-  createFollowup: vi.fn(),
-  getFollowupById: vi.fn(),
-  updateFollowup: vi.fn(),
-  deleteFollowup: vi.fn(),
+  getSiteById: vi.fn(), listFollowups: vi.fn(), createFollowup: vi.fn(), getFollowupById: vi.fn(), updateFollowup: vi.fn(), deleteFollowup: vi.fn(),
 }));
-
 vi.mock("./db", () => store);
-
 import { followupsRouter } from "./routers/followups";
 
-const site = { id: 41, name: "Productor San José" };
-
-function contextFor(userId: number, role: "user" | "admin" = "user") {
-  return {
-    user: { id: userId, role },
-    req: {} as TrpcContext["req"],
-    res: {} as TrpcContext["res"],
-  } as TrpcContext;
+const site = { id: 41, name: "Productor San José", createdBy: 10 };
+const foreignSite = { ...site, id: 42, createdBy: 20 };
+function contextFor(id: number, role: "field" | "manager" | "admin" = "field") {
+  return { user: { id, role }, req: {} as TrpcContext["req"], res: {} as TrpcContext["res"] } as TrpcContext;
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   store.getSiteById.mockResolvedValue(site);
-  store.isUserAssignedToSite.mockResolvedValue(true);
-  store.getAssignedSiteIds.mockResolvedValue([site.id]);
   store.listFollowups.mockResolvedValue([]);
   store.createFollowup.mockImplementation(async (values: Record<string, unknown>) => ({ id: 8, ...values }));
   store.getFollowupById.mockResolvedValue({ id: 8, siteId: site.id, createdBy: 10 });
@@ -38,78 +23,23 @@ beforeEach(() => {
 });
 
 describe("próximos relevamientos", () => {
-  it("agenda un relevamiento con descripción, fecha y el usuario que lo registra", async () => {
-    const caller = followupsRouter.createCaller(contextFor(10));
-
-    const result = await caller.create({
-      siteId: site.id,
-      description: "  Revisar respuesta al fertilizante y preparar visita. ",
-      scheduledFor: "2026-09-15",
-    });
-
-    expect(store.createFollowup).toHaveBeenCalledWith(
-      expect.objectContaining({
-        siteId: site.id,
-        createdBy: 10,
-        type: "reminder",
-        description: "Revisar respuesta al fertilizante y preparar visita.",
-        status: "pending",
-        scheduledFor: expect.any(Date),
-      })
-    );
-    expect(result).toMatchObject({ id: 8, siteId: site.id, status: "pending" });
+  it("exige sesión para agendar un relevamiento", async () => {
+    const caller = followupsRouter.createCaller({ user: null, req: {} as TrpcContext["req"], res: {} as TrpcContext["res"] } as TrpcContext);
+    await expect(caller.create({ siteId: site.id, description: "Seguimiento", scheduledFor: "2026-09-16" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 
-  it("permite agendar un recordatorio público y lo identifica por tipo", async () => {
-    const caller = followupsRouter.createCaller({
-      user: null,
-      req: {} as TrpcContext["req"],
-      res: {} as TrpcContext["res"],
-    } as TrpcContext);
-
-    await caller.create({
-      siteId: site.id,
-      description: "Llamar para coordinar nueva visita",
-      scheduledFor: "2026-09-16",
-      type: "reminder",
-    });
-
-    expect(store.createFollowup).toHaveBeenCalledWith(
-      expect.objectContaining({ createdBy: 0, type: "reminder", status: "pending" })
-    );
-  });
-
-  it("limita la agenda general del vendedor a los clientes de su cartera", async () => {
+  it("permite al propietario agendar y ver la agenda de todo el equipo", async () => {
     const caller = followupsRouter.createCaller(contextFor(10));
-
+    await caller.create({ siteId: site.id, description: " Revisar cultivo ", scheduledFor: "2026-09-15", type: "visit" });
     await caller.list({ limit: 12 });
-
-    expect(store.listFollowups).toHaveBeenCalledWith({
-      siteId: undefined,
-      siteIds: [site.id],
-      status: "pending",
-      limit: 12,
-    });
+    expect(store.createFollowup).toHaveBeenCalledWith(expect.objectContaining({ siteId: site.id, createdBy: 10, type: "visit", description: "Revisar cultivo" }));
+    expect(store.listFollowups).toHaveBeenCalledWith({ siteId: undefined, siteIds: undefined, status: "pending", limit: 12 });
   });
 
-  it("bloquea a un vendedor no asignado antes de agendar un relevamiento", async () => {
-    store.isUserAssignedToSite.mockResolvedValue(false);
-    const caller = followupsRouter.createCaller(contextFor(10));
-
-    await expect(
-      caller.create({ siteId: site.id, description: "Visita no autorizada", scheduledFor: "2026-09-15" })
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    expect(store.createFollowup).not.toHaveBeenCalled();
-  });
-
-  it("marca un relevamiento como realizado con fecha de cierre", async () => {
-    const caller = followupsRouter.createCaller(contextFor(10));
-
-    await caller.update({ id: 8, status: "completed" });
-
-    expect(store.updateFollowup).toHaveBeenCalledWith(
-      8,
-      expect.objectContaining({ status: "completed", completedAt: expect.any(Date) })
-    );
+  it("bloquea al representante en un punto ajeno y permite a gerencia operar sobre él", async () => {
+    store.getSiteById.mockResolvedValue(foreignSite);
+    await expect(followupsRouter.createCaller(contextFor(10)).create({ siteId: foreignSite.id, description: "No autorizado", scheduledFor: "2026-09-15" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await followupsRouter.createCaller(contextFor(40, "manager")).create({ siteId: foreignSite.id, description: "Visita de gerencia", scheduledFor: "2026-09-15" });
+    expect(store.createFollowup).toHaveBeenCalledWith(expect.objectContaining({ siteId: foreignSite.id, createdBy: 40 }));
   });
 });

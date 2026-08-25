@@ -31,8 +31,8 @@ const NAV = [
   { href: "/admin/mapa", label: "Mapa general", icon: Map },
   { href: "/admin/clientes", label: "Clientes", icon: MapPinned },
   { href: "/admin/actividad", label: "Actividad", icon: Activity },
-  { href: "/admin/usuarios", label: "Usuarios", icon: Users },
-  { href: "/admin/configuracion", label: "Configuración", icon: Settings2 },
+  { href: "/admin/usuarios", label: "Usuarios", icon: Users, adminOnly: true },
+  { href: "/admin/configuracion", label: "Configuración", icon: Settings2, adminOnly: true },
 ];
 
 type Props = {
@@ -46,7 +46,7 @@ type Props = {
 
 export function AdminShell({ children, title, description, actions, fill }: Props) {
   const [location] = useLocation();
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const initials = (user?.name ?? "?")
@@ -57,7 +57,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
 
   const nav = (
     <nav className="space-y-0.5">
-      {NAV.map(item => {
+      {NAV.filter(item => !item.adminOnly || isAdmin).map(item => {
         const active =
           item.href === "/admin" ? location === "/admin" : location.startsWith(item.href);
         const Icon = item.icon;

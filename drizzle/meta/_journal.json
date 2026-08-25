@@ -50,6 +50,13 @@
       "when": 1787687502370,
       "tag": "0006_yummy_odin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1787691459778,
+      "tag": "0007_aspiring_slipstream",
+      "breakpoints": true
     }
   ]
 }

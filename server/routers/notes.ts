@@ -4,18 +4,19 @@ import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { formatPy, toCsv } from "../csv";
 import { distanceMeters } from "../../shared/domain";
+import { canManageAll } from "@shared/permissions";
 
 async function assertNoteAccess(noteId: number, user: { id: number; role: string }) {
   const note = await db.getNoteById(noteId);
   if (!note) throw new TRPCError({ code: "NOT_FOUND", message: "Nota no encontrada" });
-  if (user.role !== "admin" && note.userId !== user.id) {
+  if (!canManageAll(user.role) && note.userId !== user.id) {
     throw new TRPCError({ code: "FORBIDDEN", message: "No podés modificar esta nota" });
   }
   return note;
 }
 
 export const notesRouter = router({
-  /** Planilla de notas: por sitio, por vendedor o global (admin). */
+  /** Planilla de notas: todos ven el historial; gerencia puede operar globalmente. */
   list: protectedProcedure
     .input(
       z
@@ -28,25 +29,20 @@ export const notesRouter = router({
         .optional()
     )
     .query(async ({ ctx, input }) => {
-      const scopeMine = ctx.user.role !== "admin" || input?.scope === "mine";
-      const assignedSiteIds = scopeMine ? await db.getAssignedSiteIds(ctx.user.id) : undefined;
       if (input?.siteId) {
         const site = await db.getSiteById(input.siteId);
         if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
-        if (ctx.user.role !== "admin" && !(await db.isUserAssignedToSite(site.id, ctx.user.id))) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este sitio" });
-        }
       }
       return db.listNotes({
         siteId: input?.siteId,
-        siteIds: assignedSiteIds,
+        siteIds: input?.scope === "mine" ? await db.getAssignedSiteIds(ctx.user.id) : undefined,
         search: input?.search?.trim() || undefined,
         limit: input?.limit,
       });
     }),
 
   /** Nueva nota con cabecera automática de fecha y hora. */
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.object({
         siteId: z.number().int().positive(),
@@ -61,15 +57,15 @@ export const notesRouter = router({
     .mutation(async ({ ctx, input }) => {
       const site = await db.getSiteById(input.siteId);
       if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
-      if (ctx.user && ctx.user.role !== "admin" && !(await db.isUserAssignedToSite(site.id, ctx.user.id))) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este sitio" });
+      if (!canManageAll(ctx.user.role) && site.createdBy !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés registrar actividad en tus propios puntos" });
       }
       let linkedCheckinId = input.checkinId ?? null;
       if (input.registerVisit) {
         const hasLocation = input.latitude !== undefined && input.longitude !== undefined;
         const visit = await db.createCheckin({
           siteId: site.id,
-          userId: ctx.user?.id ?? 0,
+          userId: ctx.user.id,
           latitude: hasLocation ? input.latitude!.toFixed(7) : null,
           longitude: hasLocation ? input.longitude!.toFixed(7) : null,
           distanceMeters: hasLocation
@@ -85,7 +81,7 @@ export const notesRouter = router({
 
       const note = await db.createNote({
         siteId: input.siteId,
-        userId: ctx.user?.id ?? 0,
+        userId: ctx.user.id,
         checkinId: linkedCheckinId,
         category: input.category?.trim() || null,
         content: input.content.trim(),
@@ -94,7 +90,7 @@ export const notesRouter = router({
     }),
 
   /** Descarga la planilla de notas del cliente para abrirla o importarla en Google Sheets. */
-  exportCsv: publicProcedure
+  exportCsv: protectedProcedure
     .input(z.object({ siteId: z.number().int().positive() }))
     .query(async ({ input }) => {
       const site = await db.getSiteById(input.siteId);

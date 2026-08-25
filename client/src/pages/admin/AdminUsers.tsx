@@ -44,7 +44,7 @@ export default function AdminUsers() {
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
-  const [role, setRole] = useState<"user" | "admin">("user");
+  const [role, setRole] = useState<"field" | "manager" | "admin">("field");
   const [zone, setZone] = useState<string>("");
   const [phone, setPhone] = useState("");
   const [created, setCreated] = useState<CreatedInfo>(null);
@@ -60,7 +60,7 @@ export default function AdminUsers() {
       setCreateOpen(false);
       setName("");
       setUsername("");
-      setRole("user");
+      setRole("field");
       setZone("");
       setPhone("");
     },
@@ -124,7 +124,7 @@ export default function AdminUsers() {
   return (
     <AdminShell
       title="Usuarios"
-      description="Altas de vendedores y administradores del sistema"
+      description="Altas, credenciales y privilegios del equipo comercial"
       actions={
         <Button onClick={() => setCreateOpen(true)}>
           <UserPlus className="h-4 w-4" />
@@ -179,13 +179,14 @@ export default function AdminUsers() {
                         <Select
                           value={user.role}
                           onValueChange={value =>
-                            updateUser.mutate({ id: user.id, role: value as "user" | "admin" })
+                            updateUser.mutate({ id: user.id, role: value as "field" | "manager" | "admin" })
                           }>
                           <SelectTrigger className="h-8 w-32 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="user">Vendedor</SelectItem>
+                            <SelectItem value="field">Representante de campo</SelectItem>
+                            <SelectItem value="manager">Gerente comercial</SelectItem>
                             <SelectItem value="admin">Administrador</SelectItem>
                           </SelectContent>
                         </Select>
@@ -266,8 +267,8 @@ export default function AdminUsers() {
                         {user.username ? `@${user.username}` : "sin usuario"}
                       </p>
                     </div>
-                    <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                      {user.role === "admin" ? "Admin" : "Vendedor"}
+                    <Badge variant={user.role === "admin" ? "default" : user.role === "manager" ? "outline" : "secondary"}>
+                      {user.role === "admin" ? "Administrador" : user.role === "manager" ? "Gerente comercial" : "Representante de campo"}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4 text-sm">
@@ -377,12 +378,13 @@ export default function AdminUsers() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Rol</Label>
-                <Select value={role} onValueChange={v => setRole(v as "user" | "admin")}>
+                <Select value={role} onValueChange={v => setRole(v as "field" | "manager" | "admin")}>
                   <SelectTrigger className="h-11 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="user">Vendedor</SelectItem>
+                    <SelectItem value="field">Representante de campo</SelectItem>
+                    <SelectItem value="manager">Gerente comercial</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                   </SelectContent>
                 </Select>

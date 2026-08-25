@@ -1,4 +1,5 @@
 import { trpc } from "@/lib/trpc";
+import { canManageAll } from "@shared/permissions";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useMemo } from "react";
 
@@ -44,6 +45,7 @@ export function useAuth() {
       error: meQuery.error ?? logoutMutation.error ?? null,
       isAuthenticated: Boolean(meQuery.data),
       isAdmin: meQuery.data?.role === "admin",
+      canManageAll: canManageAll(meQuery.data?.role),
     }),
     [
       meQuery.data,
@@ -60,4 +62,3 @@ export function useAuth() {
     logout,
   };
 }
-

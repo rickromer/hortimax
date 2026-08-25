@@ -21,7 +21,7 @@ import { formatCoords } from "@/lib/format";
 import { parsePointCoordinates } from "@/lib/locationLinks";
 import { trpc } from "@/lib/trpc";
 import { Crosshair, Loader2, MapPin, MousePointer2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export type SiteFormValues = {
@@ -46,6 +46,25 @@ const EMPTY: SiteFormValues = {
   phone: "",
   address: "",
 };
+
+function initialValues(
+  initial: Partial<SiteFormValues> | undefined,
+  autoDepartment: string | undefined,
+  autoZone: string | undefined
+): SiteFormValues {
+  return {
+    ...EMPTY,
+    ...initial,
+    name: initial?.name ?? "",
+    clientType: initial?.clientType ?? "",
+    department: autoDepartment ?? initial?.department ?? "",
+    zone: autoZone ?? initial?.zone ?? "",
+    description: initial?.description ?? "",
+    contactName: initial?.contactName ?? "",
+    phone: initial?.phone ?? "",
+    address: initial?.address ?? "",
+  };
+}
 
 type Props = {
   open: boolean;
@@ -76,12 +95,8 @@ export function SiteFormSheet({
 }: Props) {
   const utils = trpc.useUtils();
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
-  const [values, setValues] = useState<SiteFormValues>({
-    ...EMPTY,
-    ...initial,
-    department: autoDepartment ?? initial?.department ?? "",
-    zone: autoZone ?? initial?.zone ?? "",
-  });
+  const initialId = initial?.id;
+  const [values, setValues] = useState<SiteFormValues>(() => initialValues(initial, autoDepartment, autoZone));
   const [selectedCoords, setSelectedCoords] = useState<Props["coords"]>(coords);
   const [selectedSource, setSelectedSource] = useState<"gps" | "manual">(locationSource);
   const [showCoordinates, setShowCoordinates] = useState(false);
@@ -90,18 +105,13 @@ export function SiteFormSheet({
 
   useEffect(() => {
     if (!open) return;
-    setValues({
-      ...EMPTY,
-      ...initial,
-      department: autoDepartment ?? initial?.department ?? "",
-      zone: autoZone ?? initial?.zone ?? "",
-    });
+    setValues(initialValues(initial, autoDepartment, autoZone));
     setSelectedCoords(coords);
     setSelectedSource(locationSource);
     setLatitudeInput(coords ? String(coords.latitude) : "");
     setLongitudeInput(coords ? String(coords.longitude) : "");
     setShowCoordinates(false);
-  }, [open, initial, autoDepartment, autoZone]);
+  }, [open, initialId]);
 
   useEffect(() => {
     if (!open || locationSource !== "manual") return;

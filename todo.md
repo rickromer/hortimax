@@ -261,6 +261,11 @@
 - [x] Mantener Administración, Usuarios y acciones de borrado protegidos
 - [x] Probar la edición pública de un cliente sin habilitar cambios administrativos
 
+## Corrección de borrado en edición de cliente
+- [x] Diagnosticar por qué los campos de texto no permiten borrar su contenido
+- [x] Permitir editar, reemplazar y vaciar campos de texto en el formulario
+- [x] Cubrir el borrado de texto con una prueba de interfaz
+
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa
 - [x] Mantener visibles rutas, nombres y referencias sin exponer acciones de compartir

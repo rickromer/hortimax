@@ -195,6 +195,11 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La actualización básica de cliente quedó temporalmente habilitada para visitantes; archivo de clientes, check-in directo, gestión de usuarios y Administración permanecen bajo permisos autenticados.
 - La prueba de flujo confirma que una actualización anónima alcanza `updateSite`; las restricciones de un Representante autenticado sobre puntos ajenos y el acceso total de gerencia se conservan. `pnpm check`, 52 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron. No se guardó una modificación de datos reales durante la verificación visual.
 
+## Corrección del texto en edición de cliente
+
+- Se corrigió el formulario controlado que reinicializaba valores al recibir un objeto `initial` nuevo del detalle, lo que impedía borrar texto. Ahora la reinicialización solo ocurre al abrir el formulario o cambiar de cliente; durante la edición se conservan las modificaciones del usuario, incluidos los campos vacíos.
+- La prueba interactiva borra el nombre del cliente, fuerza un nuevo render con el mismo cliente y confirma que el campo permanece vacío. `pnpm check`, 55 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron.
+
 ## Referencias locales de solo lectura
 
 - Los mapas compartidos usan `clickableIcons: false`: los nombres, rutas, negocios y lugares de Google se conservan como referencia visual, pero ya no deben abrir sus paneles, enlaces de compartir o acciones de dirección al tocarlos. Los pines propios de HORTIMAX mantienen su interacción normal.

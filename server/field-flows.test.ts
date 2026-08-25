@@ -33,6 +33,7 @@ const ownSite = {
   longitude: -57.5759,
   createdBy: 10,
   clientType: "Productor",
+  department: "Central",
   zone: "Central",
 };
 
@@ -123,12 +124,13 @@ describe("flujos de sitio del vendedor", () => {
     expect(result).toEqual([{ ...site, lastCheckinAt: lastVisit }]);
   });
 
-  it("registra un sitio con coordenadas GPS redondeadas y datos normalizados", async () => {
+  it("registra departamento, localidad y coordenadas GPS redondeadas", async () => {
     const caller = sitesRouter.createCaller(contextFor(10));
 
     const created = await caller.create({
       name: "  Estancia San Rafael  ",
       clientType: "  Productor  ",
+      department: "  Caaguazú ",
       zone: "  Central ",
       description: "  Soja y maíz  ",
       latitude: -25.263712345,
@@ -140,6 +142,7 @@ describe("flujos de sitio del vendedor", () => {
       expect.objectContaining({
         name: "Estancia San Rafael",
         clientType: "Productor",
+        department: "Caaguazú",
         zone: "Central",
         description: "Soja y maíz",
         latitude: "-25.2637123",
@@ -150,6 +153,12 @@ describe("flujos de sitio del vendedor", () => {
     );
     expect(created).toMatchObject({ id: 77, name: "Estancia San Rafael" });
     expect(store.replaceSiteAssignments).toHaveBeenCalledWith(77, [10], 10);
+  });
+
+  it("aplica el filtro de departamento antes de limitar la cartera", async () => {
+    const caller = sitesRouter.createCaller(contextFor(10));
+    await caller.list({ department: "Caaguazú" });
+    expect(store.listSites).toHaveBeenCalledWith({ department: "Caaguazú", siteIds: [ownSite.id] });
   });
 
   it("crea un check-in con GPS y genera la nota opcional vinculada", async () => {

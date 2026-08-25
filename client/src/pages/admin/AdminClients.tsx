@@ -30,7 +30,7 @@ const ALL = "__todos__";
 export default function AdminClients() {
   const utils = trpc.useUtils();
   const [search, setSearch] = useState("");
-  const [zone, setZone] = useState(ALL);
+  const [department, setDepartment] = useState(ALL);
   const [clientType, setClientType] = useState(ALL);
   const [sellerId, setSellerId] = useState(ALL);
 
@@ -38,13 +38,13 @@ export default function AdminClients() {
   const usersQuery = trpc.admin.listUsers.useQuery();
   const sitesQuery = trpc.sites.list.useQuery({
     search: search.trim() || undefined,
-    zone: zone === ALL ? undefined : zone,
+    department: department === ALL ? undefined : department,
     clientType: clientType === ALL ? undefined : clientType,
     sellerId: sellerId === ALL ? undefined : Number(sellerId),
   });
 
   const sites = sitesQuery.data ?? [];
-  const hasFilters = zone !== ALL || clientType !== ALL || sellerId !== ALL || search !== "";
+  const hasFilters = department !== ALL || clientType !== ALL || sellerId !== ALL || search !== "";
 
   const exportar = async () => {
     try {
@@ -78,13 +78,13 @@ export default function AdminClients() {
             />
           </div>
           <div className="grid grid-cols-2 sm:flex gap-2">
-            <Select value={zone} onValueChange={setZone}>
+            <Select value={department} onValueChange={setDepartment}>
               <SelectTrigger className="h-10 sm:w-40 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL}>Zona</SelectItem>
-                {(catalog.data?.zones ?? []).map(item => (
+                <SelectItem value={ALL}>Departamento</SelectItem>
+                {(catalog.data?.departments ?? catalog.data?.zones ?? []).map(item => (
                   <SelectItem key={item} value={item}>
                     {item}
                   </SelectItem>
@@ -124,7 +124,7 @@ export default function AdminClients() {
               className="shrink-0"
               onClick={() => {
                 setSearch("");
-                setZone(ALL);
+                setDepartment(ALL);
                 setClientType(ALL);
                 setSellerId(ALL);
               }}>
@@ -152,7 +152,8 @@ export default function AdminClients() {
                   <TableRow className="hover:bg-transparent">
                     <TableHead>Cliente</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Zona</TableHead>
+                    <TableHead>Departamento</TableHead>
+                    <TableHead>Distrito / municipio</TableHead>
                     <TableHead>Registrado por</TableHead>
                     <TableHead>Última visita</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
@@ -181,7 +182,8 @@ export default function AdminClients() {
                           <span className="text-muted-foreground text-sm">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-sm">{site.zone ?? "—"}</TableCell>
+                      <TableCell className="text-sm">{site.department ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{site.zone ?? "—"}</TableCell>
                       <TableCell className="text-sm truncate max-w-[160px]">
                         {site.ownerName ?? site.ownerUsername ?? "—"}
                       </TableCell>
@@ -219,8 +221,13 @@ export default function AdminClients() {
                           {site.clientType}
                         </Badge>
                       )}
-                      {site.zone && (
+                      {site.department && (
                         <Badge variant="outline" className="text-[11px]">
+                          {site.department}
+                        </Badge>
+                      )}
+                      {site.zone && (
+                        <Badge variant="outline" className="text-[11px] text-muted-foreground">
                           {site.zone}
                         </Badge>
                       )}

@@ -140,3 +140,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - Verificación de documento publicada: la inspección de `document.head` desde el navegador confirmó exactamente las relaciones `rel="icon"` y `rel="apple-touch-icon"`, ambas resueltas a `https://mapaclientes-cqpci7xz.manus.space/manus-storage/hortimax-favicon_6236a44b.png`.
 - Evidencia visual directa: el favicon final es un activo WebP de 1920 × 1920 px con fondo blanco y cuatro trazos redondeados claramente distinguibles: amarillo a la izquierda, turquesa en la diagonal superior, rojo en la diagonal inferior y verde a la derecha.
 - Referencia visual persistente: [`favicon_evidence.md`](./favicon_evidence.md) incorpora la imagen del activo final publicado, su URL y la descripción de cada uno de los cuatro trazos para revisión futura.
+
+## Agrupación por departamento político
+
+- El modelo de clientes ahora separa `department` como división política principal de `zone`, que queda reservada para distrito, municipio, localidad o referencia comercial.
+- La migración agregó el índice de departamento y corrigió los datos existentes: **Comite de Productores RI3** conserva `R. I. Tres Corrales` como referencia local y queda asignado al departamento **Caaguazú**. Los demás valores que repetían el departamento se dejaron vacíos como localidad para evitar etiquetas duplicadas.
+- Los filtros de campo, clientes administrativos y mapa administrativo usan **Departamento**; las tarjetas y fichas presentan primero el departamento y, solo si existe, el distrito o municipio como dato secundario.
+- La suite aprobó `pnpm check` y 46 pruebas automatizadas (1 integración opcional omitida); la compilación de producción fue exitosa. Las capturas responsive verificaron el filtro Departamento y las tarjetas de R.I. 3 Corrales bajo Caaguazú en móvil y escritorio.

@@ -51,7 +51,9 @@ export const sites = mysqlTable(
     name: varchar("name", { length: 200 }).notNull(),
     /** Tipo de cliente: productor, revendedor, etc. Texto libre con sugerencias. */
     clientType: varchar("clientType", { length: 80 }),
-    /** Zona geográfica o comercial. */
+    /** División política principal del cliente (departamento de Paraguay). */
+    department: varchar("department", { length: 120 }),
+    /** Referencia local: distrito, municipio, localidad o zona comercial. */
     zone: varchar("zone", { length: 120 }),
     description: text("description"),
     contactName: varchar("contactName", { length: 160 }),
@@ -71,6 +73,7 @@ export const sites = mysqlTable(
   },
   table => ({
     createdByIdx: index("sites_createdBy_idx").on(table.createdBy),
+    departmentIdx: index("sites_department_idx").on(table.department),
     zoneIdx: index("sites_zone_idx").on(table.zone),
     publicSubmissionIdx: index("sites_publicSubmission_idx").on(table.publicSubmission),
   })

@@ -20,12 +20,12 @@ export const adminRouter = router({
       db.listUsers(),
     ]);
     const sites = await db.listSites();
-    const byZone = new Map<string, number>();
+    const byDepartment = new Map<string, number>();
     const byType = new Map<string, number>();
     sites.forEach(site => {
-      const zone = site.zone || "Sin zona";
+      const department = site.department || "Sin departamento";
       const type = site.clientType || "Sin clasificar";
-      byZone.set(zone, (byZone.get(zone) ?? 0) + 1);
+      byDepartment.set(department, (byDepartment.get(department) ?? 0) + 1);
       byType.set(type, (byType.get(type) ?? 0) + 1);
     });
     return {
@@ -34,7 +34,7 @@ export const adminRouter = router({
       weekCheckins,
       totalNotes,
       totalSellers: users.filter(u => u.role === "user" && u.active).length,
-      byZone: Array.from(byZone, ([zone, count]) => ({ zone, count })).sort(
+      byDepartment: Array.from(byDepartment, ([department, count]) => ({ department, count })).sort(
         (a, b) => b.count - a.count
       ),
       byType: Array.from(byType, ([type, count]) => ({ type, count })).sort(
@@ -218,6 +218,7 @@ export const adminRouter = router({
     ]);
     return {
       zones: zones.length ? zones.map(z => z.value) : DEFAULT_ZONES,
+      departments: zones.length ? zones.map(z => z.value) : DEFAULT_ZONES,
       clientTypes: clientTypes.length ? clientTypes.map(c => c.value) : DEFAULT_CLIENT_TYPES,
       noteCategories: noteCategories.length
         ? noteCategories.map(n => n.value)
@@ -282,6 +283,7 @@ export const adminRouter = router({
             "ID",
             "Nombre",
             "Tipo de cliente",
+            "Departamento",
             "Zona",
             "Descripción",
             "Contacto",
@@ -298,6 +300,7 @@ export const adminRouter = router({
             s.id,
             s.name,
             s.clientType,
+            s.department,
             s.zone,
             s.description,
             s.contactName,
@@ -320,11 +323,12 @@ export const adminRouter = router({
           limit: 5000,
         });
         const csv = toCsv(
-          ["ID", "Fecha y hora", "Sitio", "Zona", "Vendedor", "Distancia (m)", "Comentario"],
+          ["ID", "Fecha y hora", "Sitio", "Departamento", "Zona", "Vendedor", "Distancia (m)", "Comentario"],
           rows.map(c => [
             c.id,
             formatPy(c.createdAt),
             c.siteName,
+            c.siteDepartment,
             c.siteZone,
             c.userName ?? c.username,
             c.distanceMeters,
@@ -336,11 +340,12 @@ export const adminRouter = router({
 
       const rows = await db.listNotes({ siteIds: assignedSiteIds, limit: 5000 });
       const csv = toCsv(
-        ["ID", "Fecha y hora", "Sitio", "Zona", "Vendedor", "Categoría", "Nota"],
+        ["ID", "Fecha y hora", "Sitio", "Departamento", "Zona", "Vendedor", "Categoría", "Nota"],
         rows.map(n => [
           n.id,
           formatPy(n.createdAt),
           n.siteName,
+          n.siteDepartment,
           n.siteZone,
           n.userName ?? n.username,
           n.category,

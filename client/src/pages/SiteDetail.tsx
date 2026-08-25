@@ -135,7 +135,7 @@ export default function SiteDetail() {
   return (
     <FieldShell
       title={site.name}
-      subtitle={[site.clientType, site.zone].filter(Boolean).join(" · ") || "Sin clasificar"}
+      subtitle={[site.clientType, site.department, site.zone].filter(Boolean).join(" · ") || "Sin clasificar"}
       action={canEdit ? (
         <Button
           variant="ghost"
@@ -176,7 +176,8 @@ export default function SiteDetail() {
           <div className="p-3.5 space-y-3">
             <div className="flex flex-wrap gap-1.5">
               {site.clientType && <Badge variant="secondary">{site.clientType}</Badge>}
-              {site.zone && <Badge variant="outline">{site.zone}</Badge>}
+              {site.department && <Badge variant="outline">{site.department}</Badge>}
+              {site.zone && <Badge variant="outline" className="text-muted-foreground">{site.zone}</Badge>}
               <Badge variant="outline" className="font-mono text-[11px]">
                 {formatCoords(site.latitude, site.longitude)}
               </Badge>
@@ -405,6 +406,7 @@ export default function SiteDetail() {
           id: site.id,
           name: site.name,
           clientType: site.clientType ?? "",
+          department: site.department ?? "",
           zone: site.zone ?? "",
           description: site.description ?? "",
           contactName: site.contactName ?? "",

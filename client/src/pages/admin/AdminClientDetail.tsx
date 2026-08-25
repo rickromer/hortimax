@@ -59,7 +59,7 @@ export default function AdminClientDetail() {
   return (
     <AdminShell
       title={site.name}
-      description={[site.clientType, site.zone].filter(Boolean).join(" · ") || "Sin clasificar"}>
+      description={[site.clientType, site.department, site.zone].filter(Boolean).join(" · ") || "Sin clasificar"}>
       <div className="space-y-5 max-w-6xl">
         <Button variant="ghost" size="sm" className="-ml-2" asChild>
           <Link href="/admin/clientes">
@@ -92,7 +92,8 @@ export default function AdminClientDetail() {
           <div className="surface-card p-5 space-y-4">
             <div className="flex flex-wrap gap-1.5">
               {site.clientType && <Badge variant="secondary">{site.clientType}</Badge>}
-              {site.zone && <Badge variant="outline">{site.zone}</Badge>}
+              {site.department && <Badge variant="outline">{site.department}</Badge>}
+              {site.zone && <Badge variant="outline" className="text-muted-foreground">{site.zone}</Badge>}
               <Badge variant="outline" className="font-mono text-[11px]">
                 {formatCoords(site.latitude, site.longitude)}
               </Badge>

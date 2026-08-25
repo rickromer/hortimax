@@ -149,6 +149,7 @@ export async function countUsers() {
 
 export type SiteFilters = {
   search?: string;
+  department?: string;
   zone?: string;
   clientType?: string;
   createdBy?: number;
@@ -165,6 +166,7 @@ function siteConditions(filters: SiteFilters) {
       filters.siteIds.length ? inArray(sites.id, filters.siteIds) : eq(sites.id, -1)
     );
   }
+  if (filters.department) conditions.push(eq(sites.department, filters.department));
   if (filters.zone) conditions.push(eq(sites.zone, filters.zone));
   if (filters.clientType) conditions.push(eq(sites.clientType, filters.clientType));
   if (filters.search) {
@@ -175,6 +177,7 @@ function siteConditions(filters: SiteFilters) {
         like(sites.description, term),
         like(sites.contactName, term),
         like(sites.clientType, term),
+        like(sites.department, term),
         like(sites.zone, term)
       )
     );
@@ -353,6 +356,7 @@ export async function listCheckins(options: {
     .select({
       checkin: checkins,
       siteName: sites.name,
+      siteDepartment: sites.department,
       siteZone: sites.zone,
       userName: users.name,
       username: users.username,
@@ -369,6 +373,7 @@ export async function listCheckins(options: {
     latitude: row.checkin.latitude === null ? null : Number(row.checkin.latitude),
     longitude: row.checkin.longitude === null ? null : Number(row.checkin.longitude),
     siteName: row.siteName,
+    siteDepartment: row.siteDepartment,
     siteZone: row.siteZone,
     userName: row.userName,
     username: row.username,
@@ -451,6 +456,7 @@ export async function listNotes(options: {
     .select({
       note: notes,
       siteName: sites.name,
+      siteDepartment: sites.department,
       siteZone: sites.zone,
       userName: users.name,
       username: users.username,
@@ -465,6 +471,7 @@ export async function listNotes(options: {
   return rows.map(row => ({
     ...row.note,
     siteName: row.siteName,
+    siteDepartment: row.siteDepartment,
     siteZone: row.siteZone,
     userName: row.userName,
     username: row.username,
@@ -532,6 +539,7 @@ export async function listFollowups(options: {
     .select({
       followup: followups,
       siteName: sites.name,
+      siteDepartment: sites.department,
       siteZone: sites.zone,
       userName: users.name,
       username: users.username,
@@ -546,6 +554,7 @@ export async function listFollowups(options: {
   return rows.map(row => ({
     ...row.followup,
     siteName: row.siteName,
+    siteDepartment: row.siteDepartment,
     siteZone: row.siteZone,
     userName: row.userName,
     username: row.username,

@@ -11,7 +11,7 @@ export const DEFAULT_CLIENT_TYPES = [
   "Prospecto",
 ];
 
-/** Zonas por defecto: departamentos de Paraguay. */
+/** Departamentos políticos por defecto de Paraguay. */
 export const DEFAULT_ZONES = [
   "Alto Paraguay",
   "Alto Paraná",

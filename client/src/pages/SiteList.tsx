@@ -29,7 +29,7 @@ export default function SiteList() {
   const geo = useGeolocation({ enabled: canEdit });
   const utils = trpc.useUtils();
   const [search, setSearch] = useState("");
-  const [zone, setZone] = useState<string>(ALL);
+  const [department, setDepartment] = useState<string>(ALL);
   const [clientType, setClientType] = useState<string>(ALL);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [newSiteOpen, setNewSiteOpen] = useState(false);
@@ -38,12 +38,12 @@ export default function SiteList() {
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const sitesQuery = trpc.sites.list.useQuery({
     search: search.trim() || undefined,
-    zone: zone === ALL ? undefined : zone,
+    department: department === ALL ? undefined : department,
     clientType: clientType === ALL ? undefined : clientType,
   });
 
   const sites = sitesQuery.data ?? [];
-  const hasFilters = zone !== ALL || clientType !== ALL;
+  const hasFilters = department !== ALL || clientType !== ALL;
 
   const exportar = async () => {
     try {
@@ -88,14 +88,14 @@ export default function SiteList() {
           <div className="surface-card p-3 space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Zona</label>
-                <Select value={zone} onValueChange={setZone}>
+                <label className="text-xs font-medium text-muted-foreground">Departamento</label>
+                <Select value={department} onValueChange={setDepartment}>
                   <SelectTrigger className="w-full h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={ALL}>Todas las zonas</SelectItem>
-                    {(catalog.data?.zones ?? []).map(item => (
+                    <SelectItem value={ALL}>Todos los departamentos</SelectItem>
+                    {(catalog.data?.departments ?? catalog.data?.zones ?? []).map(item => (
                       <SelectItem key={item} value={item}>
                         {item}
                       </SelectItem>
@@ -126,7 +126,7 @@ export default function SiteList() {
                 size="sm"
                 className="w-full"
                 onClick={() => {
-                  setZone(ALL);
+                  setDepartment(ALL);
                   setClientType(ALL);
                 }}>
                 <X className="h-3.5 w-3.5" />
@@ -171,8 +171,13 @@ export default function SiteList() {
                           {site.clientType}
                         </Badge>
                       )}
-                      {site.zone && (
+                      {site.department && (
                         <Badge variant="outline" className="text-[11px]">
+                          {site.department}
+                        </Badge>
+                      )}
+                      {site.zone && (
+                        <Badge variant="outline" className="text-[11px] text-muted-foreground">
                           {site.zone}
                         </Badge>
                       )}

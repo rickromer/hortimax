@@ -1,33 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { zoneFromGeocode } from "./zoneFromGeocode";
+import { territoryFromGeocode, zoneFromGeocode } from "./zoneFromGeocode";
 
-describe("zoneFromGeocode", () => {
-  it("prioriza distrito por encima de municipio y departamento", () => {
+describe("territoryFromGeocode", () => {
+  it("separa departamento político de distrito o municipio", () => {
     expect(
-      zoneFromGeocode([
+      territoryFromGeocode([
         { long_name: "Central", types: ["administrative_area_level_1"] },
         { long_name: "Capiatá", types: ["administrative_area_level_2"] },
         { long_name: "Posta Ybycuá", types: ["administrative_area_level_3"] },
       ])
-    ).toBe("Posta Ybycuá");
+    ).toEqual({ department: "Central", locality: "Posta Ybycuá" });
   });
 
-  it("usa municipio cuando no recibe distrito", () => {
+  it("usa municipio como localidad cuando no recibe distrito", () => {
     expect(
-      zoneFromGeocode([
+      territoryFromGeocode([
         { long_name: "Alto Paraná", types: ["administrative_area_level_1"] },
         { long_name: "Minga Guazú", types: ["locality"] },
       ])
-    ).toBe("Minga Guazú");
+    ).toEqual({ department: "Alto Paraná", locality: "Minga Guazú" });
   });
 
-  it("usa departamento solo como respaldo", () => {
-    expect(zoneFromGeocode([{ long_name: "Itapúa", types: ["administrative_area_level_1"] }])).toBe(
-      "Itapúa"
-    );
+  it("conserva el departamento aunque no haya localidad", () => {
+    expect(
+      territoryFromGeocode([{ long_name: "Itapúa", types: ["administrative_area_level_1"] }])
+    ).toEqual({ department: "Itapúa", locality: null });
   });
 
-  it("devuelve nulo cuando no hay datos territoriales", () => {
+  it("mantiene una referencia local compatible para consumidores existentes", () => {
+    expect(
+      zoneFromGeocode([
+        { long_name: "Caaguazú", types: ["administrative_area_level_1"] },
+        { long_name: "R. I. Tres Corrales", types: ["locality"] },
+      ])
+    ).toBe("R. I. Tres Corrales");
     expect(zoneFromGeocode([{ long_name: "Ruta PY02", types: ["route"] }])).toBeNull();
   });
 });

@@ -28,6 +28,7 @@ export type SiteFormValues = {
   id?: number;
   name: string;
   clientType: string;
+  department: string;
   zone: string;
   description: string;
   contactName: string;
@@ -38,6 +39,7 @@ export type SiteFormValues = {
 const EMPTY: SiteFormValues = {
   name: "",
   clientType: "",
+  department: "",
   zone: "",
   description: "",
   contactName: "",
@@ -50,6 +52,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   coords: { latitude: number; longitude: number; accuracy?: number } | null;
   locationSource?: "gps" | "manual";
+  autoDepartment?: string;
   autoZone?: string;
   initial?: Partial<SiteFormValues>;
   mode?: "create" | "edit";
@@ -63,6 +66,7 @@ export function SiteFormSheet({
   onOpenChange,
   coords,
   locationSource = "gps",
+  autoDepartment,
   autoZone,
   initial,
   mode = "create",
@@ -72,7 +76,12 @@ export function SiteFormSheet({
 }: Props) {
   const utils = trpc.useUtils();
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
-  const [values, setValues] = useState<SiteFormValues>({ ...EMPTY, ...initial, zone: autoZone ?? initial?.zone ?? "" });
+  const [values, setValues] = useState<SiteFormValues>({
+    ...EMPTY,
+    ...initial,
+    department: autoDepartment ?? initial?.department ?? "",
+    zone: autoZone ?? initial?.zone ?? "",
+  });
   const [selectedCoords, setSelectedCoords] = useState<Props["coords"]>(coords);
   const [selectedSource, setSelectedSource] = useState<"gps" | "manual">(locationSource);
   const [showCoordinates, setShowCoordinates] = useState(false);
@@ -81,13 +90,18 @@ export function SiteFormSheet({
 
   useEffect(() => {
     if (!open) return;
-    setValues({ ...EMPTY, ...initial, zone: autoZone ?? initial?.zone ?? "" });
+    setValues({
+      ...EMPTY,
+      ...initial,
+      department: autoDepartment ?? initial?.department ?? "",
+      zone: autoZone ?? initial?.zone ?? "",
+    });
     setSelectedCoords(coords);
     setSelectedSource(locationSource);
     setLatitudeInput(coords ? String(coords.latitude) : "");
     setLongitudeInput(coords ? String(coords.longitude) : "");
     setShowCoordinates(false);
-  }, [open, initial, autoZone]);
+  }, [open, initial, autoDepartment, autoZone]);
 
   useEffect(() => {
     if (!open || locationSource !== "manual") return;
@@ -154,6 +168,7 @@ export function SiteFormSheet({
     const payload = {
       name: values.name.trim(),
       clientType: values.clientType || null,
+      department: values.department || null,
       zone: values.zone || null,
       description: values.description.trim() || null,
       contactName: values.contactName.trim() || null,
@@ -309,19 +324,30 @@ export function SiteFormSheet({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="site-zone">Zona {autoZone && mode === "create" ? "· detectada por ubicación" : ""}</Label>
+              <Label htmlFor="site-department">Departamento {autoDepartment && mode === "create" ? "· detectado por ubicación" : ""}</Label>
               <Input
-                id="site-zone"
-                list="zone-suggestions"
-                value={values.zone}
-                onChange={e => set("zone", e.target.value)}
-                placeholder="Distrito, municipio o departamento"
+                id="site-department"
+                list="department-suggestions"
+                value={values.department}
+                onChange={e => set("department", e.target.value)}
+                placeholder="Ej. Caaguazú"
                 className="h-11"
               />
-              <datalist id="zone-suggestions">
-                {(catalog.data?.zones ?? []).map(zone => <option key={zone} value={zone} />)}
+              <datalist id="department-suggestions">
+                {(catalog.data?.departments ?? catalog.data?.zones ?? []).map(department => <option key={department} value={department} />)}
               </datalist>
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="site-zone">Distrito o municipio {autoZone && mode === "create" ? "· detectado por ubicación" : ""}</Label>
+            <Input
+              id="site-zone"
+              value={values.zone}
+              onChange={e => set("zone", e.target.value)}
+              placeholder="Ej. R. I. Tres Corrales"
+              className="h-11"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

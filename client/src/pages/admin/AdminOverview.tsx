@@ -127,22 +127,22 @@ export default function AdminOverview() {
 
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="surface-card p-5 lg:col-span-1">
-            <p className="font-semibold">Distribución por zona</p>
+            <p className="font-semibold">Distribución por departamento</p>
             <p className="text-xs text-muted-foreground mb-4">Cantidad de clientes</p>
             {statsQuery.isLoading ? (
               <Skeleton className="h-40" />
-            ) : (stats?.byZone.length ?? 0) === 0 ? (
+            ) : (stats?.byDepartment.length ?? 0) === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">
                 Sin datos todavía.
               </p>
             ) : (
               <div className="space-y-2.5">
-                {stats!.byZone.slice(0, 8).map(item => {
-                  const max = stats!.byZone[0].count || 1;
+                {stats!.byDepartment.slice(0, 8).map(item => {
+                  const max = stats!.byDepartment[0].count || 1;
                   return (
-                    <div key={item.zone} className="space-y-1">
+                    <div key={item.department} className="space-y-1">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="truncate">{item.zone}</span>
+                        <span className="truncate">{item.department}</span>
                         <span className="font-medium tabular-nums text-muted-foreground">
                           {item.count}
                         </span>

@@ -12,6 +12,7 @@ const coord = z.object({
 const siteInput = z.object({
   name: z.string().min(2).max(200),
   clientType: z.string().max(80).optional().nullable(),
+  department: z.string().max(120).optional().nullable(),
   zone: z.string().max(120).optional().nullable(),
   description: z.string().max(2000).optional().nullable(),
   contactName: z.string().max(160).optional().nullable(),
@@ -41,6 +42,7 @@ export const sitesRouter = router({
       z
         .object({
           search: z.string().max(200).optional(),
+          department: z.string().max(120).optional(),
           zone: z.string().max(120).optional(),
           clientType: z.string().max(80).optional(),
           sellerId: z.number().int().positive().optional(),
@@ -51,6 +53,7 @@ export const sitesRouter = router({
     .query(async ({ ctx, input }) => {
       const filters: db.SiteFilters = {
         search: input?.search?.trim() || undefined,
+        department: input?.department || undefined,
         zone: input?.zone || undefined,
         clientType: input?.clientType || undefined,
       };
@@ -113,6 +116,7 @@ export const sitesRouter = router({
       const created = await db.createSite({
         name: input.name.trim(),
         clientType: input.clientType?.trim() || null,
+        department: input.department?.trim() || null,
         zone: input.zone?.trim() || null,
         description: input.description?.trim() || null,
         contactName: input.contactName?.trim() || null,

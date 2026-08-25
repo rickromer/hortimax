@@ -1,14 +1,14 @@
 import { ClientMap } from "@/components/ClientMap";
 import { Button } from "@/components/ui/button";
 import { formatCoords } from "@/lib/format";
-import { zoneFromGeocode } from "@/lib/zoneFromGeocode";
+import { territoryFromGeocode } from "@/lib/zoneFromGeocode";
 import { PARAGUAY_CENTER } from "@shared/domain";
 import { Check, Crosshair, Layers, Loader2, MapPin, Satellite, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type Coordinates = { latitude: number; longitude: number; accuracy?: number };
-type LocationSelection = Coordinates & { zone?: string | null };
+type LocationSelection = Coordinates & { department?: string | null; zone?: string | null };
 const DEFAULT_CENTER: Coordinates = {
   latitude: PARAGUAY_CENTER.lat,
   longitude: PARAGUAY_CENTER.lng,
@@ -34,8 +34,11 @@ export function LocationPickerDialog({
   const [mapFocus, setMapFocus] = useState<Coordinates>(initialCoords ?? DEFAULT_CENTER);
   const [locating, setLocating] = useState(false);
   const [mapType, setMapType] = useState<"roadmap" | "hybrid">("roadmap");
-  const [zone, setZone] = useState<string | null>(null);
-  const [lookingUpZone, setLookingUpZone] = useState(false);
+  const [territory, setTerritory] = useState<{ department: string | null; locality: string | null }>({
+    department: null,
+    locality: null,
+  });
+  const [lookingUpTerritory, setLookingUpTerritory] = useState(false);
   const lookupRequest = useRef(0);
 
   useEffect(() => {
@@ -43,7 +46,7 @@ export function LocationPickerDialog({
       const start = initialCoords ?? DEFAULT_CENTER;
       setCenter(start);
       setMapFocus(start);
-      setZone(null);
+      setTerritory({ department: null, locality: null });
     }
   }, [open, initialCoords]);
 
@@ -51,18 +54,18 @@ export function LocationPickerDialog({
     if (!open || !window.google?.maps?.Geocoder) return;
     const requestId = ++lookupRequest.current;
     const timeout = window.setTimeout(() => {
-      setLookingUpZone(true);
+      setLookingUpTerritory(true);
       const geocoder = new window.google!.maps.Geocoder();
       geocoder.geocode(
         { location: { lat: center.latitude, lng: center.longitude }, language: "es", region: "PY" },
         (results, status) => {
           if (requestId !== lookupRequest.current) return;
-          setLookingUpZone(false);
+          setLookingUpTerritory(false);
           if (status !== "OK") {
-            setZone(null);
+            setTerritory({ department: null, locality: null });
             return;
           }
-          setZone(zoneFromGeocode(results?.[0]?.address_components));
+          setTerritory(territoryFromGeocode(results?.[0]?.address_components));
         }
       );
     }, 450);
@@ -162,7 +165,11 @@ export function LocationPickerDialog({
         <div className="absolute bottom-3 left-1/2 z-20 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 rounded-xl bg-background/95 px-3 py-2 shadow-md backdrop-blur">
           <p className="font-mono text-xs whitespace-nowrap text-center">{formatCoords(center.latitude, center.longitude)}</p>
           <p className="mt-0.5 text-center text-xs text-muted-foreground truncate">
-            {lookingUpZone ? "Buscando distrito o municipio…" : zone ? `Zona detectada: ${zone}` : "Zona se completará al confirmar"}
+            {lookingUpTerritory
+              ? "Buscando departamento y localidad…"
+              : territory.department
+                ? `Departamento: ${territory.department}${territory.locality ? ` · ${territory.locality}` : ""}`
+                : "Departamento se completará al confirmar"}
           </p>
         </div>
       </div>
@@ -174,7 +181,7 @@ export function LocationPickerDialog({
         <Button
           type="button"
           onClick={() => {
-            onConfirm({ ...center, zone });
+            onConfirm({ ...center, department: territory.department, zone: territory.locality });
             onOpenChange(false);
           }}>
           <Check className="h-4 w-4" />

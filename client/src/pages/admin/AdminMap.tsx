@@ -21,7 +21,7 @@ const ALL = "__todos__";
 
 export default function AdminMap() {
   const [search, setSearch] = useState("");
-  const [zone, setZone] = useState(ALL);
+  const [department, setDepartment] = useState(ALL);
   const [clientType, setClientType] = useState(ALL);
   const [sellerId, setSellerId] = useState(ALL);
   const [mapType, setMapType] = useState<"roadmap" | "hybrid">("hybrid");
@@ -32,7 +32,7 @@ export default function AdminMap() {
   const usersQuery = trpc.admin.listUsers.useQuery();
   const sitesQuery = trpc.sites.list.useQuery({
     search: search.trim() || undefined,
-    zone: zone === ALL ? undefined : zone,
+    department: department === ALL ? undefined : department,
     clientType: clientType === ALL ? undefined : clientType,
     sellerId: sellerId === ALL ? undefined : Number(sellerId),
   });
@@ -72,13 +72,13 @@ export default function AdminMap() {
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Select value={zone} onValueChange={setZone}>
+              <Select value={department} onValueChange={setDepartment}>
                 <SelectTrigger className="h-9 text-xs w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ALL}>Todas las zonas</SelectItem>
-                  {(catalog.data?.zones ?? []).map(item => (
+                  <SelectItem value={ALL}>Todos los departamentos</SelectItem>
+                  {(catalog.data?.departments ?? catalog.data?.zones ?? []).map(item => (
                     <SelectItem key={item} value={item}>
                       {item}
                     </SelectItem>
@@ -142,8 +142,13 @@ export default function AdminMap() {
                         {site.clientType}
                       </Badge>
                     )}
-                    {site.zone && (
+                    {site.department && (
                       <Badge variant="outline" className="text-[10px] py-0">
+                        {site.department}
+                      </Badge>
+                    )}
+                    {site.zone && (
+                      <Badge variant="outline" className="text-[10px] py-0 text-muted-foreground">
                         {site.zone}
                       </Badge>
                     )}
@@ -195,7 +200,7 @@ export default function AdminMap() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold truncate">{selected.name}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {[selected.clientType, selected.zone].filter(Boolean).join(" · ") ||
+                    {[selected.clientType, selected.department, selected.zone].filter(Boolean).join(" · ") ||
                       "Sin clasificar"}
                   </p>
                 </div>

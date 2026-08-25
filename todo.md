@@ -188,3 +188,10 @@
 - [x] Registrar una referencia visual persistente al favicon final para revisión futura
 - [x] Guardar una evidencia explícita del favicon publicado, sus cuatro trazos y la URL final en la verificación
 - [x] Registrar una referencia visual persistente al favicon final para revisión futura
+
+## Agrupación territorial por departamento
+- [x] Incorporar el departamento político como clasificación principal de cada cliente
+- [x] Mantener distrito o municipio como referencia local secundaria del cliente
+- [x] Migrar o corregir los datos existentes afectados, incluido R.I. 3 Corrales → Caaguazú
+- [x] Cambiar los filtros y listados para agrupar por departamento
+- [x] Cubrir la nueva regla territorial con pruebas y validación visual

@@ -40,6 +40,7 @@ export default function FieldMap() {
   const [manualCoords, setManualCoords] = useState<{
     latitude: number;
     longitude: number;
+    department?: string | null;
     zone?: string | null;
   } | null>(null);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
@@ -78,6 +79,7 @@ export default function FieldMap() {
         latitude: site.latitude,
         longitude: site.longitude,
         clientType: site.clientType,
+        department: site.department,
         zone: site.zone,
         selected: site.id === selectedId,
       }));
@@ -88,6 +90,7 @@ export default function FieldMap() {
         latitude: manualCoords.latitude,
         longitude: manualCoords.longitude,
         clientType: "Prospecto",
+        department: manualCoords.department ?? null,
         zone: null,
         selected: true,
       });
@@ -170,7 +173,7 @@ export default function FieldMap() {
                       }}>
                       <p className="text-sm font-medium truncate">{site.name}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {[site.clientType, site.zone].filter(Boolean).join(" · ") ||
+                        {[site.clientType, site.department, site.zone].filter(Boolean).join(" · ") ||
                           "Sin clasificar"}
                       </p>
                     </button>
@@ -217,8 +220,13 @@ export default function FieldMap() {
                         {selected.clientType}
                       </Badge>
                     )}
-                    {selected.zone && (
+                    {selected.department && (
                       <Badge variant="outline" className="text-[11px]">
+                        {selected.department}
+                      </Badge>
+                    )}
+                    {selected.zone && (
+                      <Badge variant="outline" className="text-[11px] text-muted-foreground">
                         {selected.zone}
                       </Badge>
                     )}
@@ -301,6 +309,7 @@ export default function FieldMap() {
         onOpenChange={setNewSiteOpen}
         coords={manualCoords ?? position}
         locationSource={manualCoords ? "manual" : "gps"}
+        autoDepartment={manualCoords?.department ?? undefined}
         autoZone={manualCoords?.zone ?? undefined}
         onRequestLocation={async () => {
           setManualCoords(null);
@@ -327,7 +336,11 @@ export default function FieldMap() {
           setManualCoords(selection);
           setFocus(selection);
           setNewSiteOpen(true);
-          toast.success(selection.zone ? `Ubicación seleccionada · ${selection.zone}` : "Ubicación manual seleccionada");
+          toast.success(
+            selection.department
+              ? `Ubicación seleccionada · ${selection.department}${selection.zone ? ` · ${selection.zone}` : ""}`
+              : "Ubicación manual seleccionada"
+          );
         }}
       />}
 

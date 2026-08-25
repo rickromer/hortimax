@@ -37,8 +37,8 @@ beforeEach(() => {
 });
 
 describe("permisos de clientes", () => {
-  it("requiere una sesión para consultar puntos", async () => {
-    await expect(sitesRouter.createCaller(anonymousContext()).list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  it("permite consultar puntos sin sesión durante el acceso temporal", async () => {
+    await expect(sitesRouter.createCaller(anonymousContext()).list()).resolves.toEqual([]);
   });
 
   it("permite al representante ver todos los puntos y marca editable el suyo", async () => {
@@ -61,6 +61,12 @@ describe("permisos de clientes", () => {
     expect(store.replaceSiteAssignments).toHaveBeenCalledWith(77, [10], 10);
   });
 
+  it("marca las altas anónimas para limpieza posterior", async () => {
+    await sitesRouter.createCaller(anonymousContext()).create({ name: " Punto público ", latitude: -25.2, longitude: -57.5 });
+    expect(store.createSite).toHaveBeenCalledWith(expect.objectContaining({ createdBy: 0, publicSubmission: true }));
+    expect(store.replaceSiteAssignments).not.toHaveBeenCalled();
+  });
+
   it("bloquea al representante al editar o registrar visita en un punto ajeno", async () => {
     store.getSiteById.mockResolvedValue(foreignSite);
     const caller = sitesRouter.createCaller(contextFor(10));
@@ -79,9 +85,10 @@ describe("permisos de clientes", () => {
 });
 
 describe("notas por cliente", () => {
-  it("requiere sesión y permite registrar notas en un punto propio", async () => {
+  it("permite registrar notas temporales sin sesión y conserva la actividad autenticada", async () => {
     const anonymous = notesRouter.createCaller(anonymousContext());
-    await expect(anonymous.create({ siteId: ownSite.id, content: "Nota" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await anonymous.create({ siteId: ownSite.id, content: "Nota pública" });
+    expect(store.createNote).toHaveBeenCalledWith(expect.objectContaining({ userId: 0, content: "Nota pública" }));
 
     const result = await notesRouter.createCaller(contextFor(10)).create({
       siteId: ownSite.id, category: " Visita técnica ", content: " Cliente solicitó seguimiento. ", registerVisit: true,

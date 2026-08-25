@@ -20,11 +20,14 @@ const scheduleInput = z.object({
 });
 
 export const followupsRouter = router({
-  /** Agenda por cliente; cada vendedor accede solo a su cartera asignada. */
-  list: protectedProcedure
+  /** Agenda temporalmente abierta junto con la ficha de cada cliente. */
+  list: publicProcedure
     .input(z.object({ siteId: z.number().int().positive().optional(), limit: z.number().int().min(1).max(300).optional() }).optional())
     .query(async ({ ctx, input }) => {
-      if (input?.siteId) await assertFollowupAccess(input.siteId, ctx.user);
+      if (input?.siteId) {
+        const site = await db.getSiteById(input.siteId);
+        if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
+      }
       return db.listFollowups({
         siteId: input?.siteId,
         siteIds: undefined,
@@ -33,13 +36,18 @@ export const followupsRouter = router({
       });
     }),
 
-  create: protectedProcedure
+  create: publicProcedure
     .input(scheduleInput.extend({ siteId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      await assertFollowupAccess(input.siteId, ctx.user);
+      if (ctx.user) {
+        await assertFollowupAccess(input.siteId, ctx.user);
+      } else {
+        const site = await db.getSiteById(input.siteId);
+        if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
+      }
       return db.createFollowup({
         siteId: input.siteId,
-        createdBy: ctx.user.id,
+        createdBy: ctx.user?.id ?? 0,
         type: input.type,
         description: input.description,
         scheduledFor: input.scheduledFor,

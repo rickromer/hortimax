@@ -23,9 +23,10 @@ beforeEach(() => {
 });
 
 describe("próximos relevamientos", () => {
-  it("exige sesión para agendar un relevamiento", async () => {
+  it("permite agendar temporalmente sin sesión y lo identifica como carga pública", async () => {
     const caller = followupsRouter.createCaller({ user: null, req: {} as TrpcContext["req"], res: {} as TrpcContext["res"] } as TrpcContext);
-    await expect(caller.create({ siteId: site.id, description: "Seguimiento", scheduledFor: "2026-09-16" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await caller.create({ siteId: site.id, description: "Seguimiento", scheduledFor: "2026-09-16" });
+    expect(store.createFollowup).toHaveBeenCalledWith(expect.objectContaining({ siteId: site.id, createdBy: 0 }));
   });
 
   it("permite al propietario agendar y ver la agenda de todo el equipo", async () => {

@@ -2,7 +2,7 @@ import { distanceMeters, NEARBY_RADIUS_METERS } from "@shared/domain";
 import { canManageAll } from "@shared/permissions";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 const coord = z.object({
@@ -22,14 +22,14 @@ const siteInput = z.object({
   accuracy: z.number().int().min(0).max(100000).optional().nullable(),
 });
 
-async function assertSiteViewAccess(siteId: number, user: { id: number; role: string }) {
+async function assertSiteViewAccess(siteId: number) {
   const site = await db.getSiteById(siteId);
   if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
   return site;
 }
 
 async function assertSiteEditAccess(siteId: number, user: { id: number; role: string }) {
-  const site = await assertSiteViewAccess(siteId, user);
+  const site = await assertSiteViewAccess(siteId);
   if (!canManageAll(user.role) && site.createdBy !== user.id) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés editar los puntos que registraste" });
   }
@@ -37,8 +37,8 @@ async function assertSiteEditAccess(siteId: number, user: { id: number; role: st
 }
 
 export const sitesRouter = router({
-  /** Todos los usuarios autenticados ven el mapa completo; gerencia puede filtrar por comercial. */
-  list: protectedProcedure
+  /** Mapa temporalmente abierto; la administración conserva sus filtros privados. */
+  list: publicProcedure
     .input(
       z
         .object({
@@ -58,9 +58,9 @@ export const sitesRouter = router({
         zone: input?.zone || undefined,
         clientType: input?.clientType || undefined,
       };
-      if (input?.scope === "mine") {
+      if (ctx.user && input?.scope === "mine") {
         filters.createdBy = ctx.user.id;
-      } else if (canManageAll(ctx.user.role) && input?.sellerId) {
+      } else if (ctx.user && canManageAll(ctx.user.role) && input?.sellerId) {
         filters.siteIds = await db.getAssignedSiteIds(input.sellerId);
       }
       const sites = await db.listSites(filters);
@@ -68,11 +68,11 @@ export const sitesRouter = router({
       return sites.map(site => ({ ...site, lastCheckinAt: lastMap.get(site.id) ?? null }));
     }),
 
-  /** Todos ven la ficha; propietario, gerencia o administración pueden modificarla. */
-  detail: protectedProcedure
+  /** La ficha y su historial se consultan sin sesión durante el acceso temporal. */
+  detail: publicProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
-      const site = await assertSiteViewAccess(input.id, ctx.user);
+      const site = await assertSiteViewAccess(input.id);
       const [checkins, notes, assignees, followups] = await Promise.all([
         db.listCheckins({ siteId: site.id, limit: 100 }),
         db.listNotes({ siteId: site.id, limit: 200 }),
@@ -85,11 +85,11 @@ export const sitesRouter = router({
         notes,
         assignees,
         followups,
-        canEditSite: canManageAll(ctx.user.role) || site.createdBy === ctx.user.id,
+        canEditSite: Boolean(ctx.user && (canManageAll(ctx.user.role) || site.createdBy === ctx.user.id)),
       };
     }),
 
-  nearby: protectedProcedure
+  nearby: publicProcedure
     .input(coord.extend({ radius: z.number().int().min(50).max(5000).optional() }))
     .query(async ({ input }) => {
       const sites = await db.listSites({});
@@ -104,8 +104,8 @@ export const sitesRouter = router({
         .slice(0, 10);
     }),
 
-  /** Cada usuario autenticado crea y administra los puntos que registra. */
-  create: protectedProcedure
+  /** Alta temporal abierta; los puntos anónimos quedan marcados para limpieza posterior. */
+  create: publicProcedure
     .input(siteInput.merge(coord))
     .mutation(async ({ ctx, input }) => {
       const created = await db.createSite({
@@ -120,11 +120,11 @@ export const sitesRouter = router({
         accuracy: input.accuracy ?? null,
         latitude: input.latitude.toFixed(7),
         longitude: input.longitude.toFixed(7),
-        createdBy: ctx.user.id,
-        publicSubmission: false,
+        createdBy: ctx.user?.id ?? 0,
+        publicSubmission: !ctx.user,
       });
       if (!created) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear el sitio" });
-      await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
+      if (ctx.user) await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
       return created;
     }),
 

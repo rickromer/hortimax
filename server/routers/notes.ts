@@ -16,8 +16,8 @@ async function assertNoteAccess(noteId: number, user: { id: number; role: string
 }
 
 export const notesRouter = router({
-  /** Planilla de notas: todos ven el historial; gerencia puede operar globalmente. */
-  list: protectedProcedure
+  /** Historial temporalmente abierto junto con la ficha pública del cliente. */
+  list: publicProcedure
     .input(
       z
         .object({
@@ -35,14 +35,14 @@ export const notesRouter = router({
       }
       return db.listNotes({
         siteId: input?.siteId,
-        siteIds: input?.scope === "mine" ? await db.getAssignedSiteIds(ctx.user.id) : undefined,
+        siteIds: input?.scope === "mine" && ctx.user ? await db.getAssignedSiteIds(ctx.user.id) : undefined,
         search: input?.search?.trim() || undefined,
         limit: input?.limit,
       });
     }),
 
   /** Nueva nota con cabecera automática de fecha y hora. */
-  create: protectedProcedure
+  create: publicProcedure
     .input(
       z.object({
         siteId: z.number().int().positive(),
@@ -57,7 +57,7 @@ export const notesRouter = router({
     .mutation(async ({ ctx, input }) => {
       const site = await db.getSiteById(input.siteId);
       if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
-      if (!canManageAll(ctx.user.role) && site.createdBy !== ctx.user.id) {
+      if (ctx.user && !canManageAll(ctx.user.role) && site.createdBy !== ctx.user.id) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés registrar actividad en tus propios puntos" });
       }
       let linkedCheckinId = input.checkinId ?? null;
@@ -65,7 +65,7 @@ export const notesRouter = router({
         const hasLocation = input.latitude !== undefined && input.longitude !== undefined;
         const visit = await db.createCheckin({
           siteId: site.id,
-          userId: ctx.user.id,
+          userId: ctx.user?.id ?? 0,
           latitude: hasLocation ? input.latitude!.toFixed(7) : null,
           longitude: hasLocation ? input.longitude!.toFixed(7) : null,
           distanceMeters: hasLocation
@@ -81,7 +81,7 @@ export const notesRouter = router({
 
       const note = await db.createNote({
         siteId: input.siteId,
-        userId: ctx.user.id,
+        userId: ctx.user?.id ?? 0,
         checkinId: linkedCheckinId,
         category: input.category?.trim() || null,
         content: input.content.trim(),
@@ -90,7 +90,7 @@ export const notesRouter = router({
     }),
 
   /** Descarga la planilla de notas del cliente para abrirla o importarla en Google Sheets. */
-  exportCsv: protectedProcedure
+  exportCsv: publicProcedure
     .input(z.object({ siteId: z.number().int().positive() }))
     .query(async ({ input }) => {
       const site = await db.getSiteById(input.siteId);

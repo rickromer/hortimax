@@ -171,3 +171,8 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La ficha recibe el permiso de edición desde el backend, evitando mostrar acciones editables sobre puntos ajenos. La gestión de usuarios permite crear y asignar los tres roles, incluidos más administradores y gerentes comerciales.
 - La migración convirtió el rol anterior `user` en `field`. `pnpm check`, 45 pruebas automatizadas (1 integración opcional omitida) y compilación de producción aprobaron; las pruebas cubren sesión requerida, vista global, propietario bloqueado en puntos ajenos y acceso total del gerente.
 - El alcance del **Gerente comercial** incluye Resumen, Mapa general, Clientes, detalle de cliente y Actividad globales; Usuarios y Configuración permanecen exclusivamente para Administrador. Las pruebas de rutas y permisos confirman ese acceso, junto con la edición total de clientes por gerente. `pnpm check`, 49 pruebas automatizadas (1 integración opcional omitida) y la compilación final aprobaron.
+
+## Acceso temporal sin login
+
+- A solicitud del administrador, el mapa, el listado de clientes, las fichas y el calendario vuelven a abrirse directamente sin sesión. Durante este período, las altas de puntos anónimas quedan marcadas como `publicSubmission`, y notas y próximos relevamientos públicos usan el identificador técnico `0` para no atribuirlos a una persona.
+- La comprobación sin sesión abrió la raíz con marcadores, Google Maps, el botón **Nuevo punto** y la navegación Mapa/Clientes/Calendario. La misma sesión anónima dirigida a `/admin` fue redirigida a `/acceso`, por lo que Administración y Usuarios continúan protegidos.

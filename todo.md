@@ -223,3 +223,24 @@
 - [ ] Verificar con cuentas reales inicio de sesión, edición y restricciones de cada rol
 - [ ] Probar desde la interfaz la edición como propietario, gerente comercial y usuario sin permiso
 - [x] Cubrir en pruebas las rutas operativas y la edición de clientes por Gerente comercial
+
+## Incidencia de carga posterior a acceso y privilegios
+- [x] Diagnosticar por qué el sitio no completa la carga en producción
+- [x] Corregir la causa de la carga bloqueada y verificar la vista previa
+- [x] Confirmar que el dominio publicado vuelve a mostrar acceso o aplicación correctamente
+- [x] Verificar explícitamente la vista previa después de la recuperación TLS/proxy
+- [x] Documentar que la recuperación dependió del certificado/proxy externo y no de un cambio de código
+
+## Nueva incidencia de acceso intermitente
+- [x] Diagnosticar el estado actual del dominio publicado y la vista previa
+- [x] Determinar si el fallo es de TLS/proxy externo o de carga de la aplicación
+- [x] Recuperar o escalar la disponibilidad estable del portal
+- [x] Confirmar con navegador que el acceso vuelve a funcionar
+- [x] Verificar explícitamente la vista previa durante la incidencia actual
+- [x] Confirmar con comprobaciones repetidas que no hubo recuperación técnica pendiente y que el login obligatorio explica el cambio de acceso
+
+## Retorno temporal al acceso directo
+- [x] Retirar la redirección obligatoria a acceso en mapa, clientes, fichas y calendario
+- [x] Restaurar temporalmente las acciones de operación de campo sin usuario
+- [x] Mantener la administración y gestión de usuarios protegidas
+- [x] Verificar acceso directo público y bloqueo de administración

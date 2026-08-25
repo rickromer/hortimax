@@ -30,7 +30,7 @@ import { Link } from "wouter";
 export default function FieldMap() {
   const { user } = useAuth();
   const canEdit = Boolean(user);
-  const canCreatePoint = Boolean(user);
+  const canCreatePoint = true;
   const geo = useGeolocation({ enabled: true });
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function FieldMap() {
     position
       ? { latitude: position.latitude, longitude: position.longitude, radius: 500 }
       : { latitude: 0, longitude: 0 },
-    { enabled: canEdit && Boolean(position), staleTime: 20_000 }
+    { enabled: Boolean(position), staleTime: 20_000 }
   );
 
   const sites = sitesQuery.data ?? [];

@@ -1,11 +1,11 @@
-import { protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 const TEAM_TIMELINE_LIMIT = 1000;
 
 /** Feed público y sin filtro de cartera: refleja la actividad de todo el equipo. */
 export const calendarRouter = router({
-  timeline: protectedProcedure.query(async () => {
+  timeline: publicProcedure.query(async () => {
     const [visits, upcoming, notes] = await Promise.all([
       db.listCheckins({ limit: TEAM_TIMELINE_LIMIT }),
       db.listFollowups({ status: "pending", limit: TEAM_TIMELINE_LIMIT }),

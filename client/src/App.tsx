@@ -58,11 +58,11 @@ function Router() {
     <Switch>
       <Route path="/acceso" component={Login} />
 
-      {/* Vendedor de campo */}
-      <Route path="/">{() => <Guard component={FieldMap} />}</Route>
-      <Route path="/sitios">{() => <Guard component={SiteList} />}</Route>
-      <Route path="/sitios/:id">{() => <Guard component={SiteDetail} />}</Route>
-      <Route path="/calendario">{() => <Guard component={TeamCalendar} />}</Route>
+      {/* Campo temporalmente abierto: administración permanece protegida. */}
+      <Route path="/" component={FieldMap} />
+      <Route path="/sitios" component={SiteList} />
+      <Route path="/sitios/:id" component={SiteDetail} />
+      <Route path="/calendario" component={TeamCalendar} />
       <Route path="/notas">{() => <Redirect to="/sitios" />}</Route>
       <Route path="/perfil">{() => <Guard component={Profile} />}</Route>
 

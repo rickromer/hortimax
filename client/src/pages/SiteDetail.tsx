@@ -130,7 +130,7 @@ export default function SiteDetail() {
 
   const { site, checkins, notes, followups, canEditSite } = detailQuery.data;
   const canEdit = Boolean(user && canEditSite);
-  const canContribute = canEdit;
+  const canContribute = true;
 
   return (
     <FieldShell

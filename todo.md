@@ -179,6 +179,12 @@
 - [x] Verificar visualmente el favicon final generado y su fidelidad al isologo HORTIMAX
 - [x] Confirmar en navegador las referencias favicon y apple-touch-icon de la aplicación
 - [x] Entregar la URL final del favicon y los pasos de carga en Settings → General
-- [ ] Verificar en navegador que favicon y apple-touch-icon resuelvan correctamente
-- [ ] Documentar evidencia directa de los cuatro trazos corporativos del favicon
-- [ ] Entregar explícitamente la URL final y pasos de Settings → General al usuario
+- [x] Verificar en navegador que favicon y apple-touch-icon resuelvan correctamente
+- [x] Documentar evidencia directa de los cuatro trazos corporativos del favicon
+- [x] Entregar explícitamente la URL final y pasos de Settings → General al usuario
+- [x] Verificar con navegador automatizado las relaciones favicon y apple-touch-icon del documento publicado
+- [x] Capturar y documentar los cuatro trazos corporativos visibles del favicon final
+- [x] Guardar una evidencia explícita del favicon publicado, sus cuatro trazos y la URL final en la verificación
+- [x] Registrar una referencia visual persistente al favicon final para revisión futura
+- [x] Guardar una evidencia explícita del favicon publicado, sus cuatro trazos y la URL final en la verificación
+- [x] Registrar una referencia visual persistente al favicon final para revisión futura

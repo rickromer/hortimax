@@ -42,7 +42,7 @@ export function useGeolocation(options?: { watch?: boolean; enabled?: boolean })
 
   const handleError = useCallback((err: GeolocationPositionError) => {
     const messages: Record<number, string> = {
-      1: "Permiso de ubicación denegado. Activalo en el navegador para registrar puntos.",
+      1: "Permiso de ubicación denegado. Activálo en el navegador para centrar el mapa o registrar visitas.",
       2: "No se pudo obtener la ubicación. Verificá el GPS.",
       3: "La búsqueda de ubicación tardó demasiado.",
     };

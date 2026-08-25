@@ -259,7 +259,41 @@ describe("planilla de notas", () => {
       category: "Visita comercial",
       content: "Cliente solicitó cotización de foliar.",
     });
-    expect(note).toMatchObject({ siteId: ownSite.id, userId: 10 });
+    expect(note).toMatchObject({
+      note: { siteId: ownSite.id, userId: 10 },
+      registeredVisit: false,
+      checkinId: null,
+    });
+  });
+
+  it("vincula una visita con fecha y hora al guardar una nota desde el cliente", async () => {
+    const caller = notesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+
+    const result = await caller.create({
+      siteId: ownSite.id,
+      content: "Visita y observación de lote",
+      registerVisit: true,
+      latitude: -25.2638,
+      longitude: -57.576,
+    });
+
+    expect(store.createCheckin).toHaveBeenCalledWith(
+      expect.objectContaining({
+        siteId: ownSite.id,
+        userId: 0,
+        latitude: "-25.2638000",
+        longitude: "-57.5760000",
+        comment: "Visita registrada desde nota",
+      })
+    );
+    expect(store.createNote).toHaveBeenCalledWith(
+      expect.objectContaining({ siteId: ownSite.id, userId: 0, checkinId: 91 })
+    );
+    expect(result).toMatchObject({ registeredVisit: true, checkinId: 91 });
   });
 
   it("permite a un administrador consultar la planilla global", async () => {

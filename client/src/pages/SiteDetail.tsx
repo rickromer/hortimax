@@ -44,11 +44,12 @@ export default function SiteDetail() {
   const { user } = useAuth();
   const canEdit = Boolean(user);
   const canContribute = true;
-  const geo = useGeolocation({ enabled: canEdit });
+  const geo = useGeolocation({ enabled: true });
   const utils = trpc.useUtils();
 
   const [noteText, setNoteText] = useState("");
   const [noteCategory, setNoteCategory] = useState<string>("");
+  const [registerVisit, setRegisterVisit] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -62,14 +63,15 @@ export default function SiteDetail() {
   });
 
   const createNote = trpc.notes.create.useMutation({
-    onSuccess: async () => {
+    onSuccess: async result => {
       setNoteText("");
       setNoteCategory("");
+      setRegisterVisit(false);
       await Promise.all([
         utils.sites.detail.invalidate({ id: siteId }),
         utils.notes.list.invalidate(),
       ]);
-      toast.success("Nota agregada a la planilla");
+      toast.success(result.registeredVisit ? "Nota y visita registradas" : "Nota agregada al historial");
     },
     onError: error => toast.error(error.message),
   });
@@ -257,6 +259,19 @@ export default function SiteDetail() {
                 placeholder="Ej. Aplicación de fertilizante foliar 10:00, 40 ha"
                 rows={3}
               />
+              <label className="flex items-center gap-2.5 rounded-lg border border-border/70 bg-muted/35 px-3 py-2.5 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={registerVisit}
+                  onChange={event => setRegisterVisit(event.target.checked)}
+                  className="h-4 w-4 accent-[var(--hortimax-teal)]"
+                />
+                <span className="flex-1">
+                  <span className="font-medium block">Registrar también como visita</span>
+                  <span className="text-xs text-muted-foreground">Guarda fecha, hora y GPS si está disponible.</span>
+                </span>
+                <Navigation className="h-4 w-4 text-primary" />
+              </label>
               <div className="flex gap-2">
                 <Select value={noteCategory || undefined} onValueChange={setNoteCategory}>
                   <SelectTrigger className="h-10 flex-1">
@@ -280,6 +295,9 @@ export default function SiteDetail() {
                       siteId,
                       content: noteText,
                       category: noteCategory || undefined,
+                      registerVisit,
+                      latitude: registerVisit ? geo.position?.latitude : undefined,
+                      longitude: registerVisit ? geo.position?.longitude : undefined,
                     });
                   }}
                   disabled={createNote.isPending}>

@@ -111,3 +111,15 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - En la ficha pública de prueba se creó una nota y apareció de inmediato dentro de **Historial de notas**, con la cabecera automática de fecha y hora.
 - En la pestaña **Próximos** se agendó un elemento de tipo **Recordatorio** y se confirmó su aparición en la agenda.
 - Con un gesto real de mouse sobre **Sheets**, Chrome descargó el CSV de la planilla; se comprobó su nombre, su BOM UTF-8 y sus columnas compatibles con Google Sheets.
+
+## Nota con visita y geolocalización
+
+- La creación de una nota incorpora la casilla **Registrar también como visita**. Al activarla, una única operación guarda la nota y un check-in vinculado, con fecha/hora del servidor, comentario de visita y coordenadas/distancia cuando el GPS está disponible.
+- La integración real de MariaDB aislada validó la nota pública con visita vinculada. La comprobación móvil mostró que la nota se inserta en el historial y que la pestaña Visitas aumenta y presenta **Visita registrada desde nota**.
+- El mapa general solicita geolocalización al abrirse, centra la primera lectura GPS y expone el control **Mi ubicación** sin necesidad de sesión. La comprobación en navegador automatizado verificó el control; la concesión de GPS debe confirmarse en el celular físico, donde el navegador muestra el permiso real.
+- Validación de escritorio: se ingresó una nota con la casilla **Registrar también como visita** activa; la nota apareció inmediatamente en Historial de notas, la pestaña pasó a **Visitas (1)** y el registro de visita mostró el texto **Visita registrada desde nota**.
+
+### Evidencia persistida de escritorio
+
+- La automatización de escritorio devolvió `created.ok=true`, `noteVisible=true`, `historyVisible=true`, `visitsTab='Visitas (1)'` y `visitVisible=true` para el flujo completo **nota → visita vinculada**.
+- El punto temporal de validación se eliminó después de comprobar ambos registros, sin afectar los datos existentes del portal.

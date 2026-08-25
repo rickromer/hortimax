@@ -3,6 +3,7 @@ import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { formatPy, toCsv } from "../csv";
+import { distanceMeters } from "../../shared/domain";
 
 async function assertNoteAccess(noteId: number, user: { id: number; role: string }) {
   const note = await db.getNoteById(noteId);
@@ -52,6 +53,9 @@ export const notesRouter = router({
         content: z.string().min(1).max(4000),
         category: z.string().max(80).optional(),
         checkinId: z.number().int().positive().optional(),
+        registerVisit: z.boolean().optional().default(false),
+        latitude: z.number().min(-90).max(90).optional(),
+        longitude: z.number().min(-180).max(180).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -60,13 +64,33 @@ export const notesRouter = router({
       if (ctx.user && ctx.user.role !== "admin" && !(await db.isUserAssignedToSite(site.id, ctx.user.id))) {
         throw new TRPCError({ code: "FORBIDDEN", message: "No tenés acceso a este sitio" });
       }
-      return db.createNote({
+      let linkedCheckinId = input.checkinId ?? null;
+      if (input.registerVisit) {
+        const hasLocation = input.latitude !== undefined && input.longitude !== undefined;
+        const visit = await db.createCheckin({
+          siteId: site.id,
+          userId: ctx.user?.id ?? 0,
+          latitude: hasLocation ? input.latitude!.toFixed(7) : null,
+          longitude: hasLocation ? input.longitude!.toFixed(7) : null,
+          distanceMeters: hasLocation
+            ? distanceMeters(
+                { lat: input.latitude!, lng: input.longitude! },
+                { lat: site.latitude, lng: site.longitude }
+              )
+            : null,
+          comment: "Visita registrada desde nota",
+        });
+        linkedCheckinId = visit.id;
+      }
+
+      const note = await db.createNote({
         siteId: input.siteId,
         userId: ctx.user?.id ?? 0,
-        checkinId: input.checkinId ?? null,
+        checkinId: linkedCheckinId,
         category: input.category?.trim() || null,
         content: input.content.trim(),
       });
+      return { note, registeredVisit: Boolean(input.registerVisit), checkinId: linkedCheckinId };
     }),
 
   /** Descarga la planilla de notas del cliente para abrirla o importarla en Google Sheets. */

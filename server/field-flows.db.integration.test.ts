@@ -113,7 +113,19 @@ describe("integración de campo con MariaDB aislado", () => {
       siteId: publicPoint!.id,
       content: "Nota pública con fecha y hora automática",
     });
-    expect(publicNote).toMatchObject({ siteId: publicPoint!.id, userId: 0 });
+    expect(publicNote).toMatchObject({
+      note: { siteId: publicPoint!.id, userId: 0 },
+      registeredVisit: false,
+    });
+
+    const publicNoteWithVisit = await publicNotes.create({
+      siteId: publicPoint!.id,
+      content: "Nota pública que registra visita",
+      registerVisit: true,
+      latitude: -25.2701,
+      longitude: -57.5901,
+    });
+    expect(publicNoteWithVisit).toMatchObject({ registeredVisit: true, checkinId: expect.any(Number) });
 
     const publicFollowups = followupsRouter.createCaller({
       user: null,

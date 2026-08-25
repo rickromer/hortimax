@@ -22,7 +22,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
@@ -30,7 +30,7 @@ export default function FieldMap() {
   const { user } = useAuth();
   const canEdit = Boolean(user);
   const canCreatePoint = true;
-  const geo = useGeolocation({ enabled: canEdit });
+  const geo = useGeolocation({ enabled: true });
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -44,6 +44,7 @@ export default function FieldMap() {
   } | null>(null);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
+  const hasAutoCentered = useRef(false);
 
   const sitesQuery = trpc.sites.list.useQuery(
     { search: search.trim() || undefined },
@@ -51,6 +52,11 @@ export default function FieldMap() {
   );
 
   const position = geo.position;
+  useEffect(() => {
+    if (!position || hasAutoCentered.current) return;
+    hasAutoCentered.current = true;
+    setFocus({ latitude: position.latitude, longitude: position.longitude });
+  }, [position]);
   const nearbyQuery = trpc.sites.nearby.useQuery(
     position
       ? { latitude: position.latitude, longitude: position.longitude, radius: 500 }
@@ -99,13 +105,11 @@ export default function FieldMap() {
       bleed
       hideContext
       subtitle={
-        !canEdit
-          ? "Consulta pública"
-          : geo.loading && !position
+        geo.loading && !position
           ? "Buscando señal GPS…"
           : position
             ? `GPS activo · ±${position.accuracy} m`
-            : "GPS sin señal"
+            : "Ubicación no disponible"
       }
       action={
         <Button
@@ -179,23 +183,21 @@ export default function FieldMap() {
 
         {/* Controles laterales */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2">
-          {canEdit && (
-            <Button
-              size="icon"
-              variant="secondary"
-              className="h-11 w-11 rounded-full shadow-lg bg-background hover:bg-background"
-              onClick={centerOnMe}
-              aria-label="Centrar en mi ubicación">
-              {geo.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Crosshair className="h-5 w-5" />}
-            </Button>
-          )}
+          <Button
+            size="icon"
+            variant="secondary"
+            className="h-11 w-11 rounded-full shadow-lg bg-background hover:bg-background"
+            onClick={centerOnMe}
+            aria-label="Mi ubicación">
+            {geo.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Crosshair className="h-5 w-5" />}
+          </Button>
           <MapReferencePanel mapType={mapType} onMapTypeChange={setMapType} />
         </div>
 
         {/* Aviso de GPS */}
-        {canEdit && geo.error && (
+        {geo.error && (
           <div className="absolute top-3 inset-x-3 z-10 rounded-xl bg-destructive/95 text-destructive-foreground px-3 py-2.5 text-sm shadow-lg">
-            {geo.error}
+            {geo.error} Podés seleccionar el punto manualmente en el mapa.
           </div>
         )}
 

@@ -244,3 +244,20 @@
 - [x] Restaurar temporalmente las acciones de operación de campo sin usuario
 - [x] Mantener la administración y gestión de usuarios protegidas
 - [x] Verificar acceso directo público y bloqueo de administración
+
+## Ocultación temporal de login
+- [x] Retirar el botón Ingresar de la cabecera pública
+- [x] Conservar las rutas, pantalla y credenciales de login para reactivación futura
+- [x] Verificar que la interfaz pública no muestre acceso visible al login
+
+## Incidencia de enlace en Chrome
+- [x] Comprobar en Chrome el estado HTTPS y la redirección del dominio publicado
+- [x] Identificar si el enlace falla por certificado/proxy o por la carga de la aplicación
+- [ ] Recuperar o escalar la estabilidad del enlace publicado
+- [ ] Confirmar en Chrome que el enlace abre el portal correctamente
+
+## Incidencia DNS NXDOMAIN
+- [x] Comprobar la resolución DNS de mapaclientes-cqpci7xz.manus.space desde redes independientes
+- [x] Determinar si el subdominio publicado requiere propagación o una corrección de plataforma
+- [ ] Escalar la incidencia de DNS con la evidencia técnica disponible
+- [ ] Dar al usuario un enlace de acceso alternativo mientras el DNS se estabiliza

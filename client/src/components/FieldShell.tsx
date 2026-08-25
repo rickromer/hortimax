@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { BRAND_LOGO_URL, BRAND_NAME } from "@/lib/brand";
-import { CalendarDays, LayoutDashboard, ListTree, LogIn, LogOut, Map } from "lucide-react";
-import type { ReactNode } from "react";
+import { CalendarDays, LayoutDashboard, ListTree, LogOut, Map } from "lucide-react";
+import React, { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 
 const TABS = [
@@ -93,11 +93,7 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
                 Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu> : (
-            <Button variant="outline" size="sm" className="bg-background" asChild>
-              <Link href="/acceso"><LogIn className="h-4 w-4" />Ingresar</Link>
-            </Button>
-          )}
+          </DropdownMenu> : null}
         </div>
         <div className="brand-spectrum" aria-hidden="true" />
       </header>

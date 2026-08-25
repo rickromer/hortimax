@@ -176,3 +176,9 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 
 - A solicitud del administrador, el mapa, el listado de clientes, las fichas y el calendario vuelven a abrirse directamente sin sesión. Durante este período, las altas de puntos anónimas quedan marcadas como `publicSubmission`, y notas y próximos relevamientos públicos usan el identificador técnico `0` para no atribuirlos a una persona.
 - La comprobación sin sesión abrió la raíz con marcadores, Google Maps, el botón **Nuevo punto** y la navegación Mapa/Clientes/Calendario. La misma sesión anónima dirigida a `/admin` fue redirigida a `/acceso`, por lo que Administración y Usuarios continúan protegidos.
+
+## Ocultación temporal de login
+
+- El botón visible **Ingresar** se retiró de la cabecera pública. La prueba de componente sin sesión confirma que la interfaz conserva Mapa y Calendario, sin exponer ese acceso.
+- No se eliminó ningún flujo de autenticación: `/acceso` continúa mostrando el formulario de usuario y contraseña, listo para reactivarlo cuando se vuelva a exigir sesión.
+- `pnpm check`, 51 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron. Las capturas móviles verificaron la cabecera pública sin acceso visible y la pantalla de login conservada por separado.

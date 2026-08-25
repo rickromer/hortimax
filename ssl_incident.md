@@ -25,3 +25,5 @@ La revisión actual en Chromium abrió `https://mapaclientes-cqpci7xz.manus.spac
 ## Diagnóstico de NXDOMAIN
 
 El diagnóstico posterior comprobó que el dominio se resuelve desde tres fuentes independientes: el resolvedor local y los resolvedores públicos de Google y Cloudflare devolvieron `104.19.168.112` y `104.19.169.112`, con estado DNS correcto. Esto confirma que no existe un registro DNS faltante en este momento. El `DNS_PROBE_FINISHED_NXDOMAIN` reportado por Chrome corresponde, con alta probabilidad, a una caché DNS negativa o un resolvedor de la red local que aún no se actualizó.
+
+El usuario confirmó posteriormente que el acceso se normalizó. No fue necesaria una escalación de plataforma: la resolución pública se estabilizó y la comprobación publicada volvió a abrir mapa, clientes y calendario.

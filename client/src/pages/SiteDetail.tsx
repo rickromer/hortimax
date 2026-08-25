@@ -130,13 +130,14 @@ export default function SiteDetail() {
 
   const { site, checkins, notes, followups, canEditSite } = detailQuery.data;
   const canEdit = Boolean(user && canEditSite);
+  const canEditClient = true;
   const canContribute = true;
 
   return (
     <FieldShell
       title={site.name}
       subtitle={[site.clientType, site.department, site.zone].filter(Boolean).join(" · ") || "Sin clasificar"}
-      action={canEdit ? (
+      action={canEditClient ? (
         <Button
           variant="ghost"
           size="icon"
@@ -397,7 +398,7 @@ export default function SiteDetail() {
         site={{ id: site.id, name: site.name }}
         coords={geo.position}
       />}
-      {canEdit && <SiteFormSheet
+      {canEditClient && <SiteFormSheet
         open={editOpen}
         onOpenChange={setEditOpen}
         mode="edit"

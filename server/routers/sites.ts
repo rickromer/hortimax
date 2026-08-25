@@ -128,10 +128,15 @@ export const sitesRouter = router({
       return created;
     }),
 
-  update: protectedProcedure
+  /** Edición básica temporal abierta; archivar y check-in siguen requiriendo sesión. */
+  update: publicProcedure
     .input(siteInput.partial().extend({ id: z.number().int().positive(), latitude: z.number().min(-90).max(90).optional(), longitude: z.number().min(-180).max(180).optional() }))
     .mutation(async ({ ctx, input }) => {
-      await assertSiteEditAccess(input.id, ctx.user);
+      if (ctx.user) {
+        await assertSiteEditAccess(input.id, ctx.user);
+      } else {
+        await assertSiteViewAccess(input.id);
+      }
       const { id, latitude, longitude, ...rest } = input;
       const values: Record<string, unknown> = {};
       Object.entries(rest).forEach(([key, value]) => {

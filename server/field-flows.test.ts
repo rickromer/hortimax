@@ -77,6 +77,12 @@ describe("permisos de clientes", () => {
     expect(store.createCheckin).not.toHaveBeenCalled();
   });
 
+  it("permite editar datos básicos sin sesión durante el modo público temporal", async () => {
+    store.getSiteById.mockResolvedValue(foreignSite);
+    await sitesRouter.createCaller(anonymousContext()).update({ id: foreignSite.id, name: "Cliente actualizado" });
+    expect(store.updateSite).toHaveBeenCalledWith(foreignSite.id, { name: "Cliente actualizado" });
+  });
+
   it("permite a gerente comercial editar cualquier cliente", async () => {
     store.getSiteById.mockResolvedValue(foreignSite);
     await sitesRouter.createCaller(contextFor(40, "manager")).update({ id: foreignSite.id, name: "Cliente corregido" });

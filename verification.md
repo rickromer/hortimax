@@ -182,3 +182,15 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - El botón visible **Ingresar** se retiró de la cabecera pública. La prueba de componente sin sesión confirma que la interfaz conserva Mapa y Calendario, sin exponer ese acceso.
 - No se eliminó ningún flujo de autenticación: `/acceso` continúa mostrando el formulario de usuario y contraseña, listo para reactivarlo cuando se vuelva a exigir sesión.
 - `pnpm check`, 51 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron. Las capturas móviles verificaron la cabecera pública sin acceso visible y la pantalla de login conservada por separado.
+
+## Portal principal público
+
+- En el dominio publicado, la raíz abre directamente el mapa híbrido con sus controles de campo, la navegación inferior y Nuevo punto, sin redirección a `/acceso` ni botón Ingresar.
+- La ruta publicada `/sitios` abre el listado completo de clientes, con búsqueda, Departamento/localidad y sus enlaces a ficha, también sin sesión ni acceso visible de login.
+- La ruta publicada `/calendario` abre el calendario consolidado de visitas, próximos relevamientos y notas, con sus filtros y enlaces a cada cliente, sin solicitar autenticación.
+
+## Edición pública temporal de clientes
+
+- La ficha pública ahora muestra el icono **Editar sitio** y abre el formulario **Editar punto** sin sesión. La validación visual en vista previa confirmó la carga de nombre, tipo, departamento, distrito/municipio, contacto, teléfono, descripción y referencia, junto a Guardar cambios.
+- La actualización básica de cliente quedó temporalmente habilitada para visitantes; archivo de clientes, check-in directo, gestión de usuarios y Administración permanecen bajo permisos autenticados.
+- La prueba de flujo confirma que una actualización anónima alcanza `updateSite`; las restricciones de un Representante autenticado sobre puntos ajenos y el acceso total de gerencia se conservan. `pnpm check`, 52 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron. No se guardó una modificación de datos reales durante la verificación visual.

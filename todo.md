@@ -171,3 +171,14 @@
 - [x] Reemplazar Aplicación por Visita técnica en el catálogo persistido de notas
 - [x] Reemplazar textos visibles restantes de Aplicación en formularios y ayudas de notas
 - [x] Verificar que el selector de categoría muestre Visita técnica en la interfaz
+
+## Favicon HORTIMAX
+- [x] Generar un favicon cuadrado basado en el isologo HORTIMAX
+- [x] Preparar una versión de alta resolución adecuada para la configuración del portal
+- [x] Entregar el archivo y las instrucciones para cargarlo como favicon
+- [x] Verificar visualmente el favicon final generado y su fidelidad al isologo HORTIMAX
+- [x] Confirmar en navegador las referencias favicon y apple-touch-icon de la aplicación
+- [x] Entregar la URL final del favicon y los pasos de carga en Settings → General
+- [ ] Verificar en navegador que favicon y apple-touch-icon resuelvan correctamente
+- [ ] Documentar evidencia directa de los cuatro trazos corporativos del favicon
+- [ ] Entregar explícitamente la URL final y pasos de Settings → General al usuario

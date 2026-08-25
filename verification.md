@@ -129,3 +129,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - Se actualizó el valor por defecto y el catálogo persistido para reemplazar **Aplicación** por **Visita técnica**.
 - La ficha pública ahora carga el catálogo aun sin sesión y dispone de categorías de respaldo para evitar un selector vacío. La verificación de interfaz abrió el selector y confirmó las opciones: Visita técnica, Visita comercial, Pedido, Entrega, Reclamo y Otro; **Aplicación** ya no aparece.
 - La ayuda del campo de nota fue actualizada a “Ej. Visita técnica al invernadero, se relevó cultivo de tomate”.
+
+## Favicon HORTIMAX
+
+- Se generó un favicon cuadrado basado en el isologo geométrico multicolor de HORTIMAX, sin el wordmark, para conservar legibilidad en pestañas y accesos móviles.
+- El favicon se integró tanto en `rel="icon"` como en `apple-touch-icon` de la cabecera del portal mediante el activo administrado del proyecto.
+- Revisión visual: el archivo PNG final (1920 × 1920 px) conserva el símbolo HORTIMAX con sus cuatro trazos amarillo, turquesa, rojo y verde sobre fondo blanco; la vista previa referencia el activo dos veces, una por cada relación de icono.
+- Navegador: el activo del favicon respondió correctamente como imagen PNG de 1920 × 1920 px y el portal publicado expone las relaciones `icon` y `apple-touch-icon` hacia `/manus-storage/hortimax-favicon_6236a44b.png`.

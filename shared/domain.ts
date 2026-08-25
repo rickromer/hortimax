@@ -35,7 +35,7 @@ export const DEFAULT_ZONES = [
 
 /** Categorías sugeridas para las notas de campo. */
 export const DEFAULT_NOTE_CATEGORIES = [
-  "Aplicación",
+  "Visita técnica",
   "Visita comercial",
   "Pedido",
   "Entrega",
@@ -71,4 +71,3 @@ export function formatDateTimePy(date: Date): string {
     timeZone: "America/Asuncion",
   }).format(date);
 }
-

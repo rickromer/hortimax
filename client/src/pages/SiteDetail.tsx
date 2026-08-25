@@ -59,8 +59,11 @@ export default function SiteDetail() {
   );
   const catalog = trpc.admin.catalog.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
-    enabled: canEdit,
+    enabled: true,
   });
+  const noteCategories = catalog.data?.noteCategories?.length
+    ? catalog.data.noteCategories
+    : ["Visita técnica", "Visita comercial", "Pedido", "Entrega", "Reclamo", "Otro"];
 
   const createNote = trpc.notes.create.useMutation({
     onSuccess: async result => {
@@ -256,7 +259,7 @@ export default function SiteDetail() {
               <Textarea
                 value={noteText}
                 onChange={e => setNoteText(e.target.value)}
-                placeholder="Ej. Aplicación de fertilizante foliar 10:00, 40 ha"
+                placeholder="Ej. Visita técnica al invernadero, se relevó cultivo de tomate"
                 rows={3}
               />
               <label className="flex items-center gap-2.5 rounded-lg border border-border/70 bg-muted/35 px-3 py-2.5 text-sm cursor-pointer">
@@ -278,7 +281,7 @@ export default function SiteDetail() {
                     <SelectValue placeholder="Categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    {(catalog.data?.noteCategories ?? []).map(item => (
+                    {noteCategories.map(item => (
                       <SelectItem key={item} value={item}>
                         {item}
                       </SelectItem>

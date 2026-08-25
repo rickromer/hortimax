@@ -163,3 +163,11 @@
 - [x] Verificar en escritorio nota con visita vinculada e historial de ambos registros
 - [x] Documentar la evidencia específica de escritorio de nota → visita vinculada
 - [x] Guardar y releer la evidencia de escritorio de nota → visita vinculada
+- [ ] Confirmar en una computadora física el permiso de ubicación y el centrado automático del mapa
+- [ ] Confirmar en escritorio que Mi ubicación recentre el mapa después de moverlo
+
+## Ajuste de categorías de notas
+- [x] Reemplazar Aplicación por Visita técnica en las categorías sugeridas
+- [x] Reemplazar Aplicación por Visita técnica en el catálogo persistido de notas
+- [x] Reemplazar textos visibles restantes de Aplicación en formularios y ayudas de notas
+- [x] Verificar que el selector de categoría muestre Visita técnica en la interfaz

@@ -123,3 +123,9 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 
 - La automatización de escritorio devolvió `created.ok=true`, `noteVisible=true`, `historyVisible=true`, `visitsTab='Visitas (1)'` y `visitVisible=true` para el flujo completo **nota → visita vinculada**.
 - El punto temporal de validación se eliminó después de comprobar ambos registros, sin afectar los datos existentes del portal.
+
+## Categoría Visita técnica
+
+- Se actualizó el valor por defecto y el catálogo persistido para reemplazar **Aplicación** por **Visita técnica**.
+- La ficha pública ahora carga el catálogo aun sin sesión y dispone de categorías de respaldo para evitar un selector vacío. La verificación de interfaz abrió el selector y confirmó las opciones: Visita técnica, Visita comercial, Pedido, Entrega, Reclamo y Otro; **Aplicación** ya no aparece.
+- La ayuda del campo de nota fue actualizada a “Ej. Visita técnica al invernadero, se relevó cultivo de tomate”.

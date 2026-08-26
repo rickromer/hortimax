@@ -180,12 +180,10 @@ export function ClientMap({
       gestureHandling: "greedy",
     });
 
-    if (onMapClick) {
-      mapRef.current.addListener("click", (event: google.maps.MapMouseEvent) => {
-        const coordinates = mapClickToCoordinates(event);
-        if (coordinates) onMapClick(coordinates);
-      });
-    }
+    mapRef.current.addListener("click", (event: google.maps.MapMouseEvent) => {
+      const coordinates = mapClickToCoordinates(event);
+      if (coordinates) onMapClick?.(coordinates);
+    });
 
     if (onCenterChanged) {
       mapRef.current.addListener("idle", () => {

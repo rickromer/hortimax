@@ -207,6 +207,12 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La prioridad queda definida como: selección manual previa → centro visible del mapa → foco programático → GPS. El botón **Mi ubicación** del selector continúa siendo la acción explícita para volver al GPS.
 - Las pruebas cubren el flujo lógico de mover el mapa a un centro distinto de la posición GPS y verifican que el selector recibe el centro manual. `pnpm check`, 57 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron.
 
+## Visor unificado y búsqueda de lugares
+
+- Se añadió la barra compacta **Buscar lugar en Google Maps** dentro del lienzo del visor principal. Usa Autocomplete/Places de Google Maps, sesga la consulta al área visible y restringe los resultados a Paraguay.
+- **Nuevo punto** ya no abre la capa independiente: activa un modo sobre el mapa actual, con pin central, Cancelar, Mi ubicación y Usar esta ubicación. La búsqueda del lugar mueve el mismo visor; al confirmar, se abre solo el formulario de datos del cliente con las coordenadas elegidas.
+- Las pruebas cubren la prioridad del centro visible, la ubicación manual confirmada y la restricción de Places a Paraguay. La barra integrada se verificó visualmente en móvil y escritorio; en el capturador de vista previa el SDK de mapas tuvo un fallo transitorio y quedó expuesta la recuperación manual. `pnpm check`, 61 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron.
+
 ## Referencias locales de solo lectura
 
 - Los mapas compartidos usan `clickableIcons: false`: los nombres, rutas, negocios y lugares de Google se conservan como referencia visual, pero ya no deben abrir sus paneles, enlaces de compartir o acciones de dirección al tocarlos. Los pines propios de HORTIMAX mantienen su interacción normal.

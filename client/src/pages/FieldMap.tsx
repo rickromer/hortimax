@@ -1,8 +1,8 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
 import { FieldShell } from "@/components/FieldShell";
+import { MapPlaceSearch } from "@/components/MapPlaceSearch";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { LocationPickerDialog } from "@/components/LocationPickerDialog";
 import { MapReferencePanel } from "@/components/MapReferencePanel";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
@@ -10,11 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { formatDistance, timeAgo } from "@/lib/format";
+import { placeFromMapCenter, startMapPlacement } from "@/lib/mapPlacement";
 import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { canManageAll } from "@shared/permissions";
 import {
+  Check,
   ChevronRight,
   Crosshair,
   Loader2,
@@ -49,7 +51,14 @@ export default function FieldMap() {
     department?: string | null;
     zone?: string | null;
   } | null>(null);
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const [placementMode, setPlacementMode] = useState(false);
+  const [placementCoords, setPlacementCoords] = useState<{
+    latitude: number;
+    longitude: number;
+    department?: string | null;
+    zone?: string | null;
+  } | null>(null);
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
   const hasAutoCentered = useRef(false);
 
@@ -119,6 +128,25 @@ export default function FieldMap() {
     userPosition: position,
   });
 
+  const beginPlacement = (start = pickerStartCoords) => {
+    const next = startMapPlacement(visibleMapCenter, start);
+    if (!next) {
+      toast.error("Esperá a que cargue el mapa o usá Mi ubicación para elegir el punto.");
+      return;
+    }
+    setPlacementCoords(placeFromMapCenter(next));
+    setPlacementMode(true);
+    setFocus(next);
+  };
+
+  const confirmPlacement = () => {
+    if (!placementCoords) return;
+    setManualCoords(placementCoords);
+    setPlacementMode(false);
+    setNewSiteOpen(true);
+    toast.success("Ubicación manual seleccionada");
+  };
+
   return (
     <FieldShell
       bleed
@@ -147,7 +175,16 @@ export default function FieldMap() {
           focus={focus}
           fitToMarkers
           mapTypeId={mapType}
-          onCenterChanged={setVisibleMapCenter}
+          onReady={setMapInstance}
+          onMapClick={coords => {
+            if (!placementMode) return;
+            setPlacementCoords(placeFromMapCenter(coords));
+            setFocus(coords);
+          }}
+          onCenterChanged={coords => {
+            setVisibleMapCenter(coords);
+            if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
+          }}
           onMarkerClick={id => {
             if (id === -1) return;
             setSelectedId(id);
@@ -156,9 +193,50 @@ export default function FieldMap() {
           }}
         />
 
-        {/* Buscador flotante */}
+        <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
+          <MapPlaceSearch
+            map={mapInstance}
+            onSelect={selection => {
+              const coords = placeFromMapCenter(selection);
+              setFocus(coords);
+              setPlacementCoords(coords);
+              if (!placementMode) setPlacementMode(false);
+            }}
+          />
+        </div>
+
+        {placementMode && (
+          <>
+            <div className="absolute top-3 inset-x-3 z-30 rounded-xl bg-background/95 px-3 py-2.5 shadow-lg backdrop-blur sm:left-3 sm:right-auto sm:w-[24rem]">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">Ubicá el nuevo punto</p>
+                  <p className="text-xs text-muted-foreground">Mové el mapa o buscá un lugar. El pin central será la ubicación.</p>
+                </div>
+                <Button type="button" size="sm" variant="outline" className="bg-background" onClick={() => setPlacementMode(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+            <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center">
+              <MapPin className="h-14 w-14 -translate-y-1/2 fill-primary/15 text-primary drop-shadow-[0_5px_5px_rgba(0,0,0,0.35)]" />
+            </div>
+            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-30 flex -translate-x-1/2 gap-2">
+              <Button type="button" variant="secondary" className="bg-background shadow-lg" onClick={centerOnMe}>
+                <Crosshair className="h-4 w-4" />
+                Mi ubicación
+              </Button>
+              <Button type="button" className="shadow-lg" onClick={confirmPlacement}>
+                <Check className="h-4 w-4" />
+                Usar esta ubicación
+              </Button>
+            </div>
+          </>
+        )}
+
+        {/* Buscador de clientes flotante */}
         {searchOpen && (
-          <div className="absolute top-3 inset-x-3 z-20">
+          <div className="absolute top-16 inset-x-3 z-20 sm:top-3 sm:left-[25rem] sm:right-3">
             <div className="surface-card surface-lift flex items-center gap-2 px-3 py-2">
               <Search className="h-4 w-4 text-muted-foreground shrink-0" />
               <Input
@@ -306,7 +384,7 @@ export default function FieldMap() {
         </div>
 
         {/* Botón principal */}
-        {canCreatePoint && <Button
+        {canCreatePoint && !placementMode && <Button
           className={cn(
             "absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 -translate-x-1/2 z-30 h-14 w-14 p-0 rounded-full shadow-xl",
             "sm:w-auto sm:px-6 text-base font-semibold"
@@ -314,7 +392,7 @@ export default function FieldMap() {
           aria-label="Nuevo punto"
           onClick={() => {
             setManualCoords(null);
-            setLocationPickerOpen(true);
+            beginPlacement();
           }}>
           <Plus className="h-6 w-6" />
           <span className="sr-only sm:not-sr-only">Nuevo punto</span>
@@ -334,30 +412,13 @@ export default function FieldMap() {
         }}
         onSelectOnMap={() => {
           setNewSiteOpen(false);
-          setLocationPickerOpen(true);
+          beginPlacement(manualCoords ?? pickerStartCoords);
         }}
         onSaved={id => {
           setSelectedId(id);
           const savedAt = manualCoords ?? position;
           if (savedAt) setFocus({ latitude: savedAt.latitude, longitude: savedAt.longitude });
           setManualCoords(null);
-        }}
-      />}
-
-      {canCreatePoint && <LocationPickerDialog
-        open={locationPickerOpen}
-        onOpenChange={setLocationPickerOpen}
-        initialCoords={pickerStartCoords}
-        onRequestLocation={geo.request}
-        onConfirm={selection => {
-          setManualCoords(selection);
-          setFocus(selection);
-          setNewSiteOpen(true);
-          toast.success(
-            selection.department
-              ? `Ubicación seleccionada · ${selection.department}${selection.zone ? ` · ${selection.zone}` : ""}`
-              : "Ubicación manual seleccionada"
-          );
         }}
       />}
 

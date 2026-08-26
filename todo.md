@@ -272,6 +272,14 @@
 - [x] Mantener Mi ubicación como acción explícita dentro del selector
 - [x] Cubrir con prueba el flujo mover mapa → Nuevo punto → selector centrado en la vista
 
+## Visor unificado y búsqueda de Google Maps
+- [x] Añadir una barra compacta de búsqueda de lugares de Google Maps dentro del visor principal
+- [x] Restringir y priorizar resultados de búsqueda en Paraguay
+- [x] Convertir Nuevo punto en un modo dentro del mapa existente, sin abrir selector de ventana adicional
+- [x] Mostrar pin fijo, confirmar/cancelar y Mi ubicación dentro del modo Nuevo punto
+- [x] Conectar la ubicación confirmada al formulario de datos del cliente
+- [ ] Probar búsqueda de lugar, movimiento manual y alta de punto en móvil y escritorio
+
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa
 - [x] Mantener visibles rutas, nombres y referencias sin exponer acciones de compartir

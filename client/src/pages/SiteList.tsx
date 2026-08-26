@@ -1,4 +1,3 @@
-import { CheckinDialog } from "@/components/CheckinDialog";
 import { FieldShell } from "@/components/FieldShell";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
@@ -16,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { downloadCsv, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
-import { Download, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Download, MapPin, NotebookPen, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -33,7 +32,6 @@ export default function SiteList() {
   const [clientType, setClientType] = useState<string>(ALL);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [newSiteOpen, setNewSiteOpen] = useState(false);
-  const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
 
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const sitesQuery = trpc.sites.list.useQuery({
@@ -186,13 +184,11 @@ export default function SiteList() {
                       Última visita: {timeAgo(site.lastCheckinAt)}
                     </p>
                   </Link>
-                  {canEdit && <Button
-                    size="sm"
-                    variant="secondary"
-                    className="shrink-0"
-                    onClick={() => setCheckinSite({ id: site.id, name: site.name })}>
-                    Check-in
-                  </Button>}
+                  <Button size="icon" variant="secondary" className="shrink-0" asChild>
+                    <Link href={`/sitios/${site.id}`} aria-label={`Abrir notas de ${site.name}`}>
+                      <NotebookPen className="h-4 w-4" />
+                    </Link>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -205,12 +201,6 @@ export default function SiteList() {
         onOpenChange={setNewSiteOpen}
         coords={geo.position}
         onRequestLocation={() => geo.request()}
-      />}
-      {canEdit && <CheckinDialog
-        open={Boolean(checkinSite)}
-        onOpenChange={open => !open && setCheckinSite(null)}
-        site={checkinSite}
-        coords={geo.position}
       />}
     </FieldShell>
   );

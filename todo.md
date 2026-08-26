@@ -422,3 +422,8 @@
 - [x] Confirmar que el acceso a campo preserve la sesión administrativa existente
 - [x] Dejar solo el título en el panel visual del login, retirando el texto descriptivo
 - [x] Probar y publicar la navegación y el acceso simplificado
+
+## Simplificación de acciones en listado de clientes
+- [x] Retirar el botón directo Check-in de cada tarjeta de cliente
+- [x] Enlazar la acción visible a la ficha del cliente y sus notas
+- [ ] Probar y publicar el listado simplificado

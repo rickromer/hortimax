@@ -358,3 +358,19 @@
 - [x] Auditar el logo en acceso, vistas de campo y administración
 - [x] Corregir proporción, recorte y contraste del logo según cada fondo
 - [x] Verificar en móvil y escritorio y publicar la mejora visual
+
+## Logo móvil y autoría de actividad
+- [x] Reparar la carga del logo HORTIMAX en encabezados móviles
+- [x] Mostrar el autor de cada nota en su historial de cliente
+- [x] Mostrar el autor de notas y recordatorios en el calendario del equipo
+- [ ] Probar en móvil y escritorio y publicar las correcciones
+
+## Archivo recuperable confirmado para Representante
+- [x] Hacer visible la acción de archivar en la ficha de un punto propio
+- [x] Confirmar que un representante pueda archivar solo sus propios puntos
+- [x] Mantener bloqueado el archivo de puntos ajenos y preservar la Papelera administrativa
+
+## Cierre de sesión seguro
+- [x] Redirigir explícitamente a `/acceso` al cerrar sesión
+- [x] Bloquear `/sitios` y las demás rutas operativas cuando no haya sesión
+- [x] Probar cierre de sesión y acceso directo a una ruta operativa

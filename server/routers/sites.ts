@@ -2,7 +2,7 @@ import { distanceMeters, NEARBY_RADIUS_METERS } from "@shared/domain";
 import { canManageAll } from "@shared/permissions";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { territoryFromCoordinates } from "../territory";
 
@@ -38,8 +38,8 @@ async function assertSiteEditAccess(siteId: number, user: { id: number; role: st
 }
 
 export const sitesRouter = router({
-  /** Mapa temporalmente abierto; la administración conserva sus filtros privados. */
-  list: publicProcedure
+  /** Mapa operativo disponible únicamente dentro de una sesión válida. */
+  list: protectedProcedure
     .input(
       z
         .object({
@@ -59,9 +59,9 @@ export const sitesRouter = router({
         zone: input?.zone || undefined,
         clientType: input?.clientType || undefined,
       };
-      if (ctx.user && input?.scope === "mine") {
+      if (input?.scope === "mine") {
         filters.createdBy = ctx.user.id;
-      } else if (ctx.user && canManageAll(ctx.user.role) && input?.sellerId) {
+      } else if (canManageAll(ctx.user.role) && input?.sellerId) {
         filters.siteIds = await db.getAssignedSiteIds(input.sellerId);
       }
       const sites = await db.listSites(filters);
@@ -69,8 +69,8 @@ export const sitesRouter = router({
       return sites.map(site => ({ ...site, lastCheckinAt: lastMap.get(site.id) ?? null }));
     }),
 
-  /** La ficha y su historial se consultan sin sesión durante el acceso temporal. */
-  detail: publicProcedure
+  /** La ficha y su historial requieren sesión válida. */
+  detail: protectedProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
       const site = await assertSiteViewAccess(input.id);
@@ -86,11 +86,11 @@ export const sitesRouter = router({
         notes,
         assignees,
         followups,
-        canEditSite: Boolean(ctx.user && (canManageAll(ctx.user.role) || site.createdBy === ctx.user.id)),
+        canEditSite: canManageAll(ctx.user.role) || site.createdBy === ctx.user.id,
       };
     }),
 
-  nearby: publicProcedure
+  nearby: protectedProcedure
     .input(coord.extend({ radius: z.number().int().min(50).max(5000).optional() }))
     .query(async ({ input }) => {
       const sites = await db.listSites({});
@@ -105,8 +105,8 @@ export const sitesRouter = router({
         .slice(0, 10);
     }),
 
-  /** Alta temporal abierta; los puntos anónimos quedan marcados para limpieza posterior. */
-  create: publicProcedure
+  /** Todo punto nuevo queda atribuido a una sesión de campo verificable. */
+  create: protectedProcedure
     .input(siteInput.merge(coord))
     .mutation(async ({ ctx, input }) => {
       const territory = await territoryFromCoordinates(input.latitude, input.longitude).catch(() => ({
@@ -125,24 +125,19 @@ export const sitesRouter = router({
         accuracy: input.accuracy ?? null,
         latitude: input.latitude.toFixed(7),
         longitude: input.longitude.toFixed(7),
-        createdBy: ctx.user?.id ?? 0,
-        publicSubmission: !ctx.user,
+        createdBy: ctx.user.id,
+        publicSubmission: false,
       });
       if (!created) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear el sitio" });
-      if (ctx.user) await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
+      await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
       return created;
     }),
 
-  /** Edición básica temporal abierta; archivar y check-in siguen requiriendo sesión. */
-  update: publicProcedure
+  /** La edición exige sesión y respeta la propiedad del punto. */
+  update: protectedProcedure
     .input(siteInput.partial().extend({ id: z.number().int().positive(), latitude: z.number().min(-90).max(90).optional(), longitude: z.number().min(-180).max(180).optional() }))
     .mutation(async ({ ctx, input }) => {
-      let site;
-      if (ctx.user) {
-        site = await assertSiteEditAccess(input.id, ctx.user);
-      } else {
-        site = await assertSiteViewAccess(input.id);
-      }
+      const site = await assertSiteEditAccess(input.id, ctx.user);
       const { id, latitude, longitude, ...rest } = input;
       const values: Record<string, unknown> = {};
       Object.entries(rest).forEach(([key, value]) => {

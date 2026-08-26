@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { canManageAll } from "@shared/permissions";
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 async function assertFollowupAccess(siteId: number, user: { id: number; role: string }) {
@@ -20,8 +20,8 @@ const scheduleInput = z.object({
 });
 
 export const followupsRouter = router({
-  /** Agenda temporalmente abierta junto con la ficha de cada cliente. */
-  list: publicProcedure
+  /** Agenda disponible únicamente dentro de una sesión válida. */
+  list: protectedProcedure
     .input(z.object({ siteId: z.number().int().positive().optional(), limit: z.number().int().min(1).max(300).optional() }).optional())
     .query(async ({ ctx, input }) => {
       if (input?.siteId) {
@@ -36,18 +36,13 @@ export const followupsRouter = router({
       });
     }),
 
-  create: publicProcedure
+  create: protectedProcedure
     .input(scheduleInput.extend({ siteId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user) {
-        await assertFollowupAccess(input.siteId, ctx.user);
-      } else {
-        const site = await db.getSiteById(input.siteId);
-        if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
-      }
+      await assertFollowupAccess(input.siteId, ctx.user);
       return db.createFollowup({
         siteId: input.siteId,
-        createdBy: ctx.user?.id ?? 0,
+        createdBy: ctx.user.id,
         type: input.type,
         description: input.description,
         scheduledFor: input.scheduledFor,

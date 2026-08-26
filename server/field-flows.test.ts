@@ -40,8 +40,8 @@ beforeEach(() => {
 });
 
 describe("permisos de clientes", () => {
-  it("permite consultar puntos sin sesión durante el acceso temporal", async () => {
-    await expect(sitesRouter.createCaller(anonymousContext()).list()).resolves.toEqual([]);
+  it("rechaza consultar puntos sin sesión", async () => {
+    await expect(sitesRouter.createCaller(anonymousContext()).list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 
   it("permite al representante ver todos los puntos y marca editable el suyo", async () => {
@@ -64,9 +64,11 @@ describe("permisos de clientes", () => {
     expect(store.replaceSiteAssignments).toHaveBeenCalledWith(77, [10], 10);
   });
 
-  it("marca las altas anónimas para limpieza posterior", async () => {
-    await sitesRouter.createCaller(anonymousContext()).create({ name: " Punto público ", latitude: -25.2, longitude: -57.5 });
-    expect(store.createSite).toHaveBeenCalledWith(expect.objectContaining({ createdBy: 0, publicSubmission: true }));
+  it("rechaza altas anónimas para que todo punto tenga responsable", async () => {
+    await expect(
+      sitesRouter.createCaller(anonymousContext()).create({ name: " Punto público ", latitude: -25.2, longitude: -57.5 })
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    expect(store.createSite).not.toHaveBeenCalled();
     expect(store.replaceSiteAssignments).not.toHaveBeenCalled();
   });
 
@@ -80,12 +82,21 @@ describe("permisos de clientes", () => {
     expect(store.createCheckin).not.toHaveBeenCalled();
   });
 
-  it("permite editar datos básicos sin sesión durante el modo público temporal", async () => {
+  it("permite al representante archivar únicamente el punto que él registró", async () => {
+    store.getSiteById.mockResolvedValue(ownSite);
+    await expect(sitesRouter.createCaller(contextFor(10)).archive({ id: ownSite.id })).resolves.toMatchObject({ success: true });
+    expect(store.updateSite).toHaveBeenCalledWith(ownSite.id, { active: false });
+
     store.getSiteById.mockResolvedValue(foreignSite);
-    await sitesRouter.createCaller(anonymousContext()).update({ id: foreignSite.id, name: "Cliente actualizado" });
-    expect(store.updateSite).toHaveBeenCalledWith(foreignSite.id, expect.objectContaining({
-      name: "Cliente actualizado", department: "Caaguazú", zone: "R. I. Tres Corrales",
-    }));
+    await expect(sitesRouter.createCaller(contextFor(10)).archive({ id: foreignSite.id })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("rechaza editar datos básicos sin sesión", async () => {
+    store.getSiteById.mockResolvedValue(foreignSite);
+    await expect(
+      sitesRouter.createCaller(anonymousContext()).update({ id: foreignSite.id, name: "Cliente actualizado" })
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    expect(store.updateSite).not.toHaveBeenCalled();
   });
 
   it("permite a gerente comercial editar cualquier cliente", async () => {
@@ -98,10 +109,10 @@ describe("permisos de clientes", () => {
 });
 
 describe("notas por cliente", () => {
-  it("permite registrar notas temporales sin sesión y conserva la actividad autenticada", async () => {
+  it("rechaza notas sin sesión y conserva la actividad autenticada", async () => {
     const anonymous = notesRouter.createCaller(anonymousContext());
-    await anonymous.create({ siteId: ownSite.id, content: "Nota pública" });
-    expect(store.createNote).toHaveBeenCalledWith(expect.objectContaining({ userId: 0, content: "Nota pública" }));
+    await expect(anonymous.create({ siteId: ownSite.id, content: "Nota pública" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    expect(store.createNote).not.toHaveBeenCalled();
 
     const result = await notesRouter.createCaller(contextFor(10)).create({
       siteId: ownSite.id, category: " Visita técnica ", content: " Cliente solicitó seguimiento. ", registerVisit: true,

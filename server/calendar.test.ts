@@ -73,5 +73,6 @@ describe("calendar.timeline", () => {
     expect(store.listNotes).toHaveBeenCalledWith({ limit: 1000 });
     expect(result.entries.map(entry => entry.kind)).toEqual(["upcoming", "note", "visit"]);
     expect(result.entries[0]).toMatchObject({ siteName: "Cooperativa RI3", department: "Caaguazú" });
+    expect(result.entries[0].author).toBe("Ricardo Romero");
   });
 });

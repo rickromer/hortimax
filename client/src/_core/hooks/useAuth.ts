@@ -35,6 +35,9 @@ export function useAuth() {
       } catch {}
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
+      if (typeof window !== "undefined" && window.location.pathname !== "/acceso") {
+        window.location.replace("/acceso");
+      }
     }
   }, [logoutMutation, utils]);
 

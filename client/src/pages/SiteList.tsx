@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { downloadCsv, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
+import { canOperateSite } from "@shared/permissions";
 import { Download, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -57,7 +58,7 @@ export default function SiteList() {
 
   return (
     <FieldShell
-      title={canEdit ? "Mis clientes" : "Clientes mapeados"}
+      title="Clientes mapeados"
       subtitle={`${sites.length} sitio${sites.length === 1 ? "" : "s"} registrado${sites.length === 1 ? "" : "s"}`}
       action={canEdit ? (
         <Button variant="ghost" size="icon" className="rounded-full" onClick={exportar}>
@@ -186,7 +187,7 @@ export default function SiteList() {
                       Última visita: {timeAgo(site.lastCheckinAt)}
                     </p>
                   </Link>
-                  {canEdit && <Button
+                  {user && canOperateSite(user.role, user.id, site.createdBy) && <Button
                     size="sm"
                     variant="secondary"
                     className="shrink-0"

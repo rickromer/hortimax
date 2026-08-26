@@ -14,7 +14,7 @@ import { placeFromMapCenter, startMapPlacement } from "@/lib/mapPlacement";
 import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { canManageAll } from "@shared/permissions";
+import { canOperateSite } from "@shared/permissions";
 import {
   Check,
   ChevronRight,
@@ -87,7 +87,7 @@ export default function FieldMap() {
     [sites, selectedId]
   );
   const canEditSelected = Boolean(
-    user && selected && (canManageAll(user.role) || selected.createdBy === user.id)
+    user && selected && canOperateSite(user.role, user.id, selected.createdBy)
   );
 
   const markers = useMemo(() => {
@@ -366,7 +366,7 @@ export default function FieldMap() {
                         a {formatDistance(site.distance)} · {site.clientType ?? "Sin tipo"}
                       </p>
                     </div>
-                    {user && (canManageAll(user.role) || site.createdBy === user.id) && <Button
+                    {user && canOperateSite(user.role, user.id, site.createdBy) && <Button
                       size="sm"
                       variant="secondary"
                       onClick={() => setCheckinSite({ id: site.id, name: site.name })}>

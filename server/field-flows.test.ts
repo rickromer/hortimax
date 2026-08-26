@@ -5,7 +5,7 @@ const store = vi.hoisted(() => ({
   listSites: vi.fn(), lastCheckinBySite: vi.fn(), getSiteById: vi.fn(), listSiteAssignees: vi.fn(),
   replaceSiteAssignments: vi.fn(), createSite: vi.fn(), updateSite: vi.fn(), listCheckins: vi.fn(),
   createCheckin: vi.fn(), listNotes: vi.fn(), listFollowups: vi.fn(), createNote: vi.fn(),
-  getNoteById: vi.fn(), updateNote: vi.fn(), deleteNote: vi.fn(), getAssignedSiteIds: vi.fn(),
+  getNoteById: vi.fn(), updateNote: vi.fn(), deleteNote: vi.fn(), getAssignedSiteIds: vi.fn(), archiveSite: vi.fn(),
 }));
 vi.mock("./db", () => store);
 vi.mock("./territory", () => ({
@@ -35,6 +35,7 @@ beforeEach(() => {
   store.createCheckin.mockResolvedValue({ id: 91, siteId: ownSite.id, userId: 10 });
   store.createNote.mockImplementation(async (values: Record<string, unknown>) => ({ id: 92, ...values }));
   store.getNoteById.mockResolvedValue({ id: 92, siteId: ownSite.id, userId: 10 });
+  store.archiveSite.mockResolvedValue({ ...ownSite, active: false });
   store.listCheckins.mockResolvedValue([]);
   store.listNotes.mockResolvedValue([]);
   store.listFollowups.mockResolvedValue([]);
@@ -92,6 +93,18 @@ describe("permisos de clientes", () => {
       department: "Caaguazú",
       zone: "R. I. Tres Corrales",
     }));
+  });
+
+  it("permite al representante archivar solo el punto que él registró", async () => {
+    await expect(
+      sitesRouter.createCaller(contextFor(10)).archive({ id: ownSite.id, reason: "Duplicado" })
+    ).resolves.toMatchObject({ success: true, site: { active: false } });
+    expect(store.archiveSite).toHaveBeenCalledWith(ownSite.id, 10, "Duplicado");
+
+    store.getSiteById.mockResolvedValue(foreignSite);
+    await expect(sitesRouter.createCaller(contextFor(10)).archive({ id: foreignSite.id })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
   });
 
   it("rechaza la edición sin sesión aunque se conozca el identificador del cliente", async () => {

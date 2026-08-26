@@ -1,8 +1,8 @@
 import { distanceMeters, NEARBY_RADIUS_METERS } from "@shared/domain";
-import { canManageAll } from "@shared/permissions";
+import { canManageAll, canOperateSite } from "@shared/permissions";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { territoryFromCoordinates } from "../territory";
 
@@ -33,7 +33,7 @@ async function assertSiteViewAccess(siteId: number) {
 
 async function assertSiteEditAccess(siteId: number, user: { id: number; role: string }) {
   const site = await assertSiteViewAccess(siteId);
-  if (!canManageAll(user.role) && site.createdBy !== user.id) {
+  if (!canOperateSite(user.role, user.id, site.createdBy)) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés editar los puntos que registraste" });
   }
   return site;
@@ -159,13 +159,19 @@ export const sitesRouter = router({
       return db.updateSite(id, values as any);
     }),
 
-  /** El archivo es exclusivamente administrativo; los representantes no pueden borrar ni archivar. */
-  archive: adminProcedure
+  /** Administración puede archivar cualquier punto; campo, únicamente el punto que registró. */
+  archive: protectedProcedure
     .input(z.object({ id: z.number().int().positive(), reason: z.string().max(500).optional() }))
     .mutation(async ({ ctx, input }) => {
-      await assertSiteViewAccess(input.id);
-      const site = await db.archiveSite(input.id, ctx.user.id, input.reason);
-      return { success: true as const, site };
+      const site = await assertSiteViewAccess(input.id);
+      if (ctx.user.role === "manager") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "El archivo de clientes está reservado a Administración" });
+      }
+      if (ctx.user.role !== "admin" && site.createdBy !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés archivar los puntos que registraste" });
+      }
+      const archivedSite = await db.archiveSite(input.id, ctx.user.id, input.reason);
+      return { success: true as const, site: archivedSite };
     }),
 
   checkin: protectedProcedure

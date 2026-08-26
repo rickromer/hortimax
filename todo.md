@@ -242,6 +242,20 @@
 - [x] Probar explícitamente que un Representante propietario actualice con éxito su propio cliente
 - [x] Mostrar error y reintento en Papelera, con feedback al archivar o restaurar
 
+## Incidencia: operación del Representante de campo
+- [x] Diagnosticar por qué el representante no ve o no puede operar correctamente sus propios puntos
+- [x] Confirmar que la creación atribuya el punto al representante autenticado
+- [x] Confirmar que la edición de un punto propio quede disponible y guarde cambios
+- [x] Confirmar que la edición de un punto ajeno permanezca bloqueada
+- [ ] Aclarar e implementar el alcance permitido de eliminación para puntos propios
+- [ ] Probar y publicar la corrección del flujo de representante
+
+## Archivo recuperable de punto propio por Representante
+- [x] Permitir al representante archivar solo un punto creado por él
+- [x] Mantener bloqueado el archivo de puntos creados por otra persona
+- [x] Mostrar la acción Archivar solo en la ficha de un punto propio
+- [ ] Probar y publicar el archivo recuperable por propiedad
+
 ## Incidencia de carga posterior a acceso y privilegios
 - [x] Diagnosticar por qué el sitio no completa la carga en producción
 - [x] Corregir la causa de la carga bloqueada y verificar la vista previa

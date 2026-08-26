@@ -199,6 +199,13 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 
 - Se corrigió el formulario controlado que reinicializaba valores al recibir un objeto `initial` nuevo del detalle, lo que impedía borrar texto. Ahora la reinicialización solo ocurre al abrir el formulario o cambiar de cliente; durante la edición se conservan las modificaciones del usuario, incluidos los campos vacíos.
 - La prueba interactiva borra el nombre del cliente, fuerza un nuevo render con el mismo cliente y confirma que el campo permanece vacío. `pnpm check`, 55 pruebas automatizadas (1 integración opcional omitida) y la compilación aprobaron.
+- En el dominio publicado, la ficha de **Comite de Productores RI3** mostró el control Editar sitio y abrió el formulario Editar punto con los campos de nombre, departamento, distrito/municipio, contacto, teléfono, descripción, dirección y Guardar cambios disponibles para la edición pública temporal.
+
+## Nuevo punto desde la vista actual
+
+- El mapa general guarda su centro visible al quedar en reposo. Al tocar **Nuevo punto**, el selector prioriza ese centro que la persona estaba mirando por encima de la última ubicación GPS recibida.
+- La prioridad queda definida como: selección manual previa → centro visible del mapa → foco programático → GPS. El botón **Mi ubicación** del selector continúa siendo la acción explícita para volver al GPS.
+- Las pruebas cubren el flujo lógico de mover el mapa a un centro distinto de la posición GPS y verifican que el selector recibe el centro manual. `pnpm check`, 57 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron.
 
 ## Referencias locales de solo lectura
 

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { formatDistance, timeAgo } from "@/lib/format";
+import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { canManageAll } from "@shared/permissions";
@@ -36,6 +37,10 @@ export default function FieldMap() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [focus, setFocus] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [visibleMapCenter, setVisibleMapCenter] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [mapType, setMapType] = useState<"roadmap" | "hybrid">("hybrid");
   const [newSiteOpen, setNewSiteOpen] = useState(false);
   const [manualCoords, setManualCoords] = useState<{
@@ -107,6 +112,13 @@ export default function FieldMap() {
     if (pos) setFocus({ latitude: pos.latitude, longitude: pos.longitude });
   };
 
+  const pickerStartCoords = resolveNewPointPickerStart({
+    manualCoords,
+    visibleMapCenter,
+    focus,
+    userPosition: position,
+  });
+
   return (
     <FieldShell
       bleed
@@ -135,6 +147,7 @@ export default function FieldMap() {
           focus={focus}
           fitToMarkers
           mapTypeId={mapType}
+          onCenterChanged={setVisibleMapCenter}
           onMarkerClick={id => {
             if (id === -1) return;
             setSelectedId(id);
@@ -334,7 +347,7 @@ export default function FieldMap() {
       {canCreatePoint && <LocationPickerDialog
         open={locationPickerOpen}
         onOpenChange={setLocationPickerOpen}
-        initialCoords={manualCoords ?? position}
+        initialCoords={pickerStartCoords}
         onRequestLocation={geo.request}
         onConfirm={selection => {
           setManualCoords(selection);

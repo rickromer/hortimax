@@ -266,6 +266,12 @@
 - [x] Permitir editar, reemplazar y vaciar campos de texto en el formulario
 - [x] Cubrir el borrado de texto con una prueba de interfaz
 
+## Nuevo punto desde la vista actual del mapa
+- [x] Conservar el centro visible actual del mapa general al abrir Nuevo punto
+- [x] Priorizar la vista manual del mapa sobre la ubicación GPS para el centro inicial del selector
+- [x] Mantener Mi ubicación como acción explícita dentro del selector
+- [x] Cubrir con prueba el flujo mover mapa → Nuevo punto → selector centrado en la vista
+
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa
 - [x] Mantener visibles rutas, nombres y referencias sin exponer acciones de compartir

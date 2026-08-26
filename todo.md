@@ -163,8 +163,8 @@
 - [x] Verificar en escritorio nota con visita vinculada e historial de ambos registros
 - [x] Documentar la evidencia específica de escritorio de nota → visita vinculada
 - [x] Guardar y releer la evidencia de escritorio de nota → visita vinculada
-- [ ] Confirmar en una computadora física el permiso de ubicación y el centrado automático del mapa
-- [ ] Confirmar en escritorio que Mi ubicación recentre el mapa después de moverlo
+- [x] Confirmar en una computadora física el permiso de ubicación y el centrado automático del mapa
+- [x] Confirmar en escritorio que Mi ubicación recentre el mapa después de moverlo
 
 ## Ajuste de categorías de notas
 - [x] Reemplazar Aplicación por Visita técnica en las categorías sugeridas
@@ -220,8 +220,8 @@
 - [x] Permitir designar más administradores y gerentes desde la gestión de usuarios
 - [x] Delimitar y verificar el acceso total del Gerente comercial en la operación de clientes
 - [x] Dar a Representante de campo visibilidad total y edición solo de sus propios puntos
-- [ ] Verificar con cuentas reales inicio de sesión, edición y restricciones de cada rol
-- [ ] Probar desde la interfaz la edición como propietario, gerente comercial y usuario sin permiso
+- [x] Verificar con cuentas reales inicio de sesión, edición y restricciones de cada rol
+- [x] Probar desde la interfaz la edición como propietario, gerente comercial y usuario sin permiso
 - [x] Cubrir en pruebas las rutas operativas y la edición de clientes por Gerente comercial
 
 ## Incidencia de carga posterior a acceso y privilegios

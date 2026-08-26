@@ -416,3 +416,9 @@
 - [x] Bloquear el acceso directo a fichas de clientes ajenos para Representante
 - [x] Mantener visibilidad total para Gerente comercial y Administrador
 - [ ] Probar y publicar el aislamiento de cartera por rol
+
+## Corrección de Vista de campo y acceso
+- [x] Evitar que Vista de campo desde Administración cierre o pierda la sesión
+- [x] Confirmar que el acceso a campo preserve la sesión administrativa existente
+- [x] Dejar solo el título en el panel visual del login, retirando el texto descriptivo
+- [ ] Probar y publicar la navegación y el acceso simplificado

@@ -100,7 +100,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
 
       <div className="px-3 pb-3 space-y-2">
         <Link
-          href="/"
+          href="/mapa"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/72 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition-colors">
           <Smartphone className="h-4 w-4" />
           Vista de campo

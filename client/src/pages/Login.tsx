@@ -92,45 +92,15 @@ export default function Login() {
           }}
         />
         <div className="relative">
-          <div className="flex items-center gap-3">
-            <HortimaxLogo lightSurface className="h-10 max-w-[164px]" />
-            <div>
-              <p className="font-bold text-lg tracking-tight">{BRAND_NAME}</p>
-              <p className="text-xs text-white/65">Gestión comercial en campo</p>
-            </div>
-          </div>
+          <HortimaxLogo lightSurface className="h-10 max-w-[164px]" />
         </div>
 
-        <div className="relative max-w-md space-y-5">
+        <div className="relative max-w-md">
           <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-balance">
             Todo tu territorio, cliente por cliente.
           </h1>
-          <p className="text-white/70 leading-relaxed">
-            Los vendedores registran cada sitio con GPS, hacen check-in al llegar y
-            documentan cada aplicación en la planilla de notas. La administración ve
-            el mapa completo en tiempo real.
-          </p>
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            {[
-              { label: "Registro", value: "GPS" },
-              { label: "Visitas", value: "Check-in" },
-              { label: "Historial", value: "Notas" },
-            ].map(item => (
-              <div
-                key={item.label}
-                className="rounded-xl bg-white/8 border border-white/10 px-3 py-3 backdrop-blur">
-                <p className="text-[11px] uppercase tracking-wider text-white/50">
-                  {item.label}
-                </p>
-                <p className="font-semibold mt-0.5">{item.value}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
-        <p className="relative text-xs text-white/45">
-          Cobertura nacional · Zona horaria de Asunción
-        </p>
       </div>
 
       {/* Formulario */}

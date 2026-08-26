@@ -47,6 +47,7 @@ describe("rutas de gestión comercial", () => {
     const routes = [
       ["/admin", "resumen"], ["/admin/clientes", "clientes-admin"],
       ["/admin/clientes/31", "cliente-admin"], ["/admin/actividad", "actividad-admin"],
+      ["/mapa", "campo"],
     ];
     for (const [path, expected] of routes) {
       await act(async () => {

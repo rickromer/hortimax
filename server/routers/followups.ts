@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { canManageAll } from "@shared/permissions";
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 async function assertFollowupAccess(siteId: number, user: { id: number; role: string }) {
@@ -36,18 +36,13 @@ export const followupsRouter = router({
       });
     }),
 
-  create: publicProcedure
+  create: protectedProcedure
     .input(scheduleInput.extend({ siteId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user) {
-        await assertFollowupAccess(input.siteId, ctx.user);
-      } else {
-        const site = await db.getSiteById(input.siteId);
-        if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
-      }
+      await assertFollowupAccess(input.siteId, ctx.user);
       return db.createFollowup({
         siteId: input.siteId,
-        createdBy: ctx.user?.id ?? 0,
+        createdBy: ctx.user.id,
         type: input.type,
         description: input.description,
         scheduledFor: input.scheduledFor,
@@ -77,12 +72,11 @@ export const followupsRouter = router({
       return db.updateFollowup(input.id, values);
     }),
 
-  remove: protectedProcedure
+  remove: adminProcedure
     .input(z.object({ id: z.number().int().positive() }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const followup = await db.getFollowupById(input.id);
       if (!followup) throw new TRPCError({ code: "NOT_FOUND", message: "Relevamiento no encontrado" });
-      await assertFollowupAccess(followup.siteId, ctx.user);
       await db.deleteFollowup(input.id);
       return { success: true } as const;
     }),

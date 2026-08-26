@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { BRAND_LOGO_URL, BRAND_NAME, BRAND_SHORT_NAME } from "@/lib/brand";
 import {
   Activity,
+  Archive,
   LayoutDashboard,
   LogOut,
   Map,
@@ -31,6 +32,7 @@ const NAV = [
   { href: "/admin/mapa", label: "Mapa general", icon: Map },
   { href: "/admin/clientes", label: "Clientes", icon: MapPinned },
   { href: "/admin/actividad", label: "Actividad", icon: Activity },
+  { href: "/admin/papelera", label: "Papelera", icon: Archive, adminOnly: true },
   { href: "/admin/usuarios", label: "Usuarios", icon: Users, adminOnly: true },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings2, adminOnly: true },
 ];
@@ -105,7 +107,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
 
       <div className="px-3 pb-3 space-y-2">
         <Link
-          href="/"
+          href="/mapa"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/72 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition-colors">
           <Smartphone className="h-4 w-4" />
           Vista de campo

@@ -224,6 +224,24 @@
 - [ ] Probar desde la interfaz la edición como propietario, gerente comercial y usuario sin permiso
 - [x] Cubrir en pruebas las rutas operativas y la edición de clientes por Gerente comercial
 
+## Corrección de propiedad para Representante comercial
+- [x] Identificar por qué un Representante comercial puede editar clientes ajenos
+- [x] Restringir creación y edición del Representante a sus propios clientes registrados
+- [x] Ocultar Editar en fichas ajenas para Representante comercial
+- [x] Rechazar en backend toda actualización de cliente ajeno por Representante
+- [x] Probar propietario permitido y cliente ajeno bloqueado
+- [x] Exigir sesión para crear o modificar clientes, notas y relevamientos
+
+## Protección y recuperación de registros
+- [x] Sustituir el borrado definitivo de clientes por archivo recuperable desde Administración
+- [x] Registrar quién y cuándo archiva o restaura un cliente
+- [x] Crear una Papelera administrativa con vista y restauración de clientes archivados
+- [x] Mantener a Representantes y Gerentes sin permisos de borrado, archivo o restauración
+- [x] Conservar notas, visitas, relevamientos y asignaciones al archivar un cliente
+- [x] Cubrir con pruebas el archivo, la restauración y el aislamiento por rol
+- [x] Probar explícitamente que un Representante propietario actualice con éxito su propio cliente
+- [x] Mostrar error y reintento en Papelera, con feedback al archivar o restaurar
+
 ## Incidencia de carga posterior a acceso y privilegios
 - [x] Diagnosticar por qué el sitio no completa la carga en producción
 - [x] Corregir la causa de la carga bloqueada y verificar la vista previa
@@ -300,9 +318,9 @@
 - [x] Cubrir con pruebas el permiso y la limpieza de datos vinculados
 
 ## Disponibilidad de eliminación para Administrador
-- [ ] Confirmar que la ficha administrativa muestre la acción Eliminar cliente
-- [ ] Confirmar que la acción requiera una confirmación explícita antes de borrar
-- [ ] Confirmar que el control no se muestre fuera de Administración
+- [x] Confirmar que la ficha administrativa muestre la acción Eliminar cliente
+- [x] Confirmar que la acción requiera una confirmación explícita antes de borrar
+- [x] Confirmar que el control no se muestre fuera de Administración
 
 ## Categoría Comentario en notas
 - [x] Añadir Comentario al catálogo y los valores por defecto de categorías de notas
@@ -325,7 +343,7 @@
 ## Inicio principal en acceso
 - [x] Redirigir la raíz `/` a `/acceso` para visitantes sin sesión
 - [x] Mantener las rutas operativas accesibles después del inicio de sesión
-- [ ] Verificar que el dominio publicado abra la pantalla de login como primera vista
+- [x] Verificar que el dominio publicado abra la pantalla de login como primera vista
 
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa

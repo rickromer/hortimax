@@ -14,6 +14,7 @@ import AdminClients from "./pages/admin/AdminClients";
 import AdminMap from "./pages/admin/AdminMap";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminTrash from "./pages/admin/AdminTrash";
 import AdminUsers from "./pages/admin/AdminUsers";
 import FieldMap from "./pages/FieldMap";
 import Login from "./pages/Login";
@@ -76,6 +77,7 @@ function Router() {
       </Route>
       <Route path="/admin/notas">{() => <Redirect to="/admin/clientes" />}</Route>
       <Route path="/admin/actividad">{() => <Guard component={AdminActivity} managementOnly />}</Route>
+      <Route path="/admin/papelera">{() => <Guard component={AdminTrash} adminOnly />}</Route>
       <Route path="/admin/usuarios">{() => <Guard component={AdminUsers} adminOnly />}</Route>
       <Route path="/admin/configuracion">
         {() => <Guard component={AdminSettings} adminOnly />}

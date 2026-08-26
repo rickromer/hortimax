@@ -41,7 +41,7 @@ import { Link, useRoute } from "wouter";
 export default function SiteDetail() {
   const [, params] = useRoute("/sitios/:id");
   const siteId = Number(params?.id);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const geo = useGeolocation({ enabled: true });
   const utils = trpc.useUtils();
 
@@ -130,8 +130,8 @@ export default function SiteDetail() {
 
   const { site, checkins, notes, followups, canEditSite } = detailQuery.data;
   const canEdit = Boolean(user && canEditSite);
-  const canEditClient = true;
-  const canContribute = true;
+  const canEditClient = canEdit;
+  const canContribute = canEdit;
 
   return (
     <FieldShell
@@ -337,7 +337,7 @@ export default function SiteDetail() {
                       <span className="text-[11px] text-muted-foreground ml-auto truncate max-w-[35%]">
                         {note.userName ?? note.username}
                       </span>
-                      {canEdit && <Button
+                      {isAdmin && <Button
                         size="icon"
                         variant="ghost"
                         className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"

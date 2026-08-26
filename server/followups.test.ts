@@ -23,10 +23,12 @@ beforeEach(() => {
 });
 
 describe("próximos relevamientos", () => {
-  it("permite agendar temporalmente sin sesión y lo identifica como carga pública", async () => {
+  it("rechaza relevamientos sin sesión para que queden atribuidos a un usuario", async () => {
     const caller = followupsRouter.createCaller({ user: null, req: {} as TrpcContext["req"], res: {} as TrpcContext["res"] } as TrpcContext);
-    await caller.create({ siteId: site.id, description: "Seguimiento", scheduledFor: "2026-09-16" });
-    expect(store.createFollowup).toHaveBeenCalledWith(expect.objectContaining({ siteId: site.id, createdBy: 0 }));
+    await expect(caller.create({ siteId: site.id, description: "Seguimiento", scheduledFor: "2026-09-16" })).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+    expect(store.createFollowup).not.toHaveBeenCalled();
   });
 
   it("permite al propietario agendar y ver la agenda de todo el equipo", async () => {
@@ -42,5 +44,12 @@ describe("próximos relevamientos", () => {
     await expect(followupsRouter.createCaller(contextFor(10)).create({ siteId: foreignSite.id, description: "No autorizado", scheduledFor: "2026-09-15" })).rejects.toMatchObject({ code: "FORBIDDEN" });
     await followupsRouter.createCaller(contextFor(40, "manager")).create({ siteId: foreignSite.id, description: "Visita de gerencia", scheduledFor: "2026-09-15" });
     expect(store.createFollowup).toHaveBeenCalledWith(expect.objectContaining({ siteId: foreignSite.id, createdBy: 40 }));
+  });
+
+  it("reserva el borrado de relevamientos para Administración", async () => {
+    await expect(followupsRouter.createCaller(contextFor(10)).remove({ id: 8 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(followupsRouter.createCaller(contextFor(40, "manager")).remove({ id: 8 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(followupsRouter.createCaller(contextFor(1, "admin")).remove({ id: 8 })).resolves.toMatchObject({ success: true });
+    expect(store.deleteFollowup).toHaveBeenCalledWith(8);
   });
 });

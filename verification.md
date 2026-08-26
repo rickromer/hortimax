@@ -231,6 +231,7 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - Se completaron los tres clientes pendientes: **Fermin Lopez** → Caaguazú / Caaguazú; **Agro Alex** → Caaguazú / Tres de Febrero; y **Silvio Figueredo** → Caaguazú / Yhú. Las fichas móviles verificaron los dos primeros territorios.
 - **Comentario** fue agregado a los valores por defecto y al catálogo persistido de notas. La eliminación definitiva borra cliente, asignaciones, relevamientos, notas y visitas en una transacción, con acceso reservado a Administrador y confirmación explícita en la ficha administrativa.
 - `pnpm test` aprobó 64 pruebas (1 integración opcional omitida), incluidos el bloqueo visual de territorio, la nueva categoría y la restricción de eliminación; la compilación de producción aprobó.
+- El administrador confirmó en producción que la ficha administrativa muestra **Eliminar cliente** y que el diálogo de confirmación aparece antes de realizar cualquier borrado definitivo.
 
 ## Calendario mensual y resumen compacto
 
@@ -250,3 +251,5 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La raíz `/` redirige a `/acceso`; las capturas móviles de ambas rutas muestran el mismo formulario de inicio de sesión sin Configuración inicial.
 - El mapa operativo se trasladó a `/mapa`, y el flujo de login termina allí para evitar un bucle hacia acceso. La barra inferior Mapa usa también `/mapa` y los rechazos de rutas administrativas para roles no permitidos vuelven a esa vista.
 - La vista previa confirmó las rutas de login y mapa. El SDK de mapas volvió a fallar transitoriamente en el capturador y presentó la acción de recuperación ya disponible.
+- En una comprobación inmediata posterior al checkpoint, el dominio publicado aún respondió con la versión anterior del mapa en la raíz. La publicación del nuevo checkpoint debe terminar de propagarse antes de dar por validado `/acceso` como primera vista en producción.
+- Tras completarse la propagación, el dominio publicado redirigió correctamente `https://mapaclientes-cqpci7xz.manus.space/` a `/acceso` y mostró **Ingresá a tu cuenta** con el campo Usuario y Continuar.

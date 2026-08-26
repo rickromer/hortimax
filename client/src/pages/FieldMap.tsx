@@ -33,7 +33,7 @@ import { Link } from "wouter";
 export default function FieldMap() {
   const { user } = useAuth();
   const canEdit = Boolean(user);
-  const canCreatePoint = true;
+  const canCreatePoint = Boolean(user);
   const geo = useGeolocation({ enabled: true });
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);

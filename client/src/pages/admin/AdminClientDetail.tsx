@@ -17,11 +17,12 @@ import {
   MapPin,
   Navigation,
   Phone,
-  Trash2,
+  Archive,
   User,
   UsersRound,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Link, useLocation, useRoute } from "wouter";
 
 export default function AdminClientDetail() {
@@ -34,13 +35,15 @@ export default function AdminClientDetail() {
     { enabled: Number.isFinite(siteId) && siteId > 0 }
   );
   const [assignmentsOpen, setAssignmentsOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const utils = trpc.useUtils();
-  const deleteClient = trpc.admin.deleteClient.useMutation({
+  const archiveClient = trpc.admin.archiveClient.useMutation({
     onSuccess: async () => {
       await utils.sites.list.invalidate();
+      toast.success("Cliente archivado en Papelera. Su historial se mantiene resguardado.");
       navigate("/admin/clientes");
     },
+    onError: error => toast.error(error.message),
   });
 
   if (detailQuery.isLoading) {
@@ -83,9 +86,9 @@ export default function AdminClientDetail() {
 
         {user?.role === "admin" && (
           <div className="flex justify-end">
-            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-              <Trash2 className="h-3.5 w-3.5" />
-              Eliminar cliente
+            <Button variant="outline" size="sm" className="bg-background text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setArchiveOpen(true)}>
+              <Archive className="h-3.5 w-3.5" />
+              Archivar cliente
             </Button>
           </div>
         )}
@@ -283,24 +286,24 @@ export default function AdminClientDetail() {
         clientName={site.name}
         assignedIds={assignees.map(assignee => assignee.id)}
       />
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+      <AlertDialog open={archiveOpen} onOpenChange={setArchiveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar {site.name}?</AlertDialogTitle>
+            <AlertDialogTitle>¿Archivar {site.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción elimina definitivamente el cliente, sus notas, visitas, relevamientos y asignaciones. No se puede deshacer.
+              El cliente saldrá de la operación diaria, pero sus notas, visitas, relevamientos y asignaciones se conservarán en Papelera. Solo un administrador podrá restaurarlo.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteClient.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={archiveClient.isPending}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteClient.isPending}
+              disabled={archiveClient.isPending}
               onClick={event => {
                 event.preventDefault();
-                deleteClient.mutate({ id: site.id });
+                archiveClient.mutate({ id: site.id });
               }}>
-              {deleteClient.isPending ? "Eliminando…" : "Eliminar definitivamente"}
+              {archiveClient.isPending ? "Archivando…" : "Archivar en Papelera"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

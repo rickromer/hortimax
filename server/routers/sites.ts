@@ -2,7 +2,7 @@ import { distanceMeters, NEARBY_RADIUS_METERS } from "@shared/domain";
 import { canManageAll } from "@shared/permissions";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { territoryFromCoordinates } from "../territory";
 
@@ -25,7 +25,9 @@ const siteInput = z.object({
 
 async function assertSiteViewAccess(siteId: number) {
   const site = await db.getSiteById(siteId);
-  if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
+  if (!site || !site.active) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
+  }
   return site;
 }
 
@@ -105,8 +107,8 @@ export const sitesRouter = router({
         .slice(0, 10);
     }),
 
-  /** Alta temporal abierta; los puntos anónimos quedan marcados para limpieza posterior. */
-  create: publicProcedure
+  /** Toda alta queda atribuida a una cuenta activa. */
+  create: protectedProcedure
     .input(siteInput.merge(coord))
     .mutation(async ({ ctx, input }) => {
       const territory = await territoryFromCoordinates(input.latitude, input.longitude).catch(() => ({
@@ -125,24 +127,19 @@ export const sitesRouter = router({
         accuracy: input.accuracy ?? null,
         latitude: input.latitude.toFixed(7),
         longitude: input.longitude.toFixed(7),
-        createdBy: ctx.user?.id ?? 0,
-        publicSubmission: !ctx.user,
+        createdBy: ctx.user.id,
+        publicSubmission: false,
       });
       if (!created) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear el sitio" });
-      if (ctx.user) await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
+      await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
       return created;
     }),
 
-  /** Edición básica temporal abierta; archivar y check-in siguen requiriendo sesión. */
-  update: publicProcedure
+  /** El representante solo puede actualizar los puntos que él registró. */
+  update: protectedProcedure
     .input(siteInput.partial().extend({ id: z.number().int().positive(), latitude: z.number().min(-90).max(90).optional(), longitude: z.number().min(-180).max(180).optional() }))
     .mutation(async ({ ctx, input }) => {
-      let site;
-      if (ctx.user) {
-        site = await assertSiteEditAccess(input.id, ctx.user);
-      } else {
-        site = await assertSiteViewAccess(input.id);
-      }
+      const site = await assertSiteEditAccess(input.id, ctx.user);
       const { id, latitude, longitude, ...rest } = input;
       const values: Record<string, unknown> = {};
       Object.entries(rest).forEach(([key, value]) => {
@@ -162,12 +159,13 @@ export const sitesRouter = router({
       return db.updateSite(id, values as any);
     }),
 
-  archive: protectedProcedure
-    .input(z.object({ id: z.number().int().positive() }))
+  /** El archivo es exclusivamente administrativo; los representantes no pueden borrar ni archivar. */
+  archive: adminProcedure
+    .input(z.object({ id: z.number().int().positive(), reason: z.string().max(500).optional() }))
     .mutation(async ({ ctx, input }) => {
-      await assertSiteEditAccess(input.id, ctx.user);
-      await db.updateSite(input.id, { active: false });
-      return { success: true } as const;
+      await assertSiteViewAccess(input.id);
+      const site = await db.archiveSite(input.id, ctx.user.id, input.reason);
+      return { success: true as const, site };
     }),
 
   checkin: protectedProcedure

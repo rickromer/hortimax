@@ -211,7 +211,7 @@
 ## Corrección de selector de Nuevo punto
 - [x] Evitar que lecturas GPS posteriores vuelvan a centrar el selector durante la elección manual
 - [x] Conservar el centrado GPS únicamente al abrir o al pulsar explícitamente Usar GPS
-- [ ] Cubrir la regla de no recentering con pruebas y validación móvil/escritorio
+- [x] Cubrir la regla de no recentering con pruebas y validación móvil/escritorio
 
 ## Edición de clientes, acceso y privilegios
 - [x] Diagnosticar y reparar la edición básica de clientes
@@ -278,14 +278,19 @@
 - [x] Convertir Nuevo punto en un modo dentro del mapa existente, sin abrir selector de ventana adicional
 - [x] Mostrar pin fijo, confirmar/cancelar y Mi ubicación dentro del modo Nuevo punto
 - [x] Conectar la ubicación confirmada al formulario de datos del cliente
-- [ ] Probar búsqueda de lugar, movimiento manual y alta de punto en móvil y escritorio
+- [x] Probar búsqueda de lugar, movimiento manual y alta de punto en móvil y escritorio
+
+## Simplificación de controles de Nuevo punto
+- [x] Quitar Mi ubicación redundante del modo Nuevo punto
+- [x] Mantener el control principal de Mi ubicación del mapa disponible
+- [x] Verificar que el modo Nuevo punto conserve solo Cancelar y Usar esta ubicación
 
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa
 - [x] Mantener visibles rutas, nombres y referencias sin exponer acciones de compartir
-- [ ] Verificar en mapa general, ficha y selector de punto la lectura pasiva de referencias
-- [ ] Confirmar en el dominio publicado que los negocios locales no abran ventanas ni acciones al tocarlos
-- [ ] Verificar o descartar la carga intermitente del mapa observada en la captura de vista previa
+- [x] Verificar en mapa general, ficha y selector de punto la lectura pasiva de referencias
+- [x] Confirmar en el dominio publicado que los negocios locales no abran ventanas ni acciones al tocarlos
+- [x] Verificar o descartar la carga intermitente del mapa observada en la captura de vista previa
 - [x] Reintentar automáticamente la carga del SDK de Google Maps tras un fallo transitorio
 - [x] Ofrecer una acción visible para reintentar el mapa cuando el SDK no se recupere solo
 

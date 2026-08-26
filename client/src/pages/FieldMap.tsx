@@ -221,11 +221,7 @@ export default function FieldMap() {
             <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center">
               <MapPin className="h-14 w-14 -translate-y-1/2 fill-primary/15 text-primary drop-shadow-[0_5px_5px_rgba(0,0,0,0.35)]" />
             </div>
-            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-30 flex -translate-x-1/2 gap-2">
-              <Button type="button" variant="secondary" className="bg-background shadow-lg" onClick={centerOnMe}>
-                <Crosshair className="h-4 w-4" />
-                Mi ubicación
-              </Button>
+            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-30 -translate-x-1/2">
               <Button type="button" className="shadow-lg" onClick={confirmPlacement}>
                 <Check className="h-4 w-4" />
                 Usar esta ubicación

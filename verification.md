@@ -212,6 +212,13 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - Se añadió la barra compacta **Buscar lugar en Google Maps** dentro del lienzo del visor principal. Usa Autocomplete/Places de Google Maps, sesga la consulta al área visible y restringe los resultados a Paraguay.
 - **Nuevo punto** ya no abre la capa independiente: activa un modo sobre el mapa actual, con pin central, Cancelar, Mi ubicación y Usar esta ubicación. La búsqueda del lugar mueve el mismo visor; al confirmar, se abre solo el formulario de datos del cliente con las coordenadas elegidas.
 - Las pruebas cubren la prioridad del centro visible, la ubicación manual confirmada y la restricción de Places a Paraguay. La barra integrada se verificó visualmente en móvil y escritorio; en el capturador de vista previa el SDK de mapas tuvo un fallo transitorio y quedó expuesta la recuperación manual. `pnpm check`, 61 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron.
+- En el dominio publicado, la carga posterior mostró mosaicos reales de Google Maps. El usuario confirmó además que las sugerencias de búsqueda quedan correctamente limitadas a Paraguay.
+- El usuario validó el flujo completo en su equipo: tocar negocios o referencias locales ya no abre paneles ni compartir; buscar un lugar, activar Nuevo punto y confirmar la ubicación ocurre dentro del mismo visor antes de abrir el formulario con esas coordenadas.
+
+## Simplificación de controles de Nuevo punto
+
+- La prueba interactiva en la vista previa abrió el modo Nuevo punto sobre el mismo mapa: se muestran el aviso de ubicación, **Cancelar** y **Usar esta ubicación**; el control interno duplicado **Mi ubicación** ya no aparece.
+- El control principal de ubicación se mantiene disponible a la derecha del mapa durante todo el flujo. Tipos, 61 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron.
 
 ## Referencias locales de solo lectura
 

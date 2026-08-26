@@ -311,6 +311,12 @@
 - [x] Separar calendario, filtros y resumen cronológico de actividad
 - [x] Verificar el rediseño en escritorio y móvil
 
+## Corrección de inicio de sesión
+- [x] Mostrar siempre Iniciar sesión al abrir la ruta `/acceso`
+- [x] Evitar que Configuración inicial aparezca solo por navegar a `/acceso`
+- [x] Reservar la configuración inicial para el parámetro explícito de mantenimiento `?setup=1`
+- [x] Probar el acceso normal y confirmar la continuidad del restablecimiento de contraseña
+
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa
 - [x] Mantener visibles rutas, nombres y referencias sin exponer acciones de compartir

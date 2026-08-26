@@ -238,3 +238,9 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - El resumen queda separado bajo la grilla mensual e incorpora filtros compactos **Todo**, **Visitas**, **Próximos** y **Notas**. En escritorio los controles se mantienen pequeños y alineados a la derecha del resumen, sin las pestañas grandes anteriores.
 - Las capturas verificaron agosto de 2026 con seis registros: el calendario muestra los días 25, 28 y 31 con indicadores y las tarjetas se distribuyen cronológicamente debajo. En móvil, la grilla, contadores y filtros compactos mantienen legibilidad sin superponerse.
 - `pnpm check`, 66 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron, incluidas las pruebas de la grilla mensual y el cambio de mes.
+
+## Inicio de sesión predeterminado
+
+- La ruta `/acceso` muestra siempre **Ingresá a tu cuenta** con usuario y Continuar, incluso si la consulta interna informa que queda una configuración inicial pendiente. La captura móvil verificó que no aparece Configuración inicial en el recorrido normal.
+- La configuración inicial queda aislada para un acceso explícito de mantenimiento con `?setup=1` y solo si realmente no existe administrador configurado; no interrumpe el inicio de sesión normal ni el proceso de activación/reset de cuentas existentes.
+- `pnpm check`, 68 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron, incluidas las reglas que fuerzan login por defecto y habilitan configuración solo con parámetro explícito.

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BRAND_LOGO_URL, BRAND_NAME } from "@/lib/brand";
+import { shouldShowInitialSetup } from "@/lib/loginScreenMode";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, KeyRound, Loader2, MapPinned, ShieldCheck } from "lucide-react";
 import { useState } from "react";
@@ -21,6 +22,7 @@ export default function Login() {
   const [adminName, setAdminName] = useState("");
 
   const needsSetup = setupQuery.data?.needsSetup ?? false;
+  const showInitialSetup = shouldShowInitialSetup(needsSetup, window.location.search);
 
   const finish = async () => {
     await utils.auth.me.invalidate();
@@ -149,14 +151,14 @@ export default function Login() {
             </div>
           </div>
 
-          {setupQuery.isLoading ? (
+          {setupQuery.isLoading && window.location.search.includes("setup=1") ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               Cargando…
             </div>
-          ) : needsSetup && step !== "usuario" ? null : null}
+          ) : null}
 
-          {needsSetup ? (
+          {showInitialSetup ? (
             <form
               className="space-y-5"
               onSubmit={event => {

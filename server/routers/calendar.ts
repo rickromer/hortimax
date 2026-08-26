@@ -1,15 +1,19 @@
 import { protectedProcedure, router } from "../_core/trpc";
+import { canManageAll } from "@shared/permissions";
 import * as db from "../db";
 
 const TEAM_TIMELINE_LIMIT = 1000;
 
-/** Feed interno sin filtro de cartera: refleja la actividad de todo el equipo. */
+/** Gerencia ve actividad global; el representante, solo la de su propia cartera. */
 export const calendarRouter = router({
-  timeline: protectedProcedure.query(async () => {
+  timeline: protectedProcedure.query(async ({ ctx }) => {
+    const siteIds = canManageAll(ctx.user.role)
+      ? undefined
+      : (await db.listSites({ createdBy: ctx.user.id })).map(site => site.id);
     const [visits, upcoming, notes] = await Promise.all([
-      db.listCheckins({ limit: TEAM_TIMELINE_LIMIT }),
-      db.listFollowups({ status: "pending", limit: TEAM_TIMELINE_LIMIT }),
-      db.listNotes({ limit: TEAM_TIMELINE_LIMIT }),
+      db.listCheckins({ siteIds, limit: TEAM_TIMELINE_LIMIT }),
+      db.listFollowups({ siteIds, status: "pending", limit: TEAM_TIMELINE_LIMIT }),
+      db.listNotes({ siteIds, limit: TEAM_TIMELINE_LIMIT }),
     ]);
 
     const entries = [

@@ -23,18 +23,17 @@ const siteInput = z.object({
   accuracy: z.number().int().min(0).max(100000).optional().nullable(),
 });
 
-async function assertSiteViewAccess(siteId: number) {
+async function assertSiteViewAccess(siteId: number, user: { id: number; role: string }) {
   const site = await db.getSiteById(siteId);
   if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
+  if (!canManageAll(user.role) && site.createdBy !== user.id) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Este cliente pertenece a otra cartera" });
+  }
   return site;
 }
 
 async function assertSiteEditAccess(siteId: number, user: { id: number; role: string }) {
-  const site = await assertSiteViewAccess(siteId);
-  if (!canManageAll(user.role) && site.createdBy !== user.id) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés editar los puntos que registraste" });
-  }
-  return site;
+  return assertSiteViewAccess(siteId, user);
 }
 
 export const sitesRouter = router({
@@ -59,7 +58,7 @@ export const sitesRouter = router({
         zone: input?.zone || undefined,
         clientType: input?.clientType || undefined,
       };
-      if (input?.scope === "mine") {
+      if (!canManageAll(ctx.user.role) || input?.scope === "mine") {
         filters.createdBy = ctx.user.id;
       } else if (canManageAll(ctx.user.role) && input?.sellerId) {
         filters.siteIds = await db.getAssignedSiteIds(input.sellerId);
@@ -73,7 +72,7 @@ export const sitesRouter = router({
   detail: protectedProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
-      const site = await assertSiteViewAccess(input.id);
+      const site = await assertSiteViewAccess(input.id, ctx.user);
       const [checkins, notes, assignees, followups] = await Promise.all([
         db.listCheckins({ siteId: site.id, limit: 100 }),
         db.listNotes({ siteId: site.id, limit: 200 }),
@@ -92,8 +91,8 @@ export const sitesRouter = router({
 
   nearby: protectedProcedure
     .input(coord.extend({ radius: z.number().int().min(50).max(5000).optional() }))
-    .query(async ({ input }) => {
-      const sites = await db.listSites({});
+    .query(async ({ ctx, input }) => {
+      const sites = await db.listSites(canManageAll(ctx.user.role) ? {} : { createdBy: ctx.user.id });
       const radius = input.radius ?? NEARBY_RADIUS_METERS;
       return sites
         .map(site => ({

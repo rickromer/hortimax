@@ -410,3 +410,9 @@
 - [x] Redirigir explícitamente a `/acceso` al cerrar sesión
 - [x] Bloquear `/sitios` y las demás rutas operativas cuando no haya sesión
 - [x] Probar cierre de sesión y acceso directo a una ruta operativa
+
+## Cartera exclusiva de Representante comercial
+- [x] Limitar listados y mapa del Representante a clientes creados por él
+- [x] Bloquear el acceso directo a fichas de clientes ajenos para Representante
+- [x] Mantener visibilidad total para Gerente comercial y Administrador
+- [ ] Probar y publicar el aislamiento de cartera por rol

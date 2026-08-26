@@ -44,16 +44,19 @@ describe("permisos de clientes", () => {
     await expect(sitesRouter.createCaller(anonymousContext()).list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 
-  it("permite al representante ver todos los puntos y marca editable el suyo", async () => {
-    store.listSites.mockResolvedValue([ownSite, foreignSite]);
+  it("devuelve al representante únicamente su propia cartera y bloquea la ficha ajena", async () => {
+    store.listSites.mockResolvedValue([ownSite]);
     store.lastCheckinBySite.mockResolvedValue(new Map([[ownSite.id, null]]));
     const caller = sitesRouter.createCaller(contextFor(10));
     const list = await caller.list({ search: " Rafael " });
     const detail = await caller.detail({ id: ownSite.id });
 
-    expect(store.listSites).toHaveBeenCalledWith(expect.objectContaining({ search: "Rafael" }));
-    expect(list).toHaveLength(2);
+    expect(store.listSites).toHaveBeenCalledWith(expect.objectContaining({ search: "Rafael", createdBy: 10 }));
+    expect(list).toHaveLength(1);
     expect(detail.canEditSite).toBe(true);
+
+    store.getSiteById.mockResolvedValue(foreignSite);
+    await expect(caller.detail({ id: foreignSite.id })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
   it("asigna al creador como propietario de un punto nuevo", async () => {
@@ -105,6 +108,18 @@ describe("permisos de clientes", () => {
     expect(store.updateSite).toHaveBeenCalledWith(foreignSite.id, expect.objectContaining({
       name: "Cliente corregido", department: "Caaguazú", zone: "R. I. Tres Corrales",
     }));
+  });
+
+  it("mantiene la cartera completa disponible para gerente comercial", async () => {
+    store.listSites.mockResolvedValue([ownSite, foreignSite]);
+    const list = await sitesRouter.createCaller(contextFor(40, "manager")).list();
+    expect(store.listSites).toHaveBeenCalledWith({
+      search: undefined,
+      department: undefined,
+      zone: undefined,
+      clientType: undefined,
+    });
+    expect(list).toHaveLength(2);
   });
 });
 

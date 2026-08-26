@@ -363,7 +363,12 @@
 - [x] Reparar la carga del logo HORTIMAX en encabezados móviles
 - [x] Mostrar el autor de cada nota en su historial de cliente
 - [x] Mostrar el autor de notas y recordatorios en el calendario del equipo
-- [ ] Probar en móvil y escritorio y publicar las correcciones
+- [x] Probar en móvil y escritorio y publicar las correcciones
+
+## Fidelidad del isologo HORTIMAX
+- [x] Retirar el respaldo vectorial que modifica el isologo original
+- [x] Mantener únicamente el archivo original de marca en todas las cabeceras
+- [ ] Verificar y publicar la restauración fiel del isologo
 
 ## Archivo recuperable confirmado para Representante
 - [x] Hacer visible la acción de archivar en la ficha de un punto propio

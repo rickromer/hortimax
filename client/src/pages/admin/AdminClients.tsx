@@ -21,7 +21,7 @@ import {
 import { downloadCsv, formatDateTime, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
 import { Download, ExternalLink, Search, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
@@ -33,22 +33,6 @@ export default function AdminClients() {
   const [department, setDepartment] = useState(ALL);
   const [clientType, setClientType] = useState(ALL);
   const [sellerId, setSellerId] = useState(ALL);
-  const tableScrollRef = useRef<HTMLDivElement>(null);
-  const [tableScrollPercent, setTableScrollPercent] = useState(0);
-
-  const updateTableScrollPercent = () => {
-    const table = tableScrollRef.current;
-    if (!table) return;
-    const maxScroll = table.scrollWidth - table.clientWidth;
-    setTableScrollPercent(maxScroll > 0 ? (table.scrollLeft / maxScroll) * 100 : 0);
-  };
-
-  const setTableScroll = (percent: number) => {
-    const table = tableScrollRef.current;
-    if (!table) return;
-    table.scrollLeft = ((table.scrollWidth - table.clientWidth) * percent) / 100;
-    setTableScrollPercent(percent);
-  };
 
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const usersQuery = trpc.admin.listUsers.useQuery();
@@ -162,28 +146,9 @@ export default function AdminClients() {
         ) : (
           <>
             {/* Tabla en escritorio */}
-            <div className="surface-card hidden md:block overflow-hidden">
-              <div
-                className="flex items-center gap-3 px-4 py-2 border-b border-border/70 bg-muted/30"
-                aria-label="Control de desplazamiento horizontal de la tabla de clientes">
-                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Desplazar columnas</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={tableScrollPercent}
-                  onChange={event => setTableScroll(Number(event.target.value))}
-                  className="h-2 w-full cursor-ew-resize accent-[var(--brand-teal)]"
-                  aria-label="Desplazar columnas de la tabla hacia los costados"
-                />
-              </div>
-              <div
-                ref={tableScrollRef}
-                className="overflow-x-auto"
-                onScroll={updateTableScrollPercent}>
+            <div className="client-table-native-scroll surface-card hidden md:block h-[calc(100dvh-15rem)] min-h-[22rem] max-h-[42rem] overflow-auto">
               <Table className="min-w-[1080px]">
-                <TableHeader>
+                <TableHeader className="sticky top-0 z-10 bg-card shadow-sm">
                   <TableRow className="hover:bg-transparent">
                     <TableHead>Cliente</TableHead>
                     <TableHead>Tipo</TableHead>
@@ -242,7 +207,6 @@ export default function AdminClients() {
                   ))}
                 </TableBody>
               </Table>
-              </div>
             </div>
 
             {/* Tarjetas en móvil */}

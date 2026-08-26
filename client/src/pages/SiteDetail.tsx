@@ -7,7 +7,6 @@ import { PointLocationActions } from "@/components/PointLocationActions";
 import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -23,7 +22,6 @@ import { downloadCsv, formatCoords, formatDateTime, formatDistance, timeAgo } fr
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
-  Archive,
   CalendarClock,
   Download,
   Loader2,
@@ -38,13 +36,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Link, useLocation, useRoute } from "wouter";
+import { Link, useRoute } from "wouter";
 
 export default function SiteDetail() {
   const [, params] = useRoute("/sitios/:id");
-  const [, navigate] = useLocation();
   const siteId = Number(params?.id);
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const geo = useGeolocation({ enabled: true });
   const utils = trpc.useUtils();
 
@@ -53,7 +50,6 @@ export default function SiteDetail() {
   const [registerVisit, setRegisterVisit] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [archiveOpen, setArchiveOpen] = useState(false);
 
   const detailQuery = trpc.sites.detail.useQuery(
     { id: siteId },
@@ -88,18 +84,6 @@ export default function SiteDetail() {
         utils.notes.list.invalidate(),
       ]);
       toast.success("Nota eliminada");
-    },
-    onError: error => toast.error(error.message),
-  });
-
-  const archiveSite = trpc.sites.archive.useMutation({
-    onSuccess: async () => {
-      await Promise.all([
-        utils.sites.list.invalidate(),
-        utils.sites.detail.invalidate({ id: siteId }),
-      ]);
-      toast.success("Punto archivado en Papelera. Administración puede restaurarlo si hace falta.");
-      navigate("/sitios");
     },
     onError: error => toast.error(error.message),
   });
@@ -146,11 +130,8 @@ export default function SiteDetail() {
 
   const { site, checkins, notes, followups, canEditSite } = detailQuery.data;
   const canEdit = Boolean(user && canEditSite);
-  const canEditClient = canEdit;
-  const canContribute = canEdit;
-  const canArchive = Boolean(
-    user && (user.role === "admin" || user.role === "manager" || (user.role === "field" && site.createdBy === user.id))
-  );
+  const canEditClient = true;
+  const canContribute = true;
 
   return (
     <FieldShell
@@ -238,14 +219,6 @@ export default function SiteDetail() {
                 Check-in
               </Button>
             </div>}
-            {canArchive && <Button
-              variant="outline"
-              size="sm"
-              className="w-full bg-background text-destructive border-destructive/40 hover:bg-destructive/10"
-              onClick={() => setArchiveOpen(true)}>
-              <Archive className="h-4 w-4" />
-              Archivar punto
-            </Button>}
             <PointLocationActions
               name={site.name}
               coords={{ latitude: site.latitude, longitude: site.longitude }}
@@ -364,7 +337,7 @@ export default function SiteDetail() {
                       <span className="text-[11px] text-muted-foreground ml-auto truncate max-w-[35%]">
                         {note.userName ?? note.username}
                       </span>
-                      {isAdmin && <Button
+                      {canEdit && <Button
                         size="icon"
                         variant="ghost"
                         className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"
@@ -442,28 +415,6 @@ export default function SiteDetail() {
           address: site.address ?? "",
         }}
       />}
-      <AlertDialog open={archiveOpen} onOpenChange={setArchiveOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Archivar {site.name}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              El punto desaparecerá del mapa operativo, pero su historial seguirá resguardado en Papelera para que Administración pueda restaurarlo.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={archiveSite.isPending}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={archiveSite.isPending}
-              onClick={event => {
-                event.preventDefault();
-                archiveSite.mutate({ id: site.id, reason: "Archivado por el representante creador" });
-              }}>
-              {archiveSite.isPending ? "Archivando…" : "Archivar en Papelera"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </FieldShell>
   );
 }

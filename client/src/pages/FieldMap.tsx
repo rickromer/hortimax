@@ -14,7 +14,7 @@ import { placeFromMapCenter, startMapPlacement } from "@/lib/mapPlacement";
 import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { canOperateSite } from "@shared/permissions";
+import { canManageAll } from "@shared/permissions";
 import {
   Check,
   ChevronRight,
@@ -33,7 +33,7 @@ import { Link } from "wouter";
 export default function FieldMap() {
   const { user } = useAuth();
   const canEdit = Boolean(user);
-  const canCreatePoint = Boolean(user);
+  const canCreatePoint = true;
   const geo = useGeolocation({ enabled: true });
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -87,7 +87,7 @@ export default function FieldMap() {
     [sites, selectedId]
   );
   const canEditSelected = Boolean(
-    user && selected && canOperateSite(user.role, user.id, selected.createdBy)
+    user && selected && (canManageAll(user.role) || selected.createdBy === user.id)
   );
 
   const markers = useMemo(() => {
@@ -366,7 +366,7 @@ export default function FieldMap() {
                         a {formatDistance(site.distance)} · {site.clientType ?? "Sin tipo"}
                       </p>
                     </div>
-                    {user && canOperateSite(user.role, user.id, site.createdBy) && <Button
+                    {user && (canManageAll(user.role) || site.createdBy === user.id) && <Button
                       size="sm"
                       variant="secondary"
                       onClick={() => setCheckinSite({ id: site.id, name: site.name })}>

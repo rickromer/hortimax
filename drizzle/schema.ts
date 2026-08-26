@@ -68,12 +68,6 @@ export const sites = mysqlTable(
     /** Identifica puntos enviados durante el modo temporal de carga pública. */
     publicSubmission: boolean("publicSubmission").default(false).notNull(),
     active: boolean("active").default(true).notNull(),
-    /** Fecha de envío a papelera; null mientras el cliente esté operativo. */
-    archivedAt: timestamp("archivedAt"),
-    /** Administrador que envió el cliente a papelera. */
-    archivedBy: int("archivedBy"),
-    /** Motivo administrativo opcional para conservar contexto de la decisión. */
-    archiveReason: varchar("archiveReason", { length: 500 }),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
@@ -87,26 +81,6 @@ export const sites = mysqlTable(
 
 export type Site = typeof sites.$inferSelect;
 export type InsertSite = typeof sites.$inferInsert;
-
-/** Trazabilidad de archivado y restauración de clientes, sin alterar su historial comercial. */
-export const siteArchiveEvents = mysqlTable(
-  "site_archive_events",
-  {
-    id: int("id").autoincrement().primaryKey(),
-    siteId: int("siteId").notNull(),
-    actorId: int("actorId").notNull(),
-    action: mysqlEnum("action", ["archived", "restored"]).notNull(),
-    reason: varchar("reason", { length: 500 }),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-  },
-  table => ({
-    siteIdx: index("site_archive_events_site_idx").on(table.siteId),
-    actorIdx: index("site_archive_events_actor_idx").on(table.actorId),
-  })
-);
-
-export type SiteArchiveEvent = typeof siteArchiveEvents.$inferSelect;
-export type InsertSiteArchiveEvent = typeof siteArchiveEvents.$inferInsert;
 
 /** Cartera comercial: un sitio puede estar asignado a uno o varios vendedores. */
 export const siteAssignments = mysqlTable(

@@ -14,7 +14,6 @@ import AdminClients from "./pages/admin/AdminClients";
 import AdminMap from "./pages/admin/AdminMap";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminSettings from "./pages/admin/AdminSettings";
-import AdminTrash from "./pages/admin/AdminTrash";
 import AdminUsers from "./pages/admin/AdminUsers";
 import FieldMap from "./pages/FieldMap";
 import Login from "./pages/Login";
@@ -59,12 +58,12 @@ function Router() {
     <Switch>
       <Route path="/acceso" component={Login} />
 
-      {/* El acceso es obligatorio: tras cerrar sesión no se expone ninguna pantalla operativa. */}
+      {/* Acceso principal y campo temporalmente abierto: administración permanece protegida. */}
       <Route path="/">{() => <Redirect to="/acceso" />}</Route>
-      <Route path="/mapa">{() => <Guard component={FieldMap} />}</Route>
-      <Route path="/sitios">{() => <Guard component={SiteList} />}</Route>
-      <Route path="/sitios/:id">{() => <Guard component={SiteDetail} />}</Route>
-      <Route path="/calendario">{() => <Guard component={TeamCalendar} />}</Route>
+      <Route path="/mapa" component={FieldMap} />
+      <Route path="/sitios" component={SiteList} />
+      <Route path="/sitios/:id" component={SiteDetail} />
+      <Route path="/calendario" component={TeamCalendar} />
       <Route path="/notas">{() => <Redirect to="/sitios" />}</Route>
       <Route path="/perfil">{() => <Guard component={Profile} />}</Route>
 
@@ -77,7 +76,6 @@ function Router() {
       </Route>
       <Route path="/admin/notas">{() => <Redirect to="/admin/clientes" />}</Route>
       <Route path="/admin/actividad">{() => <Guard component={AdminActivity} managementOnly />}</Route>
-      <Route path="/admin/papelera">{() => <Guard component={AdminTrash} adminOnly />}</Route>
       <Route path="/admin/usuarios">{() => <Guard component={AdminUsers} adminOnly />}</Route>
       <Route path="/admin/configuracion">
         {() => <Guard component={AdminSettings} adminOnly />}

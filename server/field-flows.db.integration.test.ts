@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import { checkins, followups, notes, siteArchiveEvents, siteAssignments, sites, users } from "../drizzle/schema";
+import { checkins, followups, notes, siteAssignments, sites, users } from "../drizzle/schema";
 import type { TrpcContext } from "./_core/context";
 import * as db from "./db";
 import { adminRouter } from "./routers/admin";
@@ -10,7 +10,7 @@ import { sitesRouter } from "./routers/sites";
 const runDatabaseIntegration = process.env.RUN_DB_INTEGRATION === "1";
 const test = runDatabaseIntegration ? it : it.skip;
 
-function contextFor(user: { id: number; role: "field" | "manager" | "admin" }) {
+function contextFor(user: { id: number; role: "user" | "admin" }) {
   return {
     user,
     req: {} as TrpcContext["req"],
@@ -25,7 +25,6 @@ async function cleanDatabase() {
   await database.delete(followups);
   await database.delete(notes);
   await database.delete(checkins);
-  await database.delete(siteArchiveEvents);
   await database.delete(sites);
   await database.delete(users);
 }
@@ -50,7 +49,7 @@ describe("integración de campo con MariaDB aislado", () => {
       username: `seller${suffix}`.slice(0, 60),
       name: "Vendedor de prueba",
       loginMethod: "password",
-      role: "field",
+      role: "user",
       mustChangePassword: false,
       active: true,
     });
@@ -59,7 +58,7 @@ describe("integración de campo con MariaDB aislado", () => {
       username: `other${suffix}`.slice(0, 60),
       name: "Otro vendedor",
       loginMethod: "password",
-      role: "field",
+      role: "user",
       mustChangePassword: false,
       active: true,
     });
@@ -74,7 +73,7 @@ describe("integración de campo con MariaDB aislado", () => {
     });
     if (!seller || !otherSeller || !admin) throw new Error("No se pudieron crear usuarios de prueba");
 
-    const sellerCaller = sitesRouter.createCaller(contextFor({ id: seller.id, role: "field" }));
+    const sellerCaller = sitesRouter.createCaller(contextFor({ id: seller.id, role: "user" }));
     const created = await sellerCaller.create({
       name: "Estancia de integración",
       clientType: "Productor",
@@ -93,14 +92,53 @@ describe("integración de campo con MariaDB aislado", () => {
     });
     expect(await db.isUserAssignedToSite(created!.id, seller.id)).toBe(true);
 
-    const anonymousCaller = sitesRouter.createCaller({
+    const publicCaller = sitesRouter.createCaller({
       user: null,
       req: {} as TrpcContext["req"],
       res: {} as TrpcContext["res"],
     } as TrpcContext);
-    await expect(
-      anonymousCaller.create({ name: "Punto sin responsable", latitude: -25.27, longitude: -57.59 })
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    const publicPoint = await publicCaller.create({
+      name: "Punto público de prueba",
+      latitude: -25.27,
+      longitude: -57.59,
+    });
+    expect(publicPoint).toMatchObject({ createdBy: 0, publicSubmission: true });
+
+    const publicNotes = notesRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+    const publicNote = await publicNotes.create({
+      siteId: publicPoint!.id,
+      content: "Nota pública con fecha y hora automática",
+    });
+    expect(publicNote).toMatchObject({
+      note: { siteId: publicPoint!.id, userId: 0 },
+      registeredVisit: false,
+    });
+
+    const publicNoteWithVisit = await publicNotes.create({
+      siteId: publicPoint!.id,
+      content: "Nota pública que registra visita",
+      registerVisit: true,
+      latitude: -25.2701,
+      longitude: -57.5901,
+    });
+    expect(publicNoteWithVisit).toMatchObject({ registeredVisit: true, checkinId: expect.any(Number) });
+
+    const publicFollowups = followupsRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+    const publicReminder = await publicFollowups.create({
+      siteId: publicPoint!.id,
+      description: "Recordatorio público de prueba",
+      scheduledFor: "2026-09-20",
+      type: "reminder",
+    });
+    expect(publicReminder).toMatchObject({ siteId: publicPoint!.id, createdBy: 0, type: "reminder" });
 
     const result = await sellerCaller.checkin({
       siteId: created!.id,
@@ -125,12 +163,12 @@ describe("integración de campo con MariaDB aislado", () => {
     expect(detail.notes).toHaveLength(1);
     expect(detail.notes[0]?.checkinId).toBe(result.checkin.id);
 
-    const noteCaller = notesRouter.createCaller(contextFor({ id: seller.id, role: "field" }));
+    const noteCaller = notesRouter.createCaller(contextFor({ id: seller.id, role: "user" }));
     const board = await noteCaller.list({ search: "fertilizante" });
     expect(board).toHaveLength(1);
     expect(board[0]?.siteName).toBe("Estancia de integración");
 
-    const followupCaller = followupsRouter.createCaller(contextFor({ id: seller.id, role: "field" }));
+    const followupCaller = followupsRouter.createCaller(contextFor({ id: seller.id, role: "user" }));
     const followup = await followupCaller.create({
       siteId: created!.id,
       description: "Revisar la respuesta al fertilizante en siete días",
@@ -147,20 +185,24 @@ describe("integración de campo con MariaDB aislado", () => {
     expect(detailWithAgenda.followups).toHaveLength(1);
     expect(detailWithAgenda.followups[0]?.description).toContain("fertilizante");
 
-    const otherCaller = sitesRouter.createCaller(contextFor({ id: otherSeller.id, role: "field" }));
-    await expect(otherCaller.update({ id: created!.id, name: "No permitido" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const otherCaller = sitesRouter.createCaller(contextFor({ id: otherSeller.id, role: "user" }));
+    await expect(otherCaller.detail({ id: created!.id })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
 
     const adminCaller = adminRouter.createCaller(contextFor({ id: admin.id, role: "admin" }));
     await adminCaller.setSiteAssignments({ siteId: created!.id, userIds: [otherSeller.id] });
 
-    await adminCaller.archiveClient({ id: created!.id, reason: "Prueba de conservación" });
-    expect(await db.getSiteById(created!.id)).toMatchObject({ id: created!.id, active: false });
-    expect(await db.listCheckins({ siteId: created!.id })).toHaveLength(1);
-    expect(await db.listNotes({ siteId: created!.id })).toHaveLength(1);
-    expect(await db.listFollowups({ siteId: created!.id })).toHaveLength(1);
+    const cleanup = await adminCaller.clearPublicSubmissions();
+    expect(cleanup).toEqual({ removed: 1 });
+    expect(await db.getSiteById(publicPoint!.id)).toBeUndefined();
+    expect(await db.getSiteById(created!.id)).toMatchObject({ id: created!.id });
 
-    await adminCaller.restoreClient({ id: created!.id });
-    expect(await db.getSiteById(created!.id)).toMatchObject({ id: created!.id, active: true });
-    await expect(otherCaller.detail({ id: created!.id })).resolves.toMatchObject({ site: { id: created!.id } });
+    await expect(sellerCaller.detail({ id: created!.id })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    await expect(otherCaller.detail({ id: created!.id })).resolves.toMatchObject({
+      site: { id: created!.id },
+    });
   });
 });

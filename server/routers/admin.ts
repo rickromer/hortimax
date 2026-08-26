@@ -53,40 +53,20 @@ export const adminRouter = router({
       return { checkins };
     }),
 
-  /** Archiva las altas públicas temporales sin borrar sus registros relacionados. */
-  clearPublicSubmissions: adminProcedure.mutation(async ({ ctx }) => {
-    const archived = await db.archivePublicSubmissionSites(ctx.user.id);
-    return { archived };
+  /** Elimina los puntos identificados como altas públicas temporales y sus registros relacionados. */
+  clearPublicSubmissions: adminProcedure.mutation(async () => {
+    const removed = await db.deletePublicSubmissionSites();
+    return { removed };
   }),
 
-  /** Envía un cliente a papelera de forma recuperable. */
-  archiveClient: managementProcedure
-    .input(z.object({ id: z.number().int().positive(), reason: z.string().max(500).optional() }))
-    .mutation(async ({ ctx, input }) => {
-      const site = await db.getSiteById(input.id);
-      if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
-      if (!site.active) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "El cliente ya está en papelera" });
-      }
-      const archived = await db.archiveSite(input.id, ctx.user.id, input.reason);
-      return { success: true as const, site: archived };
-    }),
-
-  /** Papelera administrativa: clientes archivados, aún con todo su historial preservado. */
-  archivedClients: adminProcedure.query(async () => {
-    return db.listArchivedSites();
-  }),
-
-  restoreClient: adminProcedure
+  /** Eliminación definitiva, disponible exclusivamente para Administrador. */
+  deleteClient: adminProcedure
     .input(z.object({ id: z.number().int().positive() }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const site = await db.getSiteById(input.id);
       if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
-      if (site.active) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "El cliente ya está operativo" });
-      }
-      const restored = await db.restoreSite(input.id, ctx.user.id);
-      return { success: true as const, site: restored };
+      await db.deleteSiteCompletely(input.id);
+      return { success: true as const, name: site.name };
     }),
 
   /* ------------------------------ Usuarios ------------------------------ */

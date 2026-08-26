@@ -11,7 +11,6 @@ import {
   InsertSite,
   InsertUser,
   notes,
-  siteArchiveEvents,
   siteAssignments,
   sites,
   users,
@@ -156,16 +155,11 @@ export type SiteFilters = {
   createdBy?: number;
   siteIds?: number[];
   onlyActive?: boolean;
-  archivedOnly?: boolean;
 };
 
 function siteConditions(filters: SiteFilters) {
   const conditions = [] as any[];
-  if (filters.archivedOnly) {
-    conditions.push(eq(sites.active, false));
-  } else if (filters.onlyActive !== false) {
-    conditions.push(eq(sites.active, true));
-  }
+  if (filters.onlyActive !== false) conditions.push(eq(sites.active, true));
   if (filters.createdBy) conditions.push(eq(sites.createdBy, filters.createdBy));
   if (filters.siteIds) {
     conditions.push(
@@ -244,72 +238,18 @@ export async function updateSite(id: number, values: Partial<InsertSite>) {
   return getSiteById(id);
 }
 
-/** Envía un cliente a papelera sin borrar su historial comercial ni sus asignaciones. */
-export async function archiveSite(siteId: number, actorId: number, reason?: string | null) {
+/** Borra puntos creados durante el modo público y sus registros vinculados. Uso exclusivo de administración. */
+export async function deletePublicSubmissionSites() {
   const db = await requireDb();
-  const archivedAt = new Date();
-  const normalizedReason = reason?.trim() || null;
-  await db.transaction(async tx => {
-    await tx
-      .update(sites)
-      .set({ active: false, archivedAt, archivedBy: actorId, archiveReason: normalizedReason })
-      .where(eq(sites.id, siteId));
-    await tx.insert(siteArchiveEvents).values({
-      siteId,
-      actorId,
-      action: "archived",
-      reason: normalizedReason,
-    });
-  });
-  return getSiteById(siteId);
-}
-
-/** Restaura un cliente archivado y conserva su trazabilidad de archivo previa. */
-export async function restoreSite(siteId: number, actorId: number) {
-  const db = await requireDb();
-  await db.transaction(async tx => {
-    await tx
-      .update(sites)
-      .set({ active: true, archivedAt: null, archivedBy: null, archiveReason: null })
-      .where(eq(sites.id, siteId));
-    await tx.insert(siteArchiveEvents).values({ siteId, actorId, action: "restored", reason: null });
-  });
-  return getSiteById(siteId);
-}
-
-/** Lista únicamente los clientes en papelera; sus datos vinculados siguen en sus tablas originales. */
-export async function listArchivedSites(filters: Omit<SiteFilters, "archivedOnly"> = {}) {
-  return listSites({ ...filters, archivedOnly: true });
-}
-
-/** Archiva las altas creadas durante el modo público sin eliminar su información relacionada. */
-export async function archivePublicSubmissionSites(actorId: number) {
-  const db = await requireDb();
-  const rows = await db
-    .select({ id: sites.id })
-    .from(sites)
-    .where(and(eq(sites.publicSubmission, true), eq(sites.active, true)));
+  const rows = await db.select({ id: sites.id }).from(sites).where(eq(sites.publicSubmission, true));
   const ids = rows.map(row => row.id);
   if (!ids.length) return 0;
   await db.transaction(async tx => {
-    const archivedAt = new Date();
-    await tx
-      .update(sites)
-      .set({
-        active: false,
-        archivedAt,
-        archivedBy: actorId,
-        archiveReason: "Limpieza de cargas públicas temporales",
-      })
-      .where(inArray(sites.id, ids));
-    await tx.insert(siteArchiveEvents).values(
-      ids.map(siteId => ({
-        siteId,
-        actorId,
-        action: "archived" as const,
-        reason: "Limpieza de cargas públicas temporales",
-      }))
-    );
+    await tx.delete(siteAssignments).where(inArray(siteAssignments.siteId, ids));
+    await tx.delete(followups).where(inArray(followups.siteId, ids));
+    await tx.delete(notes).where(inArray(notes.siteId, ids));
+    await tx.delete(checkins).where(inArray(checkins.siteId, ids));
+    await tx.delete(sites).where(inArray(sites.id, ids));
   });
   return ids.length;
 }

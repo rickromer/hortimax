@@ -1,5 +1,5 @@
 import { distanceMeters, NEARBY_RADIUS_METERS } from "@shared/domain";
-import { canManageAll, canOperateSite } from "@shared/permissions";
+import { canManageAll } from "@shared/permissions";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
@@ -25,23 +25,21 @@ const siteInput = z.object({
 
 async function assertSiteViewAccess(siteId: number) {
   const site = await db.getSiteById(siteId);
-  if (!site || !site.active) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
-  }
+  if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
   return site;
 }
 
 async function assertSiteEditAccess(siteId: number, user: { id: number; role: string }) {
   const site = await assertSiteViewAccess(siteId);
-  if (!canOperateSite(user.role, user.id, site.createdBy)) {
+  if (!canManageAll(user.role) && site.createdBy !== user.id) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés editar los puntos que registraste" });
   }
   return site;
 }
 
 export const sitesRouter = router({
-  /** Mapa operativo disponible únicamente dentro de una sesión válida. */
-  list: protectedProcedure
+  /** Mapa temporalmente abierto; la administración conserva sus filtros privados. */
+  list: publicProcedure
     .input(
       z
         .object({
@@ -71,8 +69,8 @@ export const sitesRouter = router({
       return sites.map(site => ({ ...site, lastCheckinAt: lastMap.get(site.id) ?? null }));
     }),
 
-  /** La ficha y su historial requieren sesión válida. */
-  detail: protectedProcedure
+  /** La ficha y su historial se consultan sin sesión durante el acceso temporal. */
+  detail: publicProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
       const site = await assertSiteViewAccess(input.id);
@@ -92,7 +90,7 @@ export const sitesRouter = router({
       };
     }),
 
-  nearby: protectedProcedure
+  nearby: publicProcedure
     .input(coord.extend({ radius: z.number().int().min(50).max(5000).optional() }))
     .query(async ({ input }) => {
       const sites = await db.listSites({});
@@ -107,8 +105,8 @@ export const sitesRouter = router({
         .slice(0, 10);
     }),
 
-  /** Toda alta queda atribuida a una cuenta activa. */
-  create: protectedProcedure
+  /** Alta temporal abierta; los puntos anónimos quedan marcados para limpieza posterior. */
+  create: publicProcedure
     .input(siteInput.merge(coord))
     .mutation(async ({ ctx, input }) => {
       const territory = await territoryFromCoordinates(input.latitude, input.longitude).catch(() => ({
@@ -127,19 +125,24 @@ export const sitesRouter = router({
         accuracy: input.accuracy ?? null,
         latitude: input.latitude.toFixed(7),
         longitude: input.longitude.toFixed(7),
-        createdBy: ctx.user.id,
-        publicSubmission: false,
+        createdBy: ctx.user?.id ?? 0,
+        publicSubmission: !ctx.user,
       });
       if (!created) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear el sitio" });
-      await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
+      if (ctx.user) await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
       return created;
     }),
 
-  /** El representante solo puede actualizar los puntos que él registró. */
-  update: protectedProcedure
+  /** Edición básica temporal abierta; archivar y check-in siguen requiriendo sesión. */
+  update: publicProcedure
     .input(siteInput.partial().extend({ id: z.number().int().positive(), latitude: z.number().min(-90).max(90).optional(), longitude: z.number().min(-180).max(180).optional() }))
     .mutation(async ({ ctx, input }) => {
-      const site = await assertSiteEditAccess(input.id, ctx.user);
+      let site;
+      if (ctx.user) {
+        site = await assertSiteEditAccess(input.id, ctx.user);
+      } else {
+        site = await assertSiteViewAccess(input.id);
+      }
       const { id, latitude, longitude, ...rest } = input;
       const values: Record<string, unknown> = {};
       Object.entries(rest).forEach(([key, value]) => {
@@ -159,16 +162,12 @@ export const sitesRouter = router({
       return db.updateSite(id, values as any);
     }),
 
-  /** Administración puede archivar cualquier punto; campo, únicamente el punto que registró. */
   archive: protectedProcedure
-    .input(z.object({ id: z.number().int().positive(), reason: z.string().max(500).optional() }))
+    .input(z.object({ id: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      const site = await assertSiteViewAccess(input.id);
-      if (!canManageAll(ctx.user.role) && site.createdBy !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés archivar los puntos que registraste" });
-      }
-      const archivedSite = await db.archiveSite(input.id, ctx.user.id, input.reason);
-      return { success: true as const, site: archivedSite };
+      await assertSiteEditAccess(input.id, ctx.user);
+      await db.updateSite(input.id, { active: false });
+      return { success: true } as const;
     }),
 
   checkin: protectedProcedure

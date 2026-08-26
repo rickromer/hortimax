@@ -224,50 +224,6 @@
 - [ ] Probar desde la interfaz la edición como propietario, gerente comercial y usuario sin permiso
 - [x] Cubrir en pruebas las rutas operativas y la edición de clientes por Gerente comercial
 
-## Corrección de propiedad para Representante comercial
-- [x] Identificar por qué un Representante comercial puede editar clientes ajenos
-- [x] Restringir creación y edición del Representante a sus propios clientes registrados
-- [x] Ocultar Editar en fichas ajenas para Representante comercial
-- [x] Rechazar en backend toda actualización de cliente ajeno por Representante
-- [x] Probar propietario permitido y cliente ajeno bloqueado
-- [x] Exigir sesión para crear o modificar clientes, notas y relevamientos
-
-## Protección y recuperación de registros
-- [x] Sustituir el borrado definitivo de clientes por archivo recuperable desde Administración
-- [x] Registrar quién y cuándo archiva o restaura un cliente
-- [x] Crear una Papelera administrativa con vista y restauración de clientes archivados
-- [x] Mantener a Representantes y Gerentes sin permisos de borrado, archivo o restauración
-- [x] Conservar notas, visitas, relevamientos y asignaciones al archivar un cliente
-- [x] Cubrir con pruebas el archivo, la restauración y el aislamiento por rol
-- [x] Probar explícitamente que un Representante propietario actualice con éxito su propio cliente
-- [x] Mostrar error y reintento en Papelera, con feedback al archivar o restaurar
-
-## Incidencia: operación del Representante de campo
-- [x] Diagnosticar por qué el representante no ve o no puede operar correctamente sus propios puntos
-- [x] Confirmar que la creación atribuya el punto al representante autenticado
-- [x] Confirmar que la edición de un punto propio quede disponible y guarde cambios
-- [x] Confirmar que la edición de un punto ajeno permanezca bloqueada
-- [x] Aclarar e implementar el alcance permitido de eliminación para puntos propios
-- [x] Probar y publicar la corrección del flujo de representante
-
-## Archivo recuperable de punto propio por Representante
-- [x] Permitir al representante archivar solo un punto creado por él
-- [x] Mantener bloqueado el archivo de puntos creados por otra persona
-- [x] Mostrar la acción Archivar solo en la ficha de un punto propio
-- [x] Probar y publicar el archivo recuperable por propiedad
-
-## Vulnerabilidad: rutas abiertas después de cerrar sesión
-- [x] Bloquear `/mapa`, clientes, fichas y calendario sin una sesión válida
-- [x] Proteger las consultas de clientes, notas, visitas y relevamientos contra acceso anónimo
-- [x] Redirigir inmediatamente a `/acceso` después de cerrar sesión
-- [ ] Probar en navegador que una URL operativa no abra datos tras logout
-
-## Gestión comercial y navegación de clientes
-- [x] Permitir al Gerente comercial archivar clientes de forma recuperable
-- [x] Mantener Papelera y restauración exclusivamente administrativas
-- [x] Mantener disponible el desplazamiento horizontal de la tabla de clientes sin llegar al final de la página
-- [x] Verificar que Google Maps, Waze, Compartir y WhatsApp se muestren en toda ficha de cliente para los perfiles autorizados
-
 ## Incidencia de carga posterior a acceso y privilegios
 - [x] Diagnosticar por qué el sitio no completa la carga en producción
 - [x] Corregir la causa de la carga bloqueada y verificar la vista previa
@@ -391,3 +347,14 @@
 - [x] Determinar si el subdominio publicado requiere propagación o una corrección de plataforma
 - [x] Determinar que no fue necesaria escalación tras estabilizarse la resolución DNS
 - [x] Dar al usuario un enlace de acceso alternativo mientras el DNS se estabilizaba
+
+## Corrección de barra horizontal nativa
+- [x] Quitar el control superior artificial de desplazamiento
+- [x] Mantener una barra nativa horizontal visible antes de llegar a la última fila
+- [x] Sincronizar la barra visible con el desplazamiento de las columnas
+- [x] Verificar y publicar la barra nativa corregida
+
+## Corrección visual del logo HORTIMAX
+- [x] Auditar el logo en acceso, vistas de campo y administración
+- [x] Corregir proporción, recorte y contraste del logo según cada fondo
+- [x] Verificar en móvil y escritorio y publicar la mejora visual

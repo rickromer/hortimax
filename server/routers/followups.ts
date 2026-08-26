@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { canManageAll } from "@shared/permissions";
 import { z } from "zod";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 async function assertFollowupAccess(siteId: number, user: { id: number; role: string }) {
@@ -20,8 +20,8 @@ const scheduleInput = z.object({
 });
 
 export const followupsRouter = router({
-  /** Agenda disponible únicamente dentro de una sesión válida. */
-  list: protectedProcedure
+  /** Agenda temporalmente abierta junto con la ficha de cada cliente. */
+  list: publicProcedure
     .input(z.object({ siteId: z.number().int().positive().optional(), limit: z.number().int().min(1).max(300).optional() }).optional())
     .query(async ({ ctx, input }) => {
       if (input?.siteId) {
@@ -36,13 +36,18 @@ export const followupsRouter = router({
       });
     }),
 
-  create: protectedProcedure
+  create: publicProcedure
     .input(scheduleInput.extend({ siteId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      await assertFollowupAccess(input.siteId, ctx.user);
+      if (ctx.user) {
+        await assertFollowupAccess(input.siteId, ctx.user);
+      } else {
+        const site = await db.getSiteById(input.siteId);
+        if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
+      }
       return db.createFollowup({
         siteId: input.siteId,
-        createdBy: ctx.user.id,
+        createdBy: ctx.user?.id ?? 0,
         type: input.type,
         description: input.description,
         scheduledFor: input.scheduledFor,
@@ -72,11 +77,12 @@ export const followupsRouter = router({
       return db.updateFollowup(input.id, values);
     }),
 
-  remove: adminProcedure
+  remove: protectedProcedure
     .input(z.object({ id: z.number().int().positive() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const followup = await db.getFollowupById(input.id);
       if (!followup) throw new TRPCError({ code: "NOT_FOUND", message: "Relevamiento no encontrado" });
+      await assertFollowupAccess(followup.siteId, ctx.user);
       await db.deleteFollowup(input.id);
       return { success: true } as const;
     }),

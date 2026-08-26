@@ -271,4 +271,22 @@
     overflow: hidden !important;
   }
 
+  /* Área de tabla con barra nativa visible dentro del viewport de clientes. */
+  .client-table-native-scroll {
+    scrollbar-gutter: stable;
+    scrollbar-width: auto;
+    scrollbar-color: #8d8d8d #f2f2f2;
+  }
+  .client-table-native-scroll::-webkit-scrollbar {
+    width: 12px;
+    height: 14px;
+  }
+  .client-table-native-scroll::-webkit-scrollbar-track {
+    background: #f2f2f2;
+  }
+  .client-table-native-scroll::-webkit-scrollbar-thumb {
+    background: #8d8d8d;
+    border: 3px solid #f2f2f2;
+    border-radius: 999px;
+  }
 }

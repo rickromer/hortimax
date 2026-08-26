@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { HortimaxLogo } from "@/components/HortimaxLogo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BRAND_LOGO_URL, BRAND_NAME } from "@/lib/brand";
+import { BRAND_NAME } from "@/lib/brand";
 import { shouldShowInitialSetup } from "@/lib/loginScreenMode";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, KeyRound, Loader2, MapPinned, ShieldCheck } from "lucide-react";
@@ -92,11 +93,7 @@ export default function Login() {
         />
         <div className="relative">
           <div className="flex items-center gap-3">
-            <img
-              src={BRAND_LOGO_URL}
-              alt="HORTIMAX"
-              className="h-10 w-28 object-contain object-left rounded-md bg-white px-1"
-            />
+            <HortimaxLogo lightSurface className="h-10 max-w-[142px]" imageClassName="max-h-8" />
             <div>
               <p className="font-bold text-lg tracking-tight">{BRAND_NAME}</p>
               <p className="text-xs text-white/65">Gestión comercial en campo</p>
@@ -140,11 +137,7 @@ export default function Login() {
       <div className="flex flex-col justify-center px-6 py-12 sm:px-12 bg-background">
         <div className="w-full max-w-sm mx-auto">
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <img
-              src={BRAND_LOGO_URL}
-              alt="HORTIMAX"
-              className="h-10 w-28 object-contain object-left rounded-md bg-white border px-1"
-            />
+            <HortimaxLogo lightSurface className="h-10 max-w-[142px] border border-border" imageClassName="max-h-8" />
             <div>
               <p className="font-bold text-lg tracking-tight">{BRAND_NAME}</p>
               <p className="text-xs text-muted-foreground">Gestión comercial en campo</p>

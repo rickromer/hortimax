@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { HortimaxLogo } from "@/components/HortimaxLogo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,10 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { BRAND_LOGO_URL, BRAND_NAME, BRAND_SHORT_NAME } from "@/lib/brand";
+import { BRAND_NAME, BRAND_SHORT_NAME } from "@/lib/brand";
 import {
   Activity,
-  Archive,
   LayoutDashboard,
   LogOut,
   Map,
@@ -32,7 +32,6 @@ const NAV = [
   { href: "/admin/mapa", label: "Mapa general", icon: Map },
   { href: "/admin/clientes", label: "Clientes", icon: MapPinned },
   { href: "/admin/actividad", label: "Actividad", icon: Activity },
-  { href: "/admin/papelera", label: "Papelera", icon: Archive, adminOnly: true },
   { href: "/admin/usuarios", label: "Usuarios", icon: Users, adminOnly: true },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings2, adminOnly: true },
 ];
@@ -85,11 +84,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="flex flex-col items-start gap-1.5 px-5 py-3 shrink-0">
-        <img
-          src={BRAND_LOGO_URL}
-          alt="HORTIMAX"
-          className="h-8 w-[116px] object-contain object-left bg-white rounded-md px-1.5"
-        />
+        <HortimaxLogo lightSurface className="h-9 max-w-[138px]" imageClassName="max-h-7" />
         <div className="w-full min-w-0">
           <p className="font-bold text-sidebar-foreground text-sm leading-tight">{BRAND_NAME}</p>
           <p className="text-[11px] text-sidebar-foreground/55 mt-0.5">{BRAND_SHORT_NAME} · Administración</p>
@@ -107,7 +102,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
 
       <div className="px-3 pb-3 space-y-2">
         <Link
-          href="/mapa"
+          href="/"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/72 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition-colors">
           <Smartphone className="h-4 w-4" />
           Vista de campo
@@ -178,11 +173,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
               onClick={() => setMobileOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <img
-              src={BRAND_LOGO_URL}
-              alt="HORTIMAX"
-              className="h-7 w-[84px] object-contain object-left shrink-0 lg:hidden"
-            />
+            <HortimaxLogo className="h-9 max-w-[128px] lg:hidden" imageClassName="max-h-7" />
             <div className="min-w-0 flex-1">
               <h1 className="font-semibold text-lg leading-tight truncate">{title}</h1>
               {description && (

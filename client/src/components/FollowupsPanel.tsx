@@ -11,7 +11,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateLong } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { BellRing, CalendarPlus, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -55,7 +54,6 @@ const followupLabels = {
 } as const;
 
 export function FollowupsPanel({ siteId, followups, readOnly = false, canCreate = !readOnly }: Props) {
-  const { isAdmin } = useAuth();
   const utils = trpc.useUtils();
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(dateInputToday);
@@ -195,7 +193,7 @@ export function FollowupsPanel({ siteId, followups, readOnly = false, canCreate 
                   aria-label="Marcar relevamiento realizado">
                   <CheckCircle2 className="h-4 w-4" />
                 </Button>
-                {isAdmin && <Button
+                <Button
                   size="icon-sm"
                   variant="ghost"
                   className="text-muted-foreground hover:text-destructive"
@@ -203,7 +201,7 @@ export function FollowupsPanel({ siteId, followups, readOnly = false, canCreate 
                   onClick={() => remove.mutate({ id: followup.id })}
                   aria-label="Eliminar relevamiento">
                   <Trash2 className="h-4 w-4" />
-                </Button>}
+                </Button>
               </div>}
             </div>
           ))}

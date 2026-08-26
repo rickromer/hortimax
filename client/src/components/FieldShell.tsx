@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { HortimaxLogo } from "@/components/HortimaxLogo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { BRAND_LOGO_URL, BRAND_NAME } from "@/lib/brand";
+import { BRAND_NAME } from "@/lib/brand";
 import { CalendarDays, LayoutDashboard, ListTree, LogOut, Map } from "lucide-react";
 import React, { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
@@ -46,11 +47,7 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
     <div className="min-h-dvh flex flex-col bg-background">
       <header className="sticky top-0 z-30 safe-top border-b border-border/70 bg-background/85 backdrop-blur-lg">
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <img
-            src={BRAND_LOGO_URL}
-            alt="HORTIMAX"
-            className="h-8 w-[104px] object-contain object-left shrink-0"
-          />
+          <HortimaxLogo className="h-9 max-w-[132px]" imageClassName="max-h-7" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-[13px] leading-tight line-clamp-2">{BRAND_NAME}</p>
             {!hideContext && <p className="text-xs text-muted-foreground truncate">

@@ -47,7 +47,7 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
     <div className="min-h-dvh flex flex-col bg-background">
       <header className="sticky top-0 z-30 safe-top border-b border-border/70 bg-background/85 backdrop-blur-lg">
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <HortimaxLogo className="h-9 max-w-[132px]" imageClassName="max-h-7" />
+          <HortimaxLogo className="h-8 max-w-[142px]" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-[13px] leading-tight line-clamp-2">{BRAND_NAME}</p>
             {!hideContext && <p className="text-xs text-muted-foreground truncate">

@@ -368,7 +368,12 @@
 ## Fidelidad del isologo HORTIMAX
 - [x] Retirar el respaldo vectorial que modifica el isologo original
 - [x] Mantener únicamente el archivo original de marca en todas las cabeceras
-- [ ] Verificar y publicar la restauración fiel del isologo
+- [x] Verificar y publicar la restauración fiel del isologo
+
+## Proporción del isologo original aportado
+- [x] Alojar exactamente el archivo original entregado por el usuario
+- [x] Ajustar las cabeceras para que el wordmark horizontal no se comprima ni recorte
+- [ ] Verificar en móvil y escritorio y publicar la corrección
 
 ## Archivo recuperable confirmado para Representante
 - [x] Hacer visible la acción de archivar en la ficha de un punto propio

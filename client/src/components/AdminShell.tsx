@@ -84,7 +84,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="flex flex-col items-start gap-1.5 px-5 py-3 shrink-0">
-        <HortimaxLogo lightSurface className="h-9 max-w-[138px]" imageClassName="max-h-7" />
+        <HortimaxLogo lightSurface className="h-9 max-w-[154px]" />
         <div className="w-full min-w-0">
           <p className="font-bold text-sidebar-foreground text-sm leading-tight">{BRAND_NAME}</p>
           <p className="text-[11px] text-sidebar-foreground/55 mt-0.5">{BRAND_SHORT_NAME} · Administración</p>
@@ -173,7 +173,7 @@ export function AdminShell({ children, title, description, actions, fill }: Prop
               onClick={() => setMobileOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <HortimaxLogo className="h-9 max-w-[128px] lg:hidden" imageClassName="max-h-7" />
+            <HortimaxLogo className="h-8 max-w-[142px] lg:hidden" />
             <div className="min-w-0 flex-1">
               <h1 className="font-semibold text-lg leading-tight truncate">{title}</h1>
               {description && (

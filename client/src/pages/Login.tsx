@@ -93,7 +93,7 @@ export default function Login() {
         />
         <div className="relative">
           <div className="flex items-center gap-3">
-            <HortimaxLogo lightSurface className="h-10 max-w-[142px]" imageClassName="max-h-8" />
+            <HortimaxLogo lightSurface className="h-10 max-w-[164px]" />
             <div>
               <p className="font-bold text-lg tracking-tight">{BRAND_NAME}</p>
               <p className="text-xs text-white/65">Gestión comercial en campo</p>
@@ -137,7 +137,7 @@ export default function Login() {
       <div className="flex flex-col justify-center px-6 py-12 sm:px-12 bg-background">
         <div className="w-full max-w-sm mx-auto">
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <HortimaxLogo lightSurface className="h-10 max-w-[142px] border border-border" imageClassName="max-h-8" />
+            <HortimaxLogo lightSurface className="h-10 max-w-[164px] border border-border" />
             <div>
               <p className="font-bold text-lg tracking-tight">{BRAND_NAME}</p>
               <p className="text-xs text-muted-foreground">Gestión comercial en campo</p>

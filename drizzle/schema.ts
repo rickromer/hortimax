@@ -82,6 +82,45 @@ export const sites = mysqlTable(
 export type Site = typeof sites.$inferSelect;
 export type InsertSite = typeof sites.$inferInsert;
 
+/**
+ * Autorización de Google administrada por el portal. Solo conserva el refresh
+ * token cifrado; permite reemplazar la cuenta personal por una corporativa sin
+ * modificar los vínculos de las planillas existentes.
+ */
+export const googleConnections = mysqlTable("google_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  connectionKey: varchar("connectionKey", { length: 64 }).notNull().unique(),
+  encryptedRefreshToken: text("encryptedRefreshToken").notNull(),
+  grantedScopes: text("grantedScopes"),
+  connectedBy: int("connectedBy").notNull(),
+  connectedAt: timestamp("connectedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GoogleConnection = typeof googleConnections.$inferSelect;
+export type InsertGoogleConnection = typeof googleConnections.$inferInsert;
+
+/** Una planilla permanente por Productor; el estado evita duplicados durante una creación concurrente. */
+export const siteGoogleSheets = mysqlTable(
+  "site_google_sheets",
+  {
+    siteId: int("siteId").primaryKey(),
+    status: mysqlEnum("status", ["creating", "ready", "failed"]).default("creating").notNull(),
+    spreadsheetId: varchar("spreadsheetId", { length: 200 }),
+    spreadsheetUrl: varchar("spreadsheetUrl", { length: 500 }),
+    createdBy: int("createdBy").notNull(),
+    lastError: varchar("lastError", { length: 500 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => ({
+    spreadsheetIdx: index("site_google_sheets_spreadsheet_idx").on(table.spreadsheetId),
+  })
+);
+
+export type SiteGoogleSheet = typeof siteGoogleSheets.$inferSelect;
+export type InsertSiteGoogleSheet = typeof siteGoogleSheets.$inferInsert;
+
 /** Cartera comercial: un sitio puede estar asignado a uno o varios vendedores. */
 export const siteAssignments = mysqlTable(
   "site_assignments",

@@ -26,6 +26,8 @@ import {
   Archive,
   CalendarClock,
   Download,
+  ExternalLink,
+  FileSpreadsheet,
   Loader2,
   MapPin,
   Navigation,
@@ -58,6 +60,11 @@ export default function SiteDetail() {
   const detailQuery = trpc.sites.detail.useQuery(
     { id: siteId },
     { enabled: Number.isFinite(siteId) && siteId > 0 }
+  );
+  const isProducer = detailQuery.data?.site.clientType?.trim().toLocaleLowerCase("es-PY") === "productor";
+  const producerSheet = trpc.sheets.forSite.useQuery(
+    { siteId },
+    { enabled: Boolean(isProducer && Number.isFinite(siteId) && siteId > 0) }
   );
   const catalog = trpc.admin.catalog.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
@@ -100,6 +107,14 @@ export default function SiteDetail() {
       ]);
       toast.success("Punto archivado. Administración puede recuperarlo si hace falta.");
       navigate("/sitios");
+    },
+    onError: error => toast.error(error.message),
+  });
+
+  const createProducerSheet = trpc.sheets.createForSite.useMutation({
+    onSuccess: async result => {
+      await producerSheet.refetch();
+      toast.success(result.reused ? "Se abrió la planilla permanente del Productor" : "Planilla del Productor creada");
     },
     onError: error => toast.error(error.message),
   });
@@ -265,6 +280,52 @@ export default function SiteDetail() {
           </TabsList>
 
           <TabsContent value="notas" className="space-y-3 mt-3">
+            {isProducer && <div className="surface-card p-3.5 flex flex-wrap items-center gap-3 border-[color:color-mix(in_oklab,var(--hortimax-teal)_30%,var(--border))]">
+              <div className="grid place-items-center h-9 w-9 rounded-xl bg-[var(--hortimax-teal)]/12 text-[var(--hortimax-teal)] shrink-0">
+                <FileSpreadsheet className="h-4.5 w-4.5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">Planilla del Productor</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {producerSheet.data?.sheet
+                    ? "Es la misma planilla permanente para este cliente."
+                    : producerSheet.data?.connected
+                      ? "Creala una vez y quedará vinculada a este cliente."
+                      : user?.role === "admin"
+                        ? "Conectá tu cuenta personal de Google para habilitarla."
+                        : "Un administrador debe conectar primero la cuenta de Google."}
+                </p>
+              </div>
+              {producerSheet.isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              ) : producerSheet.data?.sheet ? (
+                <Button size="sm" variant="outline" className="bg-background" asChild>
+                  <a href={producerSheet.data.sheet.url} target="_blank" rel="noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    Abrir planilla
+                  </a>
+                </Button>
+              ) : producerSheet.data?.connected ? (
+                <Button
+                  size="sm"
+                  disabled={createProducerSheet.isPending}
+                  onClick={() => createProducerSheet.mutate({ siteId })}>
+                  {createProducerSheet.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  Crear planilla
+                </Button>
+              ) : user?.role === "admin" ? (
+                <Button size="sm" asChild>
+                  <a href={`/api/google/authorize?returnTo=${encodeURIComponent(`/sitios/${siteId}`)}`}>
+                    Conectar Google
+                  </a>
+                </Button>
+              ) : null}
+              {producerSheet.data?.sheet && (
+                <p className="w-full text-[11px] text-muted-foreground leading-relaxed">
+                  Google controla el acceso directo a esta planilla según los permisos que otorgue la cuenta propietaria.
+                </p>
+              )}
+            </div>}
             <div className="flex items-center justify-between gap-3 px-1">
               <div>
                 <p className="text-sm font-semibold">Historial de notas</p>
@@ -272,7 +333,7 @@ export default function SiteDetail() {
               </div>
               <Button variant="outline" size="sm" className="shrink-0 bg-background" onClick={exportNotes}>
                 <Download className="h-4 w-4" />
-                Sheets
+                CSV
               </Button>
             </div>
             {canContribute && <div className="surface-card p-3.5 space-y-3">

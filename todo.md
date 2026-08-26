@@ -427,3 +427,29 @@
 - [x] Retirar el botón directo Check-in de cada tarjeta de cliente
 - [x] Enlazar la acción visible a la ficha del cliente y sus notas
 - [x] Probar y publicar el listado simplificado
+
+## Google Sheets por cliente Productor
+- [x] Revisar la conexión disponible con Google Sheets y Drive
+- [x] Definir una única planilla permanente por Productor en el Drive del administrador
+- [ ] Crear o vincular una hoja de Sheets por cada cliente Productor desde Notas
+- [x] Mostrar el acceso a Sheets solo en fichas de tipo Productor
+- [ ] Probar y publicar el flujo de Sheets por cliente
+
+## Creación automática de Sheets por Productor
+- [ ] Configurar una autorización de Google válida para la aplicación publicada
+- [ ] Crear la planilla desde el botón “+” y guardarla en el Drive personal autorizado
+- [ ] Persistir el identificador del archivo para reutilizar la misma planilla del Productor
+- [x] Restringir la visibilidad del acceso a usuarios que ya pueden ver ese Productor
+- [ ] Probar y publicar la creación automática de la planilla
+
+## Cambio a cuenta personal de Google
+- [ ] Retirar la conexión actual de Google Workspace corporativa
+- [x] Preparar autorización OAuth con la cuenta personal de Google del usuario
+- [ ] Crear las planillas de Productores en el Drive personal autorizado
+
+## OAuth y planillas personales — implementación
+- [x] Persistir de forma cifrada la autorización renovable de Google y el vínculo Productor → planilla
+- [x] Implementar inicio y retorno OAuth con validación anti-CSRF, limitado al administrador
+- [x] Crear o reutilizar de forma idempotente la planilla única de cada Productor
+- [x] Mostrar Crear planilla o Abrir planilla en Notas solo para Productores autorizados
+- [x] Cubrir permisos, reutilización y configuración OAuth con pruebas automatizadas

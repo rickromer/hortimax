@@ -4,6 +4,7 @@ import {
   catalogs,
   checkins,
   followups,
+  googleConnections,
   InsertCatalog,
   InsertCheckin,
   InsertFollowup,
@@ -12,6 +13,7 @@ import {
   InsertUser,
   notes,
   siteAssignments,
+  siteGoogleSheets,
   sites,
   users,
 } from "../drizzle/schema";
@@ -143,6 +145,92 @@ export async function countUsers() {
   if (!db) return 0;
   const rows = await db.select({ total: sql<number>`count(*)` }).from(users);
   return Number(rows[0]?.total ?? 0);
+}
+
+/* ----------------------- Google OAuth y planillas ----------------------- */
+
+export async function getGoogleConnection(connectionKey: string) {
+  const db = await requireDb();
+  const rows = await db
+    .select()
+    .from(googleConnections)
+    .where(eq(googleConnections.connectionKey, connectionKey))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function upsertGoogleConnection(input: {
+  connectionKey: string;
+  encryptedRefreshToken: string;
+  grantedScopes: string | null;
+  connectedBy: number;
+}) {
+  const db = await requireDb();
+  await db
+    .insert(googleConnections)
+    .values({ ...input, connectedAt: new Date() })
+    .onDuplicateKeyUpdate({
+      set: {
+        encryptedRefreshToken: input.encryptedRefreshToken,
+        grantedScopes: input.grantedScopes,
+        connectedBy: input.connectedBy,
+        connectedAt: new Date(),
+      },
+    });
+  return getGoogleConnection(input.connectionKey);
+}
+
+export async function getSiteGoogleSheet(siteId: number) {
+  const db = await requireDb();
+  const rows = await db
+    .select()
+    .from(siteGoogleSheets)
+    .where(eq(siteGoogleSheets.siteId, siteId))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function reserveSiteGoogleSheet(siteId: number, createdBy: number) {
+  const db = await requireDb();
+  const found = await getSiteGoogleSheet(siteId);
+  if (found) return { created: false, sheet: found };
+  try {
+    await db.insert(siteGoogleSheets).values({ siteId, createdBy, status: "creating" });
+  } catch {
+    const existing = await getSiteGoogleSheet(siteId);
+    if (existing) return { created: false, sheet: existing };
+    throw new Error("No se pudo reservar la planilla del Productor.");
+  }
+  const created = await getSiteGoogleSheet(siteId);
+  if (!created) throw new Error("No se pudo reservar la planilla del Productor.");
+  return { created: true, sheet: created };
+}
+
+export async function markSiteGoogleSheetReady(input: {
+  siteId: number;
+  spreadsheetId: string;
+  spreadsheetUrl: string;
+}) {
+  const db = await requireDb();
+  await db
+    .update(siteGoogleSheets)
+    .set({
+      status: "ready",
+      spreadsheetId: input.spreadsheetId,
+      spreadsheetUrl: input.spreadsheetUrl,
+      lastError: null,
+    })
+    .where(eq(siteGoogleSheets.siteId, input.siteId));
+  return getSiteGoogleSheet(input.siteId);
+}
+
+export async function markSiteGoogleSheetFailed(siteId: number, lastError: string) {
+  const db = await requireDb();
+  await db
+    .update(siteGoogleSheets)
+    .set({ status: "failed", lastError })
+    .where(eq(siteGoogleSheets.siteId, siteId));
+  return getSiteGoogleSheet(siteId);
 }
 
 /* -------------------------------- Sitios -------------------------------- */

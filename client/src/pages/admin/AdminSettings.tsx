@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { downloadCsv } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
-import { Download, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, FileSpreadsheet, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -31,6 +31,7 @@ const SECTIONS: { kind: Kind; title: string; description: string }[] = [
 export default function AdminSettings() {
   const utils = trpc.useUtils();
   const catalog = trpc.admin.catalog.useQuery();
+  const googleSheets = trpc.sheets.status.useQuery();
   const [drafts, setDrafts] = useState<Record<Kind, string>>({
     zone: "",
     clientType: "",
@@ -99,6 +100,35 @@ export default function AdminSettings() {
               Notas
             </Button>
           </div>
+        </div>
+
+        <div className="surface-card p-5 flex flex-wrap items-center gap-4">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--hortimax-teal)]/12 text-[var(--hortimax-teal)]">
+            <FileSpreadsheet className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">Google Sheets de Productores</p>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+              {googleSheets.data?.connected
+                ? "La cuenta personal autorizada está lista para crear una planilla permanente por Productor."
+                : "Conectá tu cuenta personal de Google. Las planillas se guardarán en ese Drive y luego podrás reemplazar la conexión por una corporativa."}
+            </p>
+          </div>
+          {googleSheets.data?.connected ? (
+            <Badge variant="secondary" className="gap-1.5 bg-[var(--hortimax-teal)]/10 text-[var(--hortimax-teal)]">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Conectado
+            </Badge>
+          ) : googleSheets.data?.configured ? (
+            <Button asChild>
+              <a href="/api/google/authorize?returnTo=%2Fadmin%2Fconfiguracion">
+                Conectar Google
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          ) : (
+            <Badge variant="outline">Credenciales pendientes</Badge>
+          )}
         </div>
 
         {SECTIONS.map(section => {
@@ -174,4 +204,3 @@ export default function AdminSettings() {
     </AdminShell>
   );
 }
-

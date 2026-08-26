@@ -5,6 +5,7 @@ import { authRouter } from "./routers/auth";
 import { calendarRouter } from "./routers/calendar";
 import { followupsRouter } from "./routers/followups";
 import { notesRouter } from "./routers/notes";
+import { sheetsRouter } from "./routers/sheets";
 import { sitesRouter } from "./routers/sites";
 
 export const appRouter = router({
@@ -12,6 +13,7 @@ export const appRouter = router({
   auth: authRouter,
   sites: sitesRouter,
   notes: notesRouter,
+  sheets: sheetsRouter,
   followups: followupsRouter,
   calendar: calendarRouter,
   admin: adminRouter,

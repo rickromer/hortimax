@@ -23,7 +23,7 @@ const siteInput = z.object({
   accuracy: z.number().int().min(0).max(100000).optional().nullable(),
 });
 
-async function assertSiteViewAccess(siteId: number, user: { id: number; role: string }) {
+export async function assertSiteViewAccess(siteId: number, user: { id: number; role: string }) {
   const site = await db.getSiteById(siteId);
   if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
   if (!canManageAll(user.role) && site.createdBy !== user.id) {

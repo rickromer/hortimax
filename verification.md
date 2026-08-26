@@ -253,3 +253,9 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La vista previa confirmó las rutas de login y mapa. El SDK de mapas volvió a fallar transitoriamente en el capturador y presentó la acción de recuperación ya disponible.
 - En una comprobación inmediata posterior al checkpoint, el dominio publicado aún respondió con la versión anterior del mapa en la raíz. La publicación del nuevo checkpoint debe terminar de propagarse antes de dar por validado `/acceso` como primera vista en producción.
 - Tras completarse la propagación, el dominio publicado redirigió correctamente `https://mapaclientes-cqpci7xz.manus.space/` a `/acceso` y mostró **Ingresá a tu cuenta** con el campo Usuario y Continuar.
+
+## Agrupación de clientes cercanos
+
+- El visor incorpora agrupación por cuadrícula visual: a zoom amplio, los clientes próximos se consolidan en un contador turquesa; al pulsarlo, el mapa centra la zona y aumenta el zoom para revelar los pines individuales.
+- Los puntos seleccionados permanecen individuales y los marcadores agrupados se recalculan ante cada movimiento o cambio de zoom. Las pruebas unitarias cubren agrupación de puntos cercanos, expansión a zoom alto y exclusión del punto seleccionado.
+- La compilación y la suite de 74 pruebas aprobaron. El capturador interno volvió a rechazar la carga del SDK de Maps sobre su origen local, comportamiento documentado desde la primera verificación y ajeno al código de agrupación; en producción el mapa usa el proxy y el mecanismo de reintento disponible.

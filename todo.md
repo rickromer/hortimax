@@ -376,10 +376,10 @@
 - [x] Verificar en móvil y escritorio y publicar la corrección
 
 ## Agrupación inteligente de puntos en el mapa
-- [ ] Agrupar clientes cercanos para evitar superposición de pines
-- [ ] Mostrar el total de clientes dentro de cada agrupación
-- [ ] Expandir o acercar el mapa al tocar una agrupación
-- [ ] Conservar pines individuales y selección al acercar el zoom
+- [x] Agrupar clientes cercanos para evitar superposición de pines
+- [x] Mostrar el total de clientes dentro de cada agrupación
+- [x] Expandir o acercar el mapa al tocar una agrupación
+- [x] Conservar pines individuales y selección al acercar el zoom
 - [ ] Probar con una distribución densa de clientes y publicar la mejora
 
 ## Responsable visible de actividad

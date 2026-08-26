@@ -2,6 +2,7 @@
 
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { mapClickToCoordinates } from "@/lib/mapClick";
+import { clusterMapPoints } from "@/lib/mapClustering";
 import { canRetryMapLoadAutomatically } from "@/lib/mapLoadRecovery";
 import { READ_ONLY_MAP_REFERENCE_OPTIONS } from "@/lib/mapReferenceOptions";
 import { cn } from "@/lib/utils";
@@ -118,6 +119,20 @@ function buildUserDot() {
   return el;
 }
 
+function buildClusterPin(count: number) {
+  const el = document.createElement("button");
+  el.type = "button";
+  el.setAttribute("aria-label", `${count} clientes cercanos. Acercar mapa`);
+  const size = count >= 100 ? 52 : count >= 10 ? 46 : 40;
+  el.textContent = String(count);
+  el.style.cssText = `
+    display:grid;place-items:center;width:${size}px;height:${size}px;border-radius:999px;
+    background:#0BA4A6;color:#fff;border:3px solid #fff;box-shadow:0 4px 12px rgba(7,78,79,.42);
+    font:700 13px/1 system-ui,sans-serif;cursor:pointer;letter-spacing:-.02em;
+  `;
+  return el;
+}
+
 export function ClientMap({
   className,
   markers,
@@ -134,6 +149,7 @@ export function ClientMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRefs = useRef<Map<number, google.maps.marker.AdvancedMarkerElement>>(new Map());
+  const clusterRefs = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
   const userMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
   const accuracyRef = useRef<google.maps.Circle | null>(null);
   const readyRef = useRef(false);
@@ -192,6 +208,7 @@ export function ClientMap({
         onCenterChanged({ latitude: center.lat(), longitude: center.lng() });
       });
     }
+    mapRef.current.addListener("idle", () => syncMarkers());
 
     readyRef.current = true;
     automaticRetryAttemptsRef.current = 0;
@@ -205,6 +222,9 @@ export function ClientMap({
     const map = mapRef.current;
     if (!map || !window.google) return;
     const existing = markerRefs.current;
+    const zoom = map.getZoom() ?? initialZoom;
+    const clusters = clusterMapPoints(markers, zoom);
+    const clusteredIds = new Set(clusters.flatMap(cluster => cluster.ids));
     const nextIds = new Set(markers.map(m => m.id));
 
     existing.forEach((marker, id) => {
@@ -220,10 +240,11 @@ export function ClientMap({
         current.position = { lat: marker.latitude, lng: marker.longitude };
         current.content = buildPin(marker);
         current.zIndex = marker.selected ? 1000 : 1;
+        current.map = clusteredIds.has(marker.id) ? null : map;
         return;
       }
       const advanced = new window.google!.maps.marker.AdvancedMarkerElement({
-        map,
+        map: clusteredIds.has(marker.id) ? null : map,
         position: { lat: marker.latitude, lng: marker.longitude },
         title: marker.name,
         content: buildPin(marker),
@@ -231,6 +252,35 @@ export function ClientMap({
       });
       advanced.addListener("click", () => onMarkerClick?.(marker.id));
       existing.set(marker.id, advanced);
+    });
+
+    const activeClusterKeys = new Set(clusters.map(cluster => cluster.key));
+    clusterRefs.current.forEach((clusterMarker, key) => {
+      if (!activeClusterKeys.has(key)) {
+        clusterMarker.map = null;
+        clusterRefs.current.delete(key);
+      }
+    });
+    clusters.forEach(cluster => {
+      const current = clusterRefs.current.get(cluster.key);
+      if (current) {
+        current.position = { lat: cluster.latitude, lng: cluster.longitude };
+        current.content = buildClusterPin(cluster.ids.length);
+        current.map = map;
+        return;
+      }
+      const clusterMarker = new window.google!.maps.marker.AdvancedMarkerElement({
+        map,
+        position: { lat: cluster.latitude, lng: cluster.longitude },
+        title: `${cluster.ids.length} clientes cercanos`,
+        content: buildClusterPin(cluster.ids.length),
+        zIndex: 900,
+      });
+      clusterMarker.addListener("click", () => {
+        map.panTo({ lat: cluster.latitude, lng: cluster.longitude });
+        map.setZoom(Math.min((map.getZoom() ?? zoom) + 3, 18));
+      });
+      clusterRefs.current.set(cluster.key, clusterMarker);
     });
 
     if (fitToMarkers && markers.length > 0 && !didFitRef.current) {

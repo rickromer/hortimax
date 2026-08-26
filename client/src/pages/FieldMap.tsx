@@ -73,15 +73,7 @@ export default function FieldMap() {
     hasAutoCentered.current = true;
     setFocus({ latitude: position.latitude, longitude: position.longitude });
   }, [position]);
-  const nearbyQuery = trpc.sites.nearby.useQuery(
-    position
-      ? { latitude: position.latitude, longitude: position.longitude, radius: 500 }
-      : { latitude: 0, longitude: 0 },
-    { enabled: Boolean(position), staleTime: 20_000 }
-  );
-
   const sites = sitesQuery.data ?? [];
-  const nearby = position ? (nearbyQuery.data ?? []) : [];
   const selected = useMemo(
     () => sites.find(site => site.id === selectedId) ?? null,
     [sites, selectedId]
@@ -347,33 +339,6 @@ export default function FieldMap() {
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </Button>
-              </div>
-            </div>
-          ) : nearby.length > 0 ? (
-            <div className="surface-card surface-lift p-3">
-              <p className="text-xs font-medium text-muted-foreground px-1 pb-2">
-                Estás cerca de {nearby.length} sitio{nearby.length > 1 ? "s" : ""} registrado
-                {nearby.length > 1 ? "s" : ""}
-              </p>
-              <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                {nearby.slice(0, 4).map(site => (
-                  <div
-                    key={site.id}
-                    className="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-accent/50 transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{site.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        a {formatDistance(site.distance)} · {site.clientType ?? "Sin tipo"}
-                      </p>
-                    </div>
-                    {user && (canManageAll(user.role) || site.createdBy === user.id) && <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => setCheckinSite({ id: site.id, name: site.name })}>
-                      Check-in
-                    </Button>}
-                  </div>
-                ))}
               </div>
             </div>
           ) : null}

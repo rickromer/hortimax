@@ -402,7 +402,7 @@ export default function SiteDetail() {
         open={editOpen}
         onOpenChange={setEditOpen}
         mode="edit"
-        coords={null}
+        coords={{ latitude: site.latitude, longitude: site.longitude }}
         initial={{
           id: site.id,
           name: site.name,

@@ -254,6 +254,18 @@ export async function deletePublicSubmissionSites() {
   return ids.length;
 }
 
+/** Borra un cliente y todos sus registros dependientes. Llamar solo desde una ruta administrativa. */
+export async function deleteSiteCompletely(siteId: number) {
+  const db = await requireDb();
+  await db.transaction(async tx => {
+    await tx.delete(siteAssignments).where(eq(siteAssignments.siteId, siteId));
+    await tx.delete(followups).where(eq(followups.siteId, siteId));
+    await tx.delete(notes).where(eq(notes.siteId, siteId));
+    await tx.delete(checkins).where(eq(checkins.siteId, siteId));
+    await tx.delete(sites).where(eq(sites.id, siteId));
+  });
+}
+
 export async function countSites(filters: SiteFilters = {}) {
   const db = await getDb();
   if (!db) return 0;

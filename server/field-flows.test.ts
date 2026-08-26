@@ -8,6 +8,9 @@ const store = vi.hoisted(() => ({
   getNoteById: vi.fn(), updateNote: vi.fn(), deleteNote: vi.fn(), getAssignedSiteIds: vi.fn(),
 }));
 vi.mock("./db", () => store);
+vi.mock("./territory", () => ({
+  territoryFromCoordinates: vi.fn().mockResolvedValue({ department: "Caaguazú", zone: "R. I. Tres Corrales" }),
+}));
 
 import { notesRouter } from "./routers/notes";
 import { sitesRouter } from "./routers/sites";
@@ -80,13 +83,17 @@ describe("permisos de clientes", () => {
   it("permite editar datos básicos sin sesión durante el modo público temporal", async () => {
     store.getSiteById.mockResolvedValue(foreignSite);
     await sitesRouter.createCaller(anonymousContext()).update({ id: foreignSite.id, name: "Cliente actualizado" });
-    expect(store.updateSite).toHaveBeenCalledWith(foreignSite.id, { name: "Cliente actualizado" });
+    expect(store.updateSite).toHaveBeenCalledWith(foreignSite.id, expect.objectContaining({
+      name: "Cliente actualizado", department: "Caaguazú", zone: "R. I. Tres Corrales",
+    }));
   });
 
   it("permite a gerente comercial editar cualquier cliente", async () => {
     store.getSiteById.mockResolvedValue(foreignSite);
     await sitesRouter.createCaller(contextFor(40, "manager")).update({ id: foreignSite.id, name: "Cliente corregido" });
-    expect(store.updateSite).toHaveBeenCalledWith(foreignSite.id, { name: "Cliente corregido" });
+    expect(store.updateSite).toHaveBeenCalledWith(foreignSite.id, expect.objectContaining({
+      name: "Cliente corregido", department: "Caaguazú", zone: "R. I. Tres Corrales",
+    }));
   });
 });
 

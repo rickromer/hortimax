@@ -37,6 +37,7 @@ export const DEFAULT_ZONES = [
 export const DEFAULT_NOTE_CATEGORIES = [
   "Visita técnica",
   "Visita comercial",
+  "Comentario",
   "Pedido",
   "Entrega",
   "Reclamo",

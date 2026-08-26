@@ -3,10 +3,12 @@ import { ClientMap } from "@/components/ClientMap";
 import { ClientAssignmentsDialog } from "@/components/ClientAssignmentsDialog";
 import { FollowupsPanel } from "@/components/FollowupsPanel";
 import { PointLocationActions } from "@/components/PointLocationActions";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { formatCoords, formatDateTime, formatDistance, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
 import {
@@ -15,20 +17,31 @@ import {
   MapPin,
   Navigation,
   Phone,
+  Trash2,
   User,
   UsersRound,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, useRoute } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 
 export default function AdminClientDetail() {
   const [, params] = useRoute("/admin/clientes/:id");
+  const [, navigate] = useLocation();
+  const { user } = useAuth();
   const siteId = Number(params?.id);
   const detailQuery = trpc.sites.detail.useQuery(
     { id: siteId },
     { enabled: Number.isFinite(siteId) && siteId > 0 }
   );
   const [assignmentsOpen, setAssignmentsOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const utils = trpc.useUtils();
+  const deleteClient = trpc.admin.deleteClient.useMutation({
+    onSuccess: async () => {
+      await utils.sites.list.invalidate();
+      navigate("/admin/clientes");
+    },
+  });
 
   if (detailQuery.isLoading) {
     return (
@@ -67,6 +80,15 @@ export default function AdminClientDetail() {
             Clientes
           </Link>
         </Button>
+
+        {user?.role === "admin" && (
+          <div className="flex justify-end">
+            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="h-3.5 w-3.5" />
+              Eliminar cliente
+            </Button>
+          </div>
+        )}
 
         <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
           <div className="surface-card overflow-hidden">
@@ -261,6 +283,28 @@ export default function AdminClientDetail() {
         clientName={site.name}
         assignedIds={assignees.map(assignee => assignee.id)}
       />
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar {site.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción elimina definitivamente el cliente, sus notas, visitas, relevamientos y asignaciones. No se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteClient.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteClient.isPending}
+              onClick={event => {
+                event.preventDefault();
+                deleteClient.mutate({ id: site.id });
+              }}>
+              {deleteClient.isPending ? "Eliminando…" : "Eliminar definitivamente"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminShell>
   );
 }

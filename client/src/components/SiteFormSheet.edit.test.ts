@@ -68,4 +68,22 @@ describe("SiteFormSheet en edición", () => {
     await act(async () => root.render(createElement(SiteFormSheet, { ...props, initial: { ...initial } })));
     expect(container.querySelector<HTMLInputElement>("#site-name")?.value).toBe("");
   });
+
+  it("muestra Departamento y Distrito/Municipio como datos bloqueados por la ubicación", async () => {
+    await act(async () => root.render(createElement(SiteFormSheet, {
+      open: true,
+      onOpenChange: vi.fn(),
+      coords: null,
+      mode: "edit",
+      initial: {
+        id: 120001,
+        name: "Comite de Productores RI3",
+        department: "Caaguazú",
+        zone: "R. I. Tres Corrales",
+      },
+    })));
+
+    expect(container.querySelector<HTMLInputElement>("#site-department")?.readOnly).toBe(true);
+    expect(container.querySelector<HTMLInputElement>("#site-zone")?.readOnly).toBe(true);
+  });
 });

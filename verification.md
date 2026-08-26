@@ -224,3 +224,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 
 - Los mapas compartidos usan `clickableIcons: false`: los nombres, rutas, negocios y lugares de Google se conservan como referencia visual, pero ya no deben abrir sus paneles, enlaces de compartir o acciones de dirección al tocarlos. Los pines propios de HORTIMAX mantienen su interacción normal.
 - Ante un fallo transitorio del SDK, el mapa realiza un reintento automático único. Si no se recupera, muestra la acción **Reintentar mapa**; la captura de vista previa verificó ese control de recuperación y las pruebas cubren el límite de reintento y las referencias pasivas. `pnpm check`, 54 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron.
+
+## Territorio automático, Comentario y eliminación administrativa
+
+- Departamento y Distrito/Municipio quedan como valores de solo lectura calculados a partir de las coordenadas. El formulario los recalcula al abrirse o cambiar el pin; el backend ignora cualquier valor territorial manual y lo reemplaza por geocodificación inversa.
+- Se completaron los tres clientes pendientes: **Fermin Lopez** → Caaguazú / Caaguazú; **Agro Alex** → Caaguazú / Tres de Febrero; y **Silvio Figueredo** → Caaguazú / Yhú. Las fichas móviles verificaron los dos primeros territorios.
+- **Comentario** fue agregado a los valores por defecto y al catálogo persistido de notas. La eliminación definitiva borra cliente, asignaciones, relevamientos, notas y visitas en una transacción, con acceso reservado a Administrador y confirmación explícita en la ficha administrativa.
+- `pnpm test` aprobó 64 pruebas (1 integración opcional omitida), incluidos el bloqueo visual de territorio, la nueva categoría y la restricción de eliminación; la compilación de producción aprobó.

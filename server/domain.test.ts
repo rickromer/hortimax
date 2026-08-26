@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_CLIENT_TYPES,
+  DEFAULT_NOTE_CATEGORIES,
   DEFAULT_ZONES,
   NEARBY_RADIUS_METERS,
   PARAGUAY_CENTER,
@@ -21,6 +22,10 @@ describe("geografía de Paraguay", () => {
     expect(DEFAULT_ZONES).toContain("Itapúa");
     expect(DEFAULT_CLIENT_TYPES).toContain("Productor");
     expect(DEFAULT_CLIENT_TYPES).toContain("Revendedor");
+  });
+
+  it("incluye Comentario entre las categorías estándar de notas", () => {
+    expect(DEFAULT_NOTE_CATEGORIES).toContain("Comentario");
   });
 });
 
@@ -53,4 +58,3 @@ describe("cabecera de nota", () => {
     expect(texto).toMatch(/\d{1,2}\/\d{1,2}\/\d{2,4}/);
   });
 });
-

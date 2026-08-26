@@ -285,6 +285,25 @@
 - [x] Mantener el control principal de Mi ubicación del mapa disponible
 - [x] Verificar que el modo Nuevo punto conserve solo Cancelar y Usar esta ubicación
 
+## Territorio automático por ubicación
+- [x] Determinar Departamento y Distrito/Municipio únicamente mediante geocodificación del pin
+- [x] Bloquear la edición manual de Departamento y Distrito/Municipio en el formulario
+- [x] Actualizar el territorio automáticamente al cambiar la ubicación del punto
+- [x] Identificar clientes existentes sin Departamento o Distrito/Municipio reconocido
+- [x] Completar el territorio de los clientes existentes a partir de sus coordenadas
+- [x] Probar campos bloqueados y clasificación automática en creación y edición
+
+## Eliminación administrativa de clientes
+- [x] Preparar una eliminación completa de cliente y sus datos vinculados solo para Administrador
+- [x] Añadir confirmación explícita antes de eliminar desde Administración
+- [x] Mantener la acción invisible e inaccesible para página pública, Gerente comercial y Representante
+- [x] Cubrir con pruebas el permiso y la limpieza de datos vinculados
+
+## Categoría Comentario en notas
+- [x] Añadir Comentario al catálogo y los valores por defecto de categorías de notas
+- [x] Mostrar Comentario en el selector de categoría de nota
+- [x] Cubrir la nueva categoría con pruebas y datos existentes
+
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa
 - [x] Mantener visibles rutas, nombres y referencias sin exponer acciones de compartir

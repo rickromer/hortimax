@@ -59,6 +59,16 @@ export const adminRouter = router({
     return { removed };
   }),
 
+  /** Eliminación definitiva, disponible exclusivamente para Administrador. */
+  deleteClient: adminProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ input }) => {
+      const site = await db.getSiteById(input.id);
+      if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
+      await db.deleteSiteCompletely(input.id);
+      return { success: true as const, name: site.name };
+    }),
+
   /* ------------------------------ Usuarios ------------------------------ */
 
   listUsers: managementProcedure.query(async ({ ctx }) => {
@@ -217,13 +227,15 @@ export const adminRouter = router({
       db.listCatalog("clientType"),
       db.listCatalog("noteCategory"),
     ]);
+    const mergeDefaults = (existing: string[], defaults: readonly string[]) => [
+      ...existing,
+      ...defaults.filter(value => !existing.some(current => current.toLocaleLowerCase("es-PY") === value.toLocaleLowerCase("es-PY"))),
+    ];
     return {
       zones: zones.length ? zones.map(z => z.value) : DEFAULT_ZONES,
       departments: zones.length ? zones.map(z => z.value) : DEFAULT_ZONES,
       clientTypes: clientTypes.length ? clientTypes.map(c => c.value) : DEFAULT_CLIENT_TYPES,
-      noteCategories: noteCategories.length
-        ? noteCategories.map(n => n.value)
-        : DEFAULT_NOTE_CATEGORIES,
+      noteCategories: mergeDefaults(noteCategories.map(n => n.value), DEFAULT_NOTE_CATEGORIES),
       zoneRows: zones,
       clientTypeRows: clientTypes,
       noteCategoryRows: noteCategories,

@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { territoryFromCoordinates } from "../territory";
 
 const coord = z.object({
   latitude: z.number().min(-90).max(90),
@@ -108,11 +109,15 @@ export const sitesRouter = router({
   create: publicProcedure
     .input(siteInput.merge(coord))
     .mutation(async ({ ctx, input }) => {
+      const territory = await territoryFromCoordinates(input.latitude, input.longitude).catch(() => ({
+        department: input.department?.trim() || null,
+        zone: input.zone?.trim() || null,
+      }));
       const created = await db.createSite({
         name: input.name.trim(),
         clientType: input.clientType?.trim() || null,
-        department: input.department?.trim() || null,
-        zone: input.zone?.trim() || null,
+        department: territory.department,
+        zone: territory.zone,
         description: input.description?.trim() || null,
         contactName: input.contactName?.trim() || null,
         phone: input.phone?.trim() || null,
@@ -132,18 +137,28 @@ export const sitesRouter = router({
   update: publicProcedure
     .input(siteInput.partial().extend({ id: z.number().int().positive(), latitude: z.number().min(-90).max(90).optional(), longitude: z.number().min(-180).max(180).optional() }))
     .mutation(async ({ ctx, input }) => {
+      let site;
       if (ctx.user) {
-        await assertSiteEditAccess(input.id, ctx.user);
+        site = await assertSiteEditAccess(input.id, ctx.user);
       } else {
-        await assertSiteViewAccess(input.id);
+        site = await assertSiteViewAccess(input.id);
       }
       const { id, latitude, longitude, ...rest } = input;
       const values: Record<string, unknown> = {};
       Object.entries(rest).forEach(([key, value]) => {
+        if (key === "department" || key === "zone") return;
         if (value !== undefined) values[key] = typeof value === "string" ? value.trim() || null : value;
       });
+      const resolvedLatitude = latitude ?? Number(site.latitude);
+      const resolvedLongitude = longitude ?? Number(site.longitude);
       if (latitude !== undefined) values.latitude = latitude.toFixed(7);
       if (longitude !== undefined) values.longitude = longitude.toFixed(7);
+      const territory = await territoryFromCoordinates(resolvedLatitude, resolvedLongitude).catch(() => ({
+        department: site.department,
+        zone: site.zone,
+      }));
+      values.department = territory.department;
+      values.zone = territory.zone;
       return db.updateSite(id, values as any);
     }),
 

@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatCoords } from "@/lib/format";
 import { parsePointCoordinates } from "@/lib/locationLinks";
 import { trpc } from "@/lib/trpc";
+import { territoryFromGeocode } from "@/lib/zoneFromGeocode";
 import { Crosshair, Loader2, MapPin, MousePointer2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -102,6 +103,8 @@ export function SiteFormSheet({
   const [showCoordinates, setShowCoordinates] = useState(false);
   const [latitudeInput, setLatitudeInput] = useState("");
   const [longitudeInput, setLongitudeInput] = useState("");
+  const [territoryLoading, setTerritoryLoading] = useState(false);
+  const territoryRequest = React.useRef(0);
 
   useEffect(() => {
     if (!open) return;
@@ -127,6 +130,27 @@ export function SiteFormSheet({
     setLatitudeInput(coords ? String(coords.latitude) : "");
     setLongitudeInput(coords ? String(coords.longitude) : "");
   }, [coords, locationSource, open, selectedSource]);
+
+  useEffect(() => {
+    if (!open || !selectedCoords || !window.google?.maps?.Geocoder) return;
+    const requestId = ++territoryRequest.current;
+    setTerritoryLoading(true);
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode(
+      { location: { lat: selectedCoords.latitude, lng: selectedCoords.longitude }, language: "es", region: "PY" },
+      (results, status) => {
+        if (requestId !== territoryRequest.current) return;
+        setTerritoryLoading(false);
+        if (status !== "OK") return;
+        const territory = territoryFromGeocode(results?.[0]?.address_components);
+        setValues(current => ({
+          ...current,
+          department: territory.department ?? "",
+          zone: territory.locality ?? "",
+        }));
+      }
+    );
+  }, [open, selectedCoords?.latitude, selectedCoords?.longitude]);
 
   const invalidate = async () => {
     await Promise.all([utils.sites.list.invalidate(), utils.sites.nearby.invalidate()]);
@@ -334,29 +358,27 @@ export function SiteFormSheet({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="site-department">Departamento {autoDepartment && mode === "create" ? "· detectado por ubicación" : ""}</Label>
+              <Label htmlFor="site-department">Departamento · según ubicación</Label>
               <Input
                 id="site-department"
-                list="department-suggestions"
                 value={values.department}
-                onChange={e => set("department", e.target.value)}
-                placeholder="Ej. Caaguazú"
-                className="h-11"
+                readOnly
+                aria-readonly="true"
+                placeholder={territoryLoading ? "Reconociendo ubicación…" : "Sin identificar"}
+                className="h-11 bg-muted text-muted-foreground"
               />
-              <datalist id="department-suggestions">
-                {(catalog.data?.departments ?? catalog.data?.zones ?? []).map(department => <option key={department} value={department} />)}
-              </datalist>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="site-zone">Distrito o municipio {autoZone && mode === "create" ? "· detectado por ubicación" : ""}</Label>
+            <Label htmlFor="site-zone">Distrito o municipio · según ubicación</Label>
             <Input
               id="site-zone"
               value={values.zone}
-              onChange={e => set("zone", e.target.value)}
-              placeholder="Ej. R. I. Tres Corrales"
-              className="h-11"
+              readOnly
+              aria-readonly="true"
+              placeholder={territoryLoading ? "Reconociendo ubicación…" : "Sin identificar"}
+              className="h-11 bg-muted text-muted-foreground"
             />
           </div>
 

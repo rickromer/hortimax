@@ -426,4 +426,4 @@
 ## Simplificación de acciones en listado de clientes
 - [x] Retirar el botón directo Check-in de cada tarjeta de cliente
 - [x] Enlazar la acción visible a la ficha del cliente y sus notas
-- [ ] Probar y publicar el listado simplificado
+- [x] Probar y publicar el listado simplificado

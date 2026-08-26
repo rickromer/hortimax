@@ -149,7 +149,7 @@ export default function SiteDetail() {
   const canEditClient = canEdit;
   const canContribute = canEdit;
   const canArchive = Boolean(
-    user && (user.role === "admin" || (user.role === "field" && site.createdBy === user.id))
+    user && (user.role === "admin" || user.role === "manager" || (user.role === "field" && site.createdBy === user.id))
   );
 
   return (

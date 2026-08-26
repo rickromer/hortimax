@@ -11,7 +11,7 @@ vi.mock("./db", () => store);
 
 import { adminRouter } from "./routers/admin";
 
-function contextFor(userId: number, role: "field" | "admin") {
+function contextFor(userId: number, role: "field" | "manager" | "admin") {
   return { user: { id: userId, role }, req: {} as TrpcContext["req"], res: {} as TrpcContext["res"] } as TrpcContext;
 }
 
@@ -27,7 +27,7 @@ describe("papelera administrativa recuperable", () => {
     store.listArchivedSites.mockResolvedValue([archivedSite]);
   });
 
-  it("solo permite que el administrador archive un cliente y conserva un motivo opcional", async () => {
+  it("permite a administración y gerencia archivar un cliente, pero no a campo ajeno", async () => {
     const caller = adminRouter.createCaller(contextFor(1, "admin"));
     await expect(caller.archiveClient({ id: activeSite.id, reason: "Registro duplicado" })).resolves.toMatchObject({
       success: true,
@@ -36,9 +36,14 @@ describe("papelera administrativa recuperable", () => {
     expect(store.archiveSite).toHaveBeenCalledWith(activeSite.id, 1, "Registro duplicado");
 
     await expect(
+      adminRouter.createCaller(contextFor(40, "manager")).archiveClient({ id: activeSite.id })
+    ).resolves.toMatchObject({ success: true, site: { active: false } });
+    expect(store.archiveSite).toHaveBeenCalledWith(activeSite.id, 40, undefined);
+
+    await expect(
       adminRouter.createCaller(contextFor(10, "field")).archiveClient({ id: activeSite.id })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    expect(store.archiveSite).toHaveBeenCalledTimes(1);
+    expect(store.archiveSite).toHaveBeenCalledTimes(2);
   });
 
   it("muestra los clientes archivados y permite restaurarlos solo al administrador", async () => {
@@ -50,5 +55,8 @@ describe("papelera administrativa recuperable", () => {
       site: { active: true },
     });
     expect(store.restoreSite).toHaveBeenCalledWith(archivedSite.id, 1);
+    await expect(
+      adminRouter.createCaller(contextFor(40, "manager")).restoreClient({ id: archivedSite.id })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });

@@ -60,7 +60,7 @@ export const adminRouter = router({
   }),
 
   /** Envía un cliente a papelera de forma recuperable. */
-  archiveClient: adminProcedure
+  archiveClient: managementProcedure
     .input(z.object({ id: z.number().int().positive(), reason: z.string().max(500).optional() }))
     .mutation(async ({ ctx, input }) => {
       const site = await db.getSiteById(input.id);

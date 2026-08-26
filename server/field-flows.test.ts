@@ -42,8 +42,10 @@ beforeEach(() => {
 });
 
 describe("permisos de clientes", () => {
-  it("permite consultar puntos sin sesión durante el acceso temporal", async () => {
-    await expect(sitesRouter.createCaller(anonymousContext()).list()).resolves.toEqual([]);
+  it("rechaza consultar puntos sin sesión", async () => {
+    await expect(sitesRouter.createCaller(anonymousContext()).list()).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
   });
 
   it("permite al representante ver todos los puntos y marca editable el suyo", async () => {

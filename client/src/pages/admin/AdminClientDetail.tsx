@@ -84,7 +84,7 @@ export default function AdminClientDetail() {
           </Link>
         </Button>
 
-        {user?.role === "admin" && (
+        {(user?.role === "admin" || user?.role === "manager") && (
           <div className="flex justify-end">
             <Button variant="outline" size="sm" className="bg-background text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setArchiveOpen(true)}>
               <Archive className="h-3.5 w-3.5" />

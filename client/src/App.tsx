@@ -59,12 +59,12 @@ function Router() {
     <Switch>
       <Route path="/acceso" component={Login} />
 
-      {/* Acceso principal y campo temporalmente abierto: administración permanece protegida. */}
+      {/* El acceso es obligatorio: tras cerrar sesión no se expone ninguna pantalla operativa. */}
       <Route path="/">{() => <Redirect to="/acceso" />}</Route>
-      <Route path="/mapa" component={FieldMap} />
-      <Route path="/sitios" component={SiteList} />
-      <Route path="/sitios/:id" component={SiteDetail} />
-      <Route path="/calendario" component={TeamCalendar} />
+      <Route path="/mapa">{() => <Guard component={FieldMap} />}</Route>
+      <Route path="/sitios">{() => <Guard component={SiteList} />}</Route>
+      <Route path="/sitios/:id">{() => <Guard component={SiteDetail} />}</Route>
+      <Route path="/calendario">{() => <Guard component={TeamCalendar} />}</Route>
       <Route path="/notas">{() => <Redirect to="/sitios" />}</Route>
       <Route path="/perfil">{() => <Guard component={Profile} />}</Route>
 

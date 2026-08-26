@@ -20,8 +20,8 @@ const scheduleInput = z.object({
 });
 
 export const followupsRouter = router({
-  /** Agenda temporalmente abierta junto con la ficha de cada cliente. */
-  list: publicProcedure
+  /** Agenda disponible únicamente dentro de una sesión válida. */
+  list: protectedProcedure
     .input(z.object({ siteId: z.number().int().positive().optional(), limit: z.number().int().min(1).max(300).optional() }).optional())
     .query(async ({ ctx, input }) => {
       if (input?.siteId) {

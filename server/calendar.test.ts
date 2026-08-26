@@ -74,4 +74,13 @@ describe("calendar.timeline", () => {
     expect(result.entries.map(entry => entry.kind)).toEqual(["upcoming", "note", "visit"]);
     expect(result.entries[0]).toMatchObject({ siteName: "Cooperativa RI3", department: "Caaguazú" });
   });
+
+  it("rechaza el calendario del equipo sin sesión", async () => {
+    const caller = calendarRouter.createCaller({
+      user: null,
+      req: {} as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    } as TrpcContext);
+    await expect(caller.timeline()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
 });

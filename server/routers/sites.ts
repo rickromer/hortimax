@@ -40,8 +40,8 @@ async function assertSiteEditAccess(siteId: number, user: { id: number; role: st
 }
 
 export const sitesRouter = router({
-  /** Mapa temporalmente abierto; la administración conserva sus filtros privados. */
-  list: publicProcedure
+  /** Mapa operativo disponible únicamente dentro de una sesión válida. */
+  list: protectedProcedure
     .input(
       z
         .object({
@@ -71,8 +71,8 @@ export const sitesRouter = router({
       return sites.map(site => ({ ...site, lastCheckinAt: lastMap.get(site.id) ?? null }));
     }),
 
-  /** La ficha y su historial se consultan sin sesión durante el acceso temporal. */
-  detail: publicProcedure
+  /** La ficha y su historial requieren sesión válida. */
+  detail: protectedProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
       const site = await assertSiteViewAccess(input.id);
@@ -92,7 +92,7 @@ export const sitesRouter = router({
       };
     }),
 
-  nearby: publicProcedure
+  nearby: protectedProcedure
     .input(coord.extend({ radius: z.number().int().min(50).max(5000).optional() }))
     .query(async ({ input }) => {
       const sites = await db.listSites({});
@@ -164,10 +164,7 @@ export const sitesRouter = router({
     .input(z.object({ id: z.number().int().positive(), reason: z.string().max(500).optional() }))
     .mutation(async ({ ctx, input }) => {
       const site = await assertSiteViewAccess(input.id);
-      if (ctx.user.role === "manager") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "El archivo de clientes está reservado a Administración" });
-      }
-      if (ctx.user.role !== "admin" && site.createdBy !== ctx.user.id) {
+      if (!canManageAll(ctx.user.role) && site.createdBy !== ctx.user.id) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Solo podés archivar los puntos que registraste" });
       }
       const archivedSite = await db.archiveSite(input.id, ctx.user.id, input.reason);

@@ -33,8 +33,8 @@ describe("gestión comercial", () => {
     await expect(adminRouter.createCaller(contextFor("field")).stats()).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
-  it("reserva el archivo recuperable de cliente exclusivamente para Administrador", async () => {
-    await expect(adminRouter.createCaller(contextFor("manager")).archiveClient({ id: 1 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  it("permite a Gerencia archivar de forma recuperable y reserva restauración a Administración", async () => {
+    await expect(adminRouter.createCaller(contextFor("manager")).archiveClient({ id: 1 })).resolves.toMatchObject({ success: true });
     await expect(adminRouter.createCaller(contextFor("admin")).archiveClient({ id: 1 })).resolves.toMatchObject({ success: true });
     expect(store.archiveSite).toHaveBeenCalledWith(1, 10, undefined);
   });

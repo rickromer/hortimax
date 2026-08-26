@@ -16,8 +16,8 @@ async function assertNoteAccess(noteId: number, user: { id: number; role: string
 }
 
 export const notesRouter = router({
-  /** Historial temporalmente abierto junto con la ficha pública del cliente. */
-  list: publicProcedure
+  /** Historial de actividad disponible únicamente dentro de una sesión válida. */
+  list: protectedProcedure
     .input(
       z
         .object({
@@ -90,7 +90,7 @@ export const notesRouter = router({
     }),
 
   /** Descarga la planilla de notas del cliente para abrirla o importarla en Google Sheets. */
-  exportCsv: publicProcedure
+  exportCsv: protectedProcedure
     .input(z.object({ siteId: z.number().int().positive() }))
     .query(async ({ input }) => {
       const site = await db.getSiteById(input.siteId);

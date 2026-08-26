@@ -247,14 +247,26 @@
 - [x] Confirmar que la creación atribuya el punto al representante autenticado
 - [x] Confirmar que la edición de un punto propio quede disponible y guarde cambios
 - [x] Confirmar que la edición de un punto ajeno permanezca bloqueada
-- [ ] Aclarar e implementar el alcance permitido de eliminación para puntos propios
-- [ ] Probar y publicar la corrección del flujo de representante
+- [x] Aclarar e implementar el alcance permitido de eliminación para puntos propios
+- [x] Probar y publicar la corrección del flujo de representante
 
 ## Archivo recuperable de punto propio por Representante
 - [x] Permitir al representante archivar solo un punto creado por él
 - [x] Mantener bloqueado el archivo de puntos creados por otra persona
 - [x] Mostrar la acción Archivar solo en la ficha de un punto propio
-- [ ] Probar y publicar el archivo recuperable por propiedad
+- [x] Probar y publicar el archivo recuperable por propiedad
+
+## Vulnerabilidad: rutas abiertas después de cerrar sesión
+- [x] Bloquear `/mapa`, clientes, fichas y calendario sin una sesión válida
+- [x] Proteger las consultas de clientes, notas, visitas y relevamientos contra acceso anónimo
+- [x] Redirigir inmediatamente a `/acceso` después de cerrar sesión
+- [ ] Probar en navegador que una URL operativa no abra datos tras logout
+
+## Gestión comercial y navegación de clientes
+- [x] Permitir al Gerente comercial archivar clientes de forma recuperable
+- [x] Mantener Papelera y restauración exclusivamente administrativas
+- [x] Mantener disponible el desplazamiento horizontal de la tabla de clientes sin llegar al final de la página
+- [x] Verificar que Google Maps, Waze, Compartir y WhatsApp se muestren en toda ficha de cliente para los perfiles autorizados
 
 ## Incidencia de carga posterior a acceso y privilegios
 - [x] Diagnosticar por qué el sitio no completa la carga en producción

@@ -299,6 +299,11 @@
 - [x] Mantener la acción invisible e inaccesible para página pública, Gerente comercial y Representante
 - [x] Cubrir con pruebas el permiso y la limpieza de datos vinculados
 
+## Disponibilidad de eliminación para Administrador
+- [ ] Confirmar que la ficha administrativa muestre la acción Eliminar cliente
+- [ ] Confirmar que la acción requiera una confirmación explícita antes de borrar
+- [ ] Confirmar que el control no se muestre fuera de Administración
+
 ## Categoría Comentario en notas
 - [x] Añadir Comentario al catálogo y los valores por defecto de categorías de notas
 - [x] Mostrar Comentario en el selector de categoría de nota
@@ -316,6 +321,11 @@
 - [x] Evitar que Configuración inicial aparezca solo por navegar a `/acceso`
 - [x] Reservar la configuración inicial para el parámetro explícito de mantenimiento `?setup=1`
 - [x] Probar el acceso normal y confirmar la continuidad del restablecimiento de contraseña
+
+## Inicio principal en acceso
+- [x] Redirigir la raíz `/` a `/acceso` para visitantes sin sesión
+- [x] Mantener las rutas operativas accesibles después del inicio de sesión
+- [ ] Verificar que el dominio publicado abra la pantalla de login como primera vista
 
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa

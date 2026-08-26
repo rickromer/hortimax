@@ -244,3 +244,9 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - La ruta `/acceso` muestra siempre **Ingresá a tu cuenta** con usuario y Continuar, incluso si la consulta interna informa que queda una configuración inicial pendiente. La captura móvil verificó que no aparece Configuración inicial en el recorrido normal.
 - La configuración inicial queda aislada para un acceso explícito de mantenimiento con `?setup=1` y solo si realmente no existe administrador configurado; no interrumpe el inicio de sesión normal ni el proceso de activación/reset de cuentas existentes.
 - `pnpm check`, 68 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron, incluidas las reglas que fuerzan login por defecto y habilitan configuración solo con parámetro explícito.
+
+## Inicio principal en acceso
+
+- La raíz `/` redirige a `/acceso`; las capturas móviles de ambas rutas muestran el mismo formulario de inicio de sesión sin Configuración inicial.
+- El mapa operativo se trasladó a `/mapa`, y el flujo de login termina allí para evitar un bucle hacia acceso. La barra inferior Mapa usa también `/mapa` y los rechazos de rutas administrativas para roles no permitidos vuelven a esa vista.
+- La vista previa confirmó las rutas de login y mapa. El SDK de mapas volvió a fallar transitoriamente en el capturador y presentó la acción de recuperación ya disponible.

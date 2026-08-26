@@ -16,7 +16,7 @@ import React, { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 
 const TABS = [
-  { href: "/", label: "Mapa", icon: Map },
+  { href: "/mapa", label: "Mapa", icon: Map },
   { href: "/sitios", label: "Clientes", icon: ListTree },
   { href: "/calendario", label: "Calendario", icon: CalendarDays },
 ];
@@ -106,7 +106,7 @@ export function FieldShell({ children, title, subtitle, bleed, action, hideConte
         <div className="grid grid-cols-3 max-w-md mx-auto px-2 pt-1.5">
           {TABS.map(tab => {
             const active =
-              tab.href === "/" ? location === "/" : location.startsWith(tab.href);
+              location.startsWith(tab.href);
             const Icon = tab.icon;
             return (
               <Link

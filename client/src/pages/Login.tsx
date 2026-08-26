@@ -27,7 +27,7 @@ export default function Login() {
   const finish = async () => {
     await utils.auth.me.invalidate();
     await utils.auth.needsSetup.invalidate();
-    window.location.href = "/";
+    window.location.href = "/mapa";
   };
 
   const checkUser = trpc.auth.checkUsername.useMutation({

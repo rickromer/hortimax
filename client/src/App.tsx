@@ -48,8 +48,8 @@ function Guard({
   const { user, loading, isAdmin, canManageAll } = useAuth();
   if (loading) return <Splash />;
   if (!user) return <Redirect to="/acceso" />;
-  if (adminOnly && !isAdmin) return <Redirect to="/" />;
-  if (managementOnly && !canManageAll) return <Redirect to="/" />;
+  if (adminOnly && !isAdmin) return <Redirect to="/mapa" />;
+  if (managementOnly && !canManageAll) return <Redirect to="/mapa" />;
   return <Component />;
 }
 
@@ -58,8 +58,9 @@ function Router() {
     <Switch>
       <Route path="/acceso" component={Login} />
 
-      {/* Campo temporalmente abierto: administración permanece protegida. */}
-      <Route path="/" component={FieldMap} />
+      {/* Acceso principal y campo temporalmente abierto: administración permanece protegida. */}
+      <Route path="/">{() => <Redirect to="/acceso" />}</Route>
+      <Route path="/mapa" component={FieldMap} />
       <Route path="/sitios" component={SiteList} />
       <Route path="/sitios/:id" component={SiteDetail} />
       <Route path="/calendario" component={TeamCalendar} />

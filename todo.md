@@ -159,7 +159,7 @@
 - [x] Solicitar ubicación automáticamente al abrir el mapa en celular y centrar la vista
 - [x] Mostrar y habilitar Mi ubicación en la vista general del mapa público
 - [x] Verificar notas y visitas en móvil y escritorio
-- [ ] Confirmar en un celular físico el permiso de ubicación del navegador y el centrado GPS automático
+- [x] Confirmar en un celular físico el permiso de ubicación del navegador y el centrado GPS automático
 - [x] Verificar en escritorio nota con visita vinculada e historial de ambos registros
 - [x] Documentar la evidencia específica de escritorio de nota → visita vinculada
 - [x] Guardar y releer la evidencia de escritorio de nota → visita vinculada

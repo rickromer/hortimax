@@ -11,7 +11,6 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import AdminActivity from "./pages/admin/AdminActivity";
 import AdminClientDetail from "./pages/admin/AdminClientDetail";
 import AdminClients from "./pages/admin/AdminClients";
-import AdminMap from "./pages/admin/AdminMap";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -69,7 +68,7 @@ function Router() {
 
       {/* Administración */}
       <Route path="/admin">{() => <Guard component={AdminOverview} managementOnly />}</Route>
-      <Route path="/admin/mapa">{() => <Guard component={AdminMap} managementOnly />}</Route>
+      <Route path="/admin/mapa">{() => <Redirect to="/admin/actividad" />}</Route>
       <Route path="/admin/clientes">{() => <Guard component={AdminClients} managementOnly />}</Route>
       <Route path="/admin/clientes/:id">
         {() => <Guard component={AdminClientDetail} managementOnly />}

@@ -360,7 +360,7 @@ export default function SiteDetail() {
                         </Badge>
                       )}
                       <span className="text-[11px] text-muted-foreground ml-auto truncate max-w-[48%]" title={note.userName ?? note.username ?? undefined}>
-                        Registrado por {note.userName ?? note.username ?? "Equipo HORTIMAX"}
+                        Registrado por {note.userName ?? note.username ?? "Registro anterior sin responsable"}
                       </span>
                       {canEdit && <Button
                         size="icon"
@@ -398,7 +398,7 @@ export default function SiteDetail() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{formatDateTime(checkin.createdAt)}</p>
                       <p className="text-xs text-muted-foreground">
-                        {checkin.userName ?? checkin.username}
+                        Registrado por {checkin.userName ?? checkin.username ?? "Registro anterior sin responsable"}
                         {checkin.distanceMeters !== null &&
                           ` · a ${formatDistance(checkin.distanceMeters)} del pin`}
                       </p>

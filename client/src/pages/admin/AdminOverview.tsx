@@ -45,7 +45,7 @@ function StatCard({
 
 export default function AdminOverview() {
   const statsQuery = trpc.admin.stats.useQuery();
-  const activityQuery = trpc.admin.activity.useQuery({ limit: 8 });
+  const activityQuery = trpc.admin.activityTimeline.useQuery({ limit: 8 });
   const followupsQuery = trpc.followups.list.useQuery({ limit: 8 });
   const stats = statsQuery.data;
 
@@ -56,8 +56,8 @@ export default function AdminOverview() {
       actions={
         <Button asChild variant="outline" className="bg-background hidden sm:flex">
           <Link href="/admin/mapa">
-            <MapPinned className="h-4 w-4" />
-            Ver mapa general
+            <Activity className="h-4 w-4" />
+            Ver actividad
           </Link>
         </Button>
       }>
@@ -188,33 +188,33 @@ export default function AdminOverview() {
           <div className="surface-card p-5 lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="h-4 w-4 text-primary" />
-              <p className="font-semibold">Últimas visitas</p>
+              <p className="font-semibold">Actividad reciente</p>
               <Button variant="ghost" size="sm" className="ml-auto -mr-2" asChild>
                 <Link href="/admin/actividad">Ver todo</Link>
               </Button>
             </div>
             {activityQuery.isLoading ? (
               <Skeleton className="h-40" />
-            ) : (activityQuery.data?.checkins.length ?? 0) === 0 ? (
+            ) : (activityQuery.data?.entries.length ?? 0) === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">
                 Sin actividad registrada.
               </p>
             ) : (
               <div className="space-y-2.5">
-                {activityQuery.data!.checkins.slice(0, 6).map(checkin => (
+                {activityQuery.data!.entries.slice(0, 6).map(entry => (
                   <Link
-                    key={checkin.id}
-                    href={`/admin/clientes/${checkin.siteId}`}
+                    key={entry.id}
+                    href={`/admin/clientes/${entry.siteId}`}
                     className="flex items-start gap-2.5 rounded-lg px-2 py-1.5 -mx-2 hover:bg-accent/50 transition-colors">
                     <CalendarClock className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{checkin.siteName}</p>
+                      <p className="text-sm font-medium truncate">{entry.siteName}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {checkin.userName ?? checkin.username} · {formatDateTime(checkin.createdAt)}
+                        {entry.kind === "visit" ? "Visita" : entry.kind === "note" ? "Nota" : "Recordatorio"} · Registrado por {entry.authorName ?? "Registro anterior sin responsable"}
                       </p>
                     </div>
                     <span className="text-[11px] text-muted-foreground shrink-0">
-                      {timeAgo(checkin.createdAt)}
+                      {timeAgo(entry.occurredAt)}
                     </span>
                   </Link>
                 ))}

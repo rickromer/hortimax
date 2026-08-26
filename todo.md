@@ -373,7 +373,28 @@
 ## Proporción del isologo original aportado
 - [x] Alojar exactamente el archivo original entregado por el usuario
 - [x] Ajustar las cabeceras para que el wordmark horizontal no se comprima ni recorte
-- [ ] Verificar en móvil y escritorio y publicar la corrección
+- [x] Verificar en móvil y escritorio y publicar la corrección
+
+## Agrupación inteligente de puntos en el mapa
+- [ ] Agrupar clientes cercanos para evitar superposición de pines
+- [ ] Mostrar el total de clientes dentro de cada agrupación
+- [ ] Expandir o acercar el mapa al tocar una agrupación
+- [ ] Conservar pines individuales y selección al acercar el zoom
+- [ ] Probar con una distribución densa de clientes y publicar la mejora
+
+## Responsable visible de actividad
+- [x] Eliminar el respaldo “Equipo HORTIMAX” de notas, visitas y recordatorios
+- [x] Resolver y mostrar nombre y apellido del usuario creador en cada actividad
+- [x] Mostrar claramente “Sin responsable registrado” solo en datos históricos sin usuario
+- [ ] Probar y publicar la trazabilidad en ficha, calendario y actividad administrativa
+
+## Administración: historial de actividad operativo
+- [x] Retirar el menú y la ruta administrativa de Mapa general redundante
+- [x] Unificar visitas, notas y recordatorios en Actividad administrativa
+- [x] Añadir búsqueda por cliente, contenido y responsable
+- [x] Añadir filtros de tipo, responsable y rango de fechas
+- [x] Mostrar responsable, cliente, fecha y detalle para cada actividad histórica
+- [ ] Probar y publicar el historial administrativo completo
 
 ## Archivo recuperable confirmado para Representante
 - [x] Hacer visible la acción de archivar en la ficha de un punto propio

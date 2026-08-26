@@ -20,7 +20,6 @@ vi.mock("@/components/ui/tooltip", () => ({ TooltipProvider: ({ children }: { ch
 vi.mock("./contexts/ThemeContext", () => ({ ThemeProvider: ({ children }: { children: unknown }) => children }));
 vi.mock("./pages/FieldMap", () => ({ default: page("campo") }));
 vi.mock("./pages/admin/AdminOverview", () => ({ default: page("resumen") }));
-vi.mock("./pages/admin/AdminMap", () => ({ default: page("mapa-admin") }));
 vi.mock("./pages/admin/AdminClients", () => ({ default: page("clientes-admin") }));
 vi.mock("./pages/admin/AdminClientDetail", () => ({ default: page("cliente-admin") }));
 vi.mock("./pages/admin/AdminActivity", () => ({ default: page("actividad-admin") }));
@@ -44,9 +43,9 @@ describe("rutas de gestión comercial", () => {
     container.remove();
   });
 
-  it("da al gerente acceso a resumen, mapa, clientes, detalle y actividad globales", async () => {
+  it("da al gerente acceso a resumen, clientes, detalle y actividad globales", async () => {
     const routes = [
-      ["/admin", "resumen"], ["/admin/mapa", "mapa-admin"], ["/admin/clientes", "clientes-admin"],
+      ["/admin", "resumen"], ["/admin/clientes", "clientes-admin"],
       ["/admin/clientes/31", "cliente-admin"], ["/admin/actividad", "actividad-admin"],
     ];
     for (const [path, expected] of routes) {

@@ -53,6 +53,56 @@ export const adminRouter = router({
       return { checkins };
     }),
 
+  /** Historial comercial unificado para consultas posteriores y seguimiento de viajes. */
+  activityTimeline: managementProcedure
+    .input(z.object({
+      search: z.string().max(200).optional(),
+      kind: z.enum(["all", "visit", "note", "upcoming"]).optional(),
+      authorId: z.number().int().positive().optional(),
+      from: z.coerce.date().optional(),
+      to: z.coerce.date().optional(),
+      limit: z.number().int().min(1).max(2000).optional(),
+    }).optional())
+    .query(async ({ input }) => {
+      const limit = input?.limit ?? 1000;
+      const [visits, notes, upcoming] = await Promise.all([
+        db.listCheckins({ limit }),
+        db.listNotes({ limit }),
+        db.listFollowups({ limit }),
+      ]);
+      const records = [
+        ...visits.map(visit => ({
+          id: `visit-${visit.id}`, kind: "visit" as const, occurredAt: visit.createdAt,
+          siteId: visit.siteId, siteName: visit.siteName, department: visit.siteDepartment, locality: visit.siteZone,
+          authorId: visit.userId, authorName: visit.userName?.trim() || visit.username?.trim() || null,
+          description: visit.comment || "Visita registrada", distanceMeters: visit.distanceMeters,
+        })),
+        ...notes.map(note => ({
+          id: `note-${note.id}`, kind: "note" as const, occurredAt: note.createdAt,
+          siteId: note.siteId, siteName: note.siteName, department: note.siteDepartment, locality: note.siteZone,
+          authorId: note.userId, authorName: note.userName?.trim() || note.username?.trim() || null,
+          description: note.content, category: note.category, checkinId: note.checkinId,
+        })),
+        ...upcoming.map(followup => ({
+          id: `upcoming-${followup.id}`, kind: "upcoming" as const, occurredAt: followup.scheduledFor,
+          siteId: followup.siteId, siteName: followup.siteName, department: followup.siteDepartment, locality: followup.siteZone,
+          authorId: followup.createdBy, authorName: followup.userName?.trim() || followup.username?.trim() || null,
+          description: followup.description, followupType: followup.type, status: followup.status,
+        })),
+      ];
+      const term = input?.search?.trim().toLocaleLowerCase("es-PY");
+      const filtered = records.filter(record => {
+        if (input?.kind && input.kind !== "all" && record.kind !== input.kind) return false;
+        if (input?.authorId && record.authorId !== input.authorId) return false;
+        if (input?.from && record.occurredAt < input.from) return false;
+        if (input?.to && record.occurredAt > input.to) return false;
+        if (!term) return true;
+        return [record.siteName, record.description, record.authorName, record.department, record.locality]
+          .filter(Boolean).join(" ").toLocaleLowerCase("es-PY").includes(term);
+      });
+      return { entries: filtered.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime()).slice(0, limit) };
+    }),
+
   /** Elimina los puntos identificados como altas públicas temporales y sus registros relacionados. */
   clearPublicSubmissions: adminProcedure.mutation(async () => {
     const removed = await db.deletePublicSubmissionSites();

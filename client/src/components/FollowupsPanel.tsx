@@ -177,11 +177,9 @@ export function FollowupsPanel({ siteId, followups, readOnly = false, canCreate 
                   {isOverdue(followup.scheduledFor) && <Badge variant="destructive">Vencido</Badge>}
                 </div>
                 <p className="text-sm leading-relaxed whitespace-pre-wrap mt-1">{followup.description}</p>
-                {(followup.userName ?? followup.username) && (
-                  <p className="text-xs text-muted-foreground mt-1.5">
-                    Agendado por {followup.userName ?? followup.username}
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Agendado por {followup.userName ?? followup.username ?? "Registro anterior sin responsable"}
+                </p>
               </div>
               {!readOnly && <div className="flex items-center gap-1 shrink-0">
                 <Button

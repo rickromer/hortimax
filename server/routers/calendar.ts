@@ -1,11 +1,11 @@
-import { publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 const TEAM_TIMELINE_LIMIT = 1000;
 
-/** Feed público y sin filtro de cartera: refleja la actividad de todo el equipo. */
+/** Feed interno sin filtro de cartera: refleja la actividad de todo el equipo. */
 export const calendarRouter = router({
-  timeline: publicProcedure.query(async () => {
+  timeline: protectedProcedure.query(async () => {
     const [visits, upcoming, notes] = await Promise.all([
       db.listCheckins({ limit: TEAM_TIMELINE_LIMIT }),
       db.listFollowups({ status: "pending", limit: TEAM_TIMELINE_LIMIT }),
@@ -21,7 +21,7 @@ export const calendarRouter = router({
         siteName: visit.siteName,
         department: visit.siteDepartment,
         locality: visit.siteZone,
-        author: visit.userName ?? visit.username ?? "Equipo HORTIMAX",
+        author: visit.userName?.trim() || visit.username?.trim() || null,
         description: visit.comment,
         distanceMeters: visit.distanceMeters,
       })),
@@ -33,7 +33,7 @@ export const calendarRouter = router({
         siteName: followup.siteName,
         department: followup.siteDepartment,
         locality: followup.siteZone,
-        author: followup.userName ?? followup.username ?? "Equipo HORTIMAX",
+        author: followup.userName?.trim() || followup.username?.trim() || null,
         description: followup.description,
         followupType: followup.type,
       })),
@@ -45,7 +45,7 @@ export const calendarRouter = router({
         siteName: note.siteName,
         department: note.siteDepartment,
         locality: note.siteZone,
-        author: note.userName ?? note.username ?? "Equipo HORTIMAX",
+        author: note.userName?.trim() || note.username?.trim() || null,
         description: note.content,
         category: note.category,
         checkinId: note.checkinId,

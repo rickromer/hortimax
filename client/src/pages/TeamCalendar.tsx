@@ -242,7 +242,7 @@ export default function TeamCalendar() {
                                 <p className="mt-1.5 font-semibold leading-tight">{entry.siteName ?? "Cliente sin nombre"}</p>
                                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground line-clamp-2">{entry.description || (isVisit ? "Visita registrada sin comentario." : "Sin descripción")}</p>
                                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                                  <span>{formatDateTime(entry.occurredAt)}</span><span>Registrado por {entry.author}</span>
+                                  <span>{formatDateTime(entry.occurredAt)}</span><span>Registrado por {entry.author ?? "Registro anterior sin responsable"}</span>
                                   {entry.kind === "visit" && entry.distanceMeters !== null && <span>{formatDistance(entry.distanceMeters)}</span>}
                                 </div>
                                 {(entry.department || entry.locality) && <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{[entry.department, entry.locality].filter(Boolean).join(" · ")}</span></div>}

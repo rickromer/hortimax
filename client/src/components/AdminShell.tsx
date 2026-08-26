@@ -16,7 +16,6 @@ import {
   Activity,
   LayoutDashboard,
   LogOut,
-  Map,
   MapPinned,
   Menu,
   Settings2,
@@ -29,7 +28,6 @@ import { Link, useLocation } from "wouter";
 
 const NAV = [
   { href: "/admin", label: "Resumen", icon: LayoutDashboard },
-  { href: "/admin/mapa", label: "Mapa general", icon: Map },
   { href: "/admin/clientes", label: "Clientes", icon: MapPinned },
   { href: "/admin/actividad", label: "Actividad", icon: Activity },
   { href: "/admin/usuarios", label: "Usuarios", icon: Users, adminOnly: true },

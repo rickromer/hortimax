@@ -75,4 +75,11 @@ describe("calendar.timeline", () => {
     expect(result.entries[0]).toMatchObject({ siteName: "Cooperativa RI3", department: "Caaguazú" });
     expect(result.entries[0].author).toBe("Ricardo Romero");
   });
+
+  it("marca explícitamente la actividad histórica que no conserva responsable", async () => {
+    store.listNotes.mockResolvedValue([{ id: 10, siteId: 2, siteName: "Histórico", userName: null, username: null, content: "Carga anterior", createdAt: new Date("2026-08-26T10:00:00Z") }]);
+    const caller = calendarRouter.createCaller({ user: { id: 10, role: "field" }, req: {} as TrpcContext["req"], res: {} as TrpcContext["res"] } as TrpcContext);
+    const result = await caller.timeline();
+    expect(result.entries.find(entry => entry.kind === "note")?.author).toBeNull();
+  });
 });

@@ -304,6 +304,13 @@
 - [x] Mostrar Comentario en el selector de categoría de nota
 - [x] Cubrir la nueva categoría con pruebas y datos existentes
 
+## Rediseño de Calendario
+- [x] Reemplazar pestañas grandes por controles compactos adecuados para escritorio
+- [x] Añadir una vista mensual real con indicadores de visitas, próximos y notas por día
+- [x] Permitir seleccionar un día del mes para filtrar el resumen de actividades
+- [x] Separar calendario, filtros y resumen cronológico de actividad
+- [x] Verificar el rediseño en escritorio y móvil
+
 ## Referencias de mapa de solo lectura
 - [x] Desactivar las ventanas emergentes de negocios y lugares locales en el mapa
 - [x] Mantener visibles rutas, nombres y referencias sin exponer acciones de compartir

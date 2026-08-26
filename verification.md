@@ -231,3 +231,10 @@ La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de m
 - Se completaron los tres clientes pendientes: **Fermin Lopez** → Caaguazú / Caaguazú; **Agro Alex** → Caaguazú / Tres de Febrero; y **Silvio Figueredo** → Caaguazú / Yhú. Las fichas móviles verificaron los dos primeros territorios.
 - **Comentario** fue agregado a los valores por defecto y al catálogo persistido de notas. La eliminación definitiva borra cliente, asignaciones, relevamientos, notas y visitas en una transacción, con acceso reservado a Administrador y confirmación explícita en la ficha administrativa.
 - `pnpm test` aprobó 64 pruebas (1 integración opcional omitida), incluidos el bloqueo visual de territorio, la nueva categoría y la restricción de eliminación; la compilación de producción aprobó.
+
+## Calendario mensual y resumen compacto
+
+- Calendario pasó a una vista mensual real con controles anterior/siguiente, días de lunes a domingo e indicadores por color: verde para visitas, ámbar para próximos y turquesa para notas. Al tocar un día, el resumen queda filtrado a esa fecha; un segundo toque vuelve a mostrar el mes completo.
+- El resumen queda separado bajo la grilla mensual e incorpora filtros compactos **Todo**, **Visitas**, **Próximos** y **Notas**. En escritorio los controles se mantienen pequeños y alineados a la derecha del resumen, sin las pestañas grandes anteriores.
+- Las capturas verificaron agosto de 2026 con seis registros: el calendario muestra los días 25, 28 y 31 con indicadores y las tarjetas se distribuyen cronológicamente debajo. En móvil, la grilla, contadores y filtros compactos mantienen legibilidad sin superponerse.
+- `pnpm check`, 66 pruebas automatizadas (1 integración opcional omitida) y compilación aprobaron, incluidas las pruebas de la grilla mensual y el cambio de mes.

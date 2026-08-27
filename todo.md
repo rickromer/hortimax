@@ -453,3 +453,7 @@
 - [x] Crear o reutilizar de forma idempotente la planilla única de cada Productor
 - [x] Mostrar Crear planilla o Abrir planilla en Notas solo para Productores autorizados
 - [x] Cubrir permisos, reutilización y configuración OAuth con pruebas automatizadas
+
+## Corrección de retorno OAuth publicado
+- [x] Usar el origen público reenviado en lugar de la URL interna de Cloud Run
+- [x] Probar que la solicitud OAuth usa la URI pública registrada en Google

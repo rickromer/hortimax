@@ -17,10 +17,17 @@ const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
 type OAuthState = { nonce: string; userId: number; returnTo: string };
 
-function requestOrigin(req: Request) {
+function firstForwardedValue(value: string | string[] | undefined) {
+  const first = Array.isArray(value) ? value[0] : value?.split(",")[0];
+  return first?.trim() || null;
+}
+
+export function requestOrigin(req: Pick<Request, "protocol" | "headers" | "get">) {
   const forwardedProto = req.headers["x-forwarded-proto"];
-  const protocol = typeof forwardedProto === "string" ? forwardedProto.split(",")[0].trim() : req.protocol;
-  const host = req.get("host");
+  const protocol = firstForwardedValue(forwardedProto) ?? req.protocol;
+  // En producción, el Host interno es una URL a.run.app. La cabecera reenviada
+  // conserva el dominio público al que llegó el navegador y es el que Google conoce.
+  const host = firstForwardedValue(req.headers["x-forwarded-host"]) ?? req.get("host");
   if (!host) throw new Error("No se pudo identificar la dirección de retorno del portal.");
   return `${protocol}://${host}`;
 }

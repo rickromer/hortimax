@@ -457,3 +457,7 @@
 ## Corrección de retorno OAuth publicado
 - [x] Usar el origen público reenviado en lugar de la URL interna de Cloud Run
 - [x] Probar que la solicitud OAuth usa la URI pública registrada en Google
+
+## Acceso simplificado a planillas para el equipo
+- [x] Mostrar Conectar o Crear planilla únicamente al administrador
+- [x] Mostrar a los demás usuarios autorizados solo Abrir planilla cuando ya exista

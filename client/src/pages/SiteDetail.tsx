@@ -160,6 +160,7 @@ export default function SiteDetail() {
   }
 
   const { site, checkins, notes, followups, canEditSite } = detailQuery.data;
+  const isAdmin = user?.role === "admin";
   const canEdit = Boolean(user && canEditSite);
   const canEditClient = canEdit;
   const canContribute = canEdit;
@@ -280,7 +281,16 @@ export default function SiteDetail() {
           </TabsList>
 
           <TabsContent value="notas" className="space-y-3 mt-3">
-            {isProducer && <div className="surface-card p-3.5 flex flex-wrap items-center gap-3 border-[color:color-mix(in_oklab,var(--hortimax-teal)_30%,var(--border))]">
+            {isProducer && !isAdmin && producerSheet.data?.sheet && (
+              <Button className="w-full" variant="outline" asChild>
+                <a href={producerSheet.data.sheet.url} target="_blank" rel="noreferrer">
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Abrir planilla del Productor
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
+            {isProducer && isAdmin && <div className="surface-card p-3.5 flex flex-wrap items-center gap-3 border-[color:color-mix(in_oklab,var(--hortimax-teal)_30%,var(--border))]">
               <div className="grid place-items-center h-9 w-9 rounded-xl bg-[var(--hortimax-teal)]/12 text-[var(--hortimax-teal)] shrink-0">
                 <FileSpreadsheet className="h-4.5 w-4.5" />
               </div>
@@ -291,7 +301,7 @@ export default function SiteDetail() {
                     ? "Es la misma planilla permanente para este cliente."
                     : producerSheet.data?.connected
                       ? "Creala una vez y quedará vinculada a este cliente."
-                      : user?.role === "admin"
+                      : isAdmin
                         ? "Conectá tu cuenta personal de Google para habilitarla."
                         : "Un administrador debe conectar primero la cuenta de Google."}
                 </p>
@@ -313,7 +323,7 @@ export default function SiteDetail() {
                   {createProducerSheet.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                   Crear planilla
                 </Button>
-              ) : user?.role === "admin" ? (
+              ) : isAdmin ? (
                 <Button size="sm" asChild>
                   <a href={`/api/google/authorize?returnTo=${encodeURIComponent(`/sitios/${siteId}`)}`}>
                     Conectar Google

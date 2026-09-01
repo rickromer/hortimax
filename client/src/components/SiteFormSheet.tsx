@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCoords } from "@/lib/format";
-import { enqueueOfflineOperation, isOffline } from "@/lib/offlineQueue";
+import { enqueueOfflineOperation, isNetworkFailure, isOffline } from "@/lib/offlineQueue";
 import { parsePointCoordinates } from "@/lib/locationLinks";
 import { trpc } from "@/lib/trpc";
 import { territoryFromGeocode } from "@/lib/zoneFromGeocode";
@@ -164,7 +164,18 @@ export function SiteFormSheet({
       onOpenChange(false);
       if (site?.id) onSaved?.(site.id);
     },
-    onError: error => toast.error(error.message),
+    onError: (error, input) => {
+      if (isNetworkFailure(error)) {
+        void enqueueOfflineOperation("site.create", input as Record<string, unknown>)
+          .then(() => {
+            toast.success("Punto guardado en el teléfono. Se sincronizará al recuperar señal.");
+            onOpenChange(false);
+          })
+          .catch(queueError => toast.error(queueError instanceof Error ? queueError.message : "No se pudo guardar sin conexión"));
+        return;
+      }
+      toast.error(error.message);
+    },
   });
 
   const updateSite = trpc.sites.update.useMutation({

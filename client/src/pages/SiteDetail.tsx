@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { downloadCsv, formatCoords, formatDateTime, formatDistance, timeAgo } from "@/lib/format";
-import { enqueueOfflineOperation, isOffline } from "@/lib/offlineQueue";
+import { enqueueOfflineOperation, isNetworkFailure, isOffline } from "@/lib/offlineQueue";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -87,7 +87,20 @@ export default function SiteDetail() {
       ]);
       toast.success(result.registeredVisit ? "Nota y visita registradas" : "Nota agregada al historial");
     },
-    onError: error => toast.error(error.message),
+    onError: (error, input) => {
+      if (isNetworkFailure(error)) {
+        void enqueueOfflineOperation("note.create", input as Record<string, unknown>)
+          .then(() => {
+            setNoteText("");
+            setNoteCategory("");
+            setRegisterVisit(false);
+            toast.success("Nota guardada en el teléfono. Se sincronizará al recuperar señal.");
+          })
+          .catch(queueError => toast.error(queueError instanceof Error ? queueError.message : "No se pudo guardar sin conexión"));
+        return;
+      }
+      toast.error(error.message);
+    },
   });
 
   const removeNote = trpc.notes.remove.useMutation({

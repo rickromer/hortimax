@@ -6,6 +6,7 @@ import {
   enqueueOfflineOperation,
   createClientRequestId,
   isOffline,
+  isNetworkFailure,
   listOfflineOperations,
   removeOfflineOperation,
   updateOfflineOperation,
@@ -53,6 +54,11 @@ describe("offlineQueue", () => {
 
     await removeOfflineOperation(operation.id);
     expect(await listOfflineOperations()).toEqual([]);
+  });
+
+  it("detecta una caída real de red, pero no confunde un permiso rechazado con falta de señal", () => {
+    expect(isNetworkFailure(new TypeError("Failed to fetch"))).toBe(true);
+    expect(isNetworkFailure(new Error("FORBIDDEN"))).toBe(false);
   });
 
   it("no declara falta de señal cuando navigator está disponible y conectado", () => {

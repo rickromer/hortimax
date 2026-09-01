@@ -63,6 +63,12 @@ export function isOffline() {
   return typeof navigator !== "undefined" && navigator.onLine === false;
 }
 
+/** Detecta cortes de red sin confundir errores de validación, permisos o negocio con falta de señal. */
+export function isNetworkFailure(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return error instanceof TypeError || /failed to fetch|networkerror|network request failed|load failed|internet disconnected|offline/i.test(message);
+}
+
 export async function enqueueOfflineOperation(kind: OfflineOperationKind, input: Record<string, unknown>) {
   if (!browserAvailable()) throw new Error("El almacenamiento offline no está disponible en este dispositivo");
   const operation: OfflineOperation = { id: createClientRequestId(), kind, input: { ...input, clientRequestId: createClientRequestId() }, createdAt: Date.now(), attempts: 0 };

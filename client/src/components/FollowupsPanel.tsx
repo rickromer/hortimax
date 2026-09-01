@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateLong } from "@/lib/format";
-import { enqueueOfflineOperation, isOffline } from "@/lib/offlineQueue";
+import { enqueueOfflineOperation, isNetworkFailure, isOffline } from "@/lib/offlineQueue";
 import { trpc } from "@/lib/trpc";
 import { BellRing, CalendarPlus, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -75,7 +75,20 @@ export function FollowupsPanel({ siteId, followups, readOnly = false, canCreate 
       await invalidate();
       toast.success(`${followupLabels[type]} agendado`);
     },
-    onError: error => toast.error(error.message),
+    onError: (error, input) => {
+      if (isNetworkFailure(error)) {
+        void enqueueOfflineOperation("followup.create", input as Record<string, unknown>)
+          .then(() => {
+            setDescription("");
+            setDate(dateInputToday());
+            setType("reminder");
+            toast.success("Relevamiento guardado en el teléfono. Se sincronizará al recuperar señal.");
+          })
+          .catch(queueError => toast.error(queueError instanceof Error ? queueError.message : "No se pudo guardar sin conexión"));
+        return;
+      }
+      toast.error(error.message);
+    },
   });
 
   const update = trpc.followups.update.useMutation({

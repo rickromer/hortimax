@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTime } from "@/lib/format";
-import { enqueueOfflineOperation, isOffline } from "@/lib/offlineQueue";
+import { enqueueOfflineOperation, isNetworkFailure, isOffline } from "@/lib/offlineQueue";
 import { trpc } from "@/lib/trpc";
 import { CheckCircle2, Clock, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -55,7 +55,18 @@ export function CheckinDialog({ open, onOpenChange, site, coords }: Props) {
       toast.success("Check-in registrado");
       onOpenChange(false);
     },
-    onError: error => toast.error(error.message),
+    onError: (error, input) => {
+      if (isNetworkFailure(error)) {
+        void enqueueOfflineOperation("site.checkin", input as Record<string, unknown>)
+          .then(() => {
+            toast.success("Visita guardada en el teléfono. Se sincronizará al recuperar señal.");
+            onOpenChange(false);
+          })
+          .catch(queueError => toast.error(queueError instanceof Error ? queueError.message : "No se pudo guardar sin conexión"));
+        return;
+      }
+      toast.error(error.message);
+    },
   });
 
   if (!site) return null;

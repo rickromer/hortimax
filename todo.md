@@ -490,3 +490,10 @@
 ## Planilla en ficha administrativa de Productor
 - [x] Mostrar la planilla permanente también dentro de Administración → Clientes → Notas
 - [x] Validar la ficha administrativa y publicar el ajuste
+
+## Revisión integral solicitada por el usuario
+- [x] Auditar nuevamente todos los flujos del portal frente a los pedidos acumulados
+- [x] Verificar responsive en fichas, calendario, clientes, administración y mapa en viewport móvil
+- [ ] Verificar offline real en celular: abrir, capturar, cerrar y sincronizar al recuperar señal
+- [x] Corregir cualquier diferencia entre lo implementado y lo informado al usuario
+- [x] Preparar un informe completo y honesto antes del próximo checkpoint

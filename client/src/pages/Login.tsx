@@ -4,15 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BRAND_NAME } from "@/lib/brand";
 import { shouldShowInitialSetup } from "@/lib/loginScreenMode";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { getRememberedOfflineUser, isNetworkFailure, rememberOfflineCredential, setOfflineSession, verifyOfflineCredential } from "@/lib/offlineAuth";
 import { ArrowLeft, KeyRound, Loader2, MapPinned, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type Step = "usuario" | "clave" | "activar" | "setup";
 
 export default function Login() {
+  const { user: rememberedUser, loading: authLoading } = useAuth();
   const utils = trpc.useUtils();
   const setupQuery = trpc.auth.needsSetup.useQuery(undefined, { retry: false });
   const [step, setStep] = useState<Step>("usuario");
@@ -25,6 +27,10 @@ export default function Login() {
 
   const needsSetup = setupQuery.data?.needsSetup ?? false;
   const showInitialSetup = shouldShowInitialSetup(needsSetup, window.location.search);
+
+  useEffect(() => {
+    if (!showInitialSetup && !authLoading && rememberedUser) window.location.replace("/mapa");
+  }, [authLoading, rememberedUser, showInitialSetup]);
 
   const finish = async () => {
     await utils.auth.me.invalidate();

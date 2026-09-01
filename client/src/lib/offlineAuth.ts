@@ -10,6 +10,7 @@ export type OfflineUser = {
 
 type StoredCredential = {
   username: string;
+  deviceId: string;
   salt: string;
   verifier: string;
   user: OfflineUser;
@@ -17,6 +18,7 @@ type StoredCredential = {
 
 const CREDENTIAL_KEY = "hortimax-offline-credential-v1";
 const SESSION_KEY = "hortimax-offline-session-v1";
+const DEVICE_KEY = "hortimax-device-id-v1";
 const CHANGE_EVENT = "hortimax-offline-auth-change";
 
 function available() {
@@ -59,6 +61,15 @@ function emitChange() {
   if (available()) window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
+function getOrCreateDeviceId() {
+  if (!available()) return "server-only";
+  const existing = localStorage.getItem(DEVICE_KEY);
+  if (existing) return existing;
+  const created = crypto.randomUUID();
+  localStorage.setItem(DEVICE_KEY, created);
+  return created;
+}
+
 export async function rememberOfflineCredential(user: OfflineUser, password: string) {
   if (!available()) return;
   const salt = crypto.getRandomValues(new Uint8Array(16)) as Uint8Array<ArrayBuffer>;
@@ -67,6 +78,7 @@ export async function rememberOfflineCredential(user: OfflineUser, password: str
   const verifier = await deriveVerifier(username, password, salt);
   const stored: StoredCredential = {
     username,
+    deviceId: getOrCreateDeviceId(),
     salt: toBase64(salt),
     verifier,
     user,
@@ -133,6 +145,14 @@ export function getOfflineSession(): OfflineUser | null {
 export function clearOfflineSession() {
   if (!available()) return;
   localStorage.removeItem(SESSION_KEY);
+  emitChange();
+}
+
+export function forgetOfflineCredential() {
+  if (!available()) return;
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(CREDENTIAL_KEY);
+  localStorage.removeItem(DEVICE_KEY);
   emitChange();
 }
 

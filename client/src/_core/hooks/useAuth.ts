@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { canManageAll } from "@shared/permissions";
 import { TRPCClientError } from "@trpc/client";
-import { clearOfflineSession, getOfflineSession, onOfflineAuthChange } from "@/lib/offlineAuth";
+import { forgetOfflineCredential, getOfflineSession, onOfflineAuthChange } from "@/lib/offlineAuth";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
@@ -18,6 +18,10 @@ export function useAuth() {
     retry: false,
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (meQuery.data) setOfflineSession(meQuery.data);
+  }, [meQuery.data]);
 
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
@@ -37,7 +41,7 @@ export function useAuth() {
       try {
         sessionStorage.removeItem("manus-cookie");
       } catch {}
-      clearOfflineSession();
+      forgetOfflineCredential();
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
       if (typeof window !== "undefined" && window.location.pathname !== "/acceso") {

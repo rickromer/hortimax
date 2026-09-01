@@ -523,3 +523,11 @@
 - [x] Mantener expiración, cierre de sesión y revocación al recuperar conexión
 - [x] Cubrir autenticación offline, aislamiento de roles y sincronización posterior
 - [x] Probar y publicar el flujo, dejando pendiente la confirmación en teléfono real
+
+## Acceso persistente por usuario y teléfono
+- [x] Mantener la sesión del usuario en su teléfono después del primer acceso online
+- [x] Permitir apertura y reingreso offline sin volver a escribir la contraseña
+- [x] Vincular la credencial local a un identificador único de instalación/dispositivo
+- [x] Conservar roles y cartera del usuario durante el modo offline
+- [x] Revocar y limpiar el acceso al cerrar sesión explícitamente o desde Administración
+- [x] Cubrir acceso automático, dispositivo nuevo y cambio de contraseña con pruebas

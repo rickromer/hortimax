@@ -431,21 +431,21 @@
 ## Google Sheets por cliente Productor
 - [x] Revisar la conexión disponible con Google Sheets y Drive
 - [x] Definir una única planilla permanente por Productor en el Drive del administrador
-- [ ] Crear o vincular una hoja de Sheets por cada cliente Productor desde Notas
+- [x] Crear o vincular una hoja de Sheets por cada cliente Productor desde Notas
 - [x] Mostrar el acceso a Sheets solo en fichas de tipo Productor
-- [ ] Probar y publicar el flujo de Sheets por cliente
+- [x] Probar y publicar el flujo de Sheets por cliente
 
 ## Creación automática de Sheets por Productor
-- [ ] Configurar una autorización de Google válida para la aplicación publicada
-- [ ] Crear la planilla desde el botón “+” y guardarla en el Drive personal autorizado
-- [ ] Persistir el identificador del archivo para reutilizar la misma planilla del Productor
+- [x] Configurar una autorización de Google válida para la aplicación publicada
+- [x] Crear la planilla desde el botón “+” y guardarla en el Drive personal autorizado
+- [x] Persistir el identificador del archivo para reutilizar la misma planilla del Productor
 - [x] Restringir la visibilidad del acceso a usuarios que ya pueden ver ese Productor
-- [ ] Probar y publicar la creación automática de la planilla
+- [x] Probar y publicar la creación automática de la planilla
 
 ## Cambio a cuenta personal de Google
-- [ ] Retirar la conexión actual de Google Workspace corporativa
+- [x] Retirar la conexión actual de Google Workspace corporativa
 - [x] Preparar autorización OAuth con la cuenta personal de Google del usuario
-- [ ] Crear las planillas de Productores en el Drive personal autorizado
+- [x] Crear las planillas de Productores en el Drive personal autorizado
 
 ## OAuth y planillas personales — implementación
 - [x] Persistir de forma cifrada la autorización renovable de Google y el vínculo Productor → planilla
@@ -463,14 +463,14 @@
 - [x] Mostrar a los demás usuarios autorizados solo Abrir planilla cuando ya exista
 
 ## Responsive y operación offline en campo
-- [ ] Auditar y corregir desbordamientos horizontales en las vistas móviles existentes
-- [ ] Incorporar manifest e instalación PWA para celulares Android y escritorio compatible
-- [ ] Cachear la carcasa de la aplicación y recursos seguros sin almacenar secretos
-- [ ] Permitir registrar notas, visitas y nuevos puntos sin conexión
-- [ ] Encolar operaciones offline con identificadores idempotentes y sincronizarlas al recuperar señal
-- [ ] Mostrar estado de conexión, pendientes y errores de sincronización al vendedor
-- [ ] Cubrir responsive, cola offline y reintentos con pruebas automatizadas
-- [ ] Validar en viewport móvil y publicar la mejora
+- [x] Auditar y corregir desbordamientos horizontales en las vistas móviles existentes
+- [x] Incorporar manifest e instalación PWA para celulares Android y escritorio compatible
+- [x] Cachear la carcasa de la aplicación y recursos seguros sin almacenar secretos
+- [x] Permitir registrar notas, visitas y nuevos puntos sin conexión
+- [x] Encolar operaciones offline con identificadores idempotentes y sincronizarlas al recuperar señal
+- [x] Mostrar estado de conexión, pendientes y errores de sincronización al vendedor
+- [x] Cubrir responsive, cola offline y reintentos con pruebas automatizadas
+- [x] Validar en viewport móvil y publicar la mejora
 
 > Alcance offline: el mapa de Google y la búsqueda de lugares requieren conexión; la captura de datos y la consulta de clientes previamente almacenados podrán funcionar sin señal. La sincronización se realizará cuando vuelva Internet.
 
@@ -486,3 +486,7 @@
 - [x] Pasar coordenadas e identificador del cliente al mapa principal
 - [x] Centrar y seleccionar el cliente al abrir /mapa
 - [x] Cubrir y publicar la navegación contextual
+
+## Planilla en ficha administrativa de Productor
+- [x] Mostrar la planilla permanente también dentro de Administración → Clientes → Notas
+- [x] Validar la ficha administrativa y publicar el ajuste

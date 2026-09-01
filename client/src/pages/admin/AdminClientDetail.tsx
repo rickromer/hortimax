@@ -14,14 +14,19 @@ import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
   CalendarClock,
+  ExternalLink,
+  FileSpreadsheet,
+  Loader2,
   MapPin,
   Navigation,
   Phone,
+  Plus,
   Trash2,
   User,
   UsersRound,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Link, useLocation, useRoute } from "wouter";
 
 export default function AdminClientDetail() {
@@ -33,6 +38,18 @@ export default function AdminClientDetail() {
     { id: siteId },
     { enabled: Number.isFinite(siteId) && siteId > 0 }
   );
+  const isProducer = detailQuery.data?.site.clientType?.trim().toLocaleLowerCase("es-PY") === "productor";
+  const producerSheet = trpc.sheets.forSite.useQuery(
+    { siteId },
+    { enabled: Boolean(isProducer && Number.isFinite(siteId) && siteId > 0) }
+  );
+  const createProducerSheet = trpc.sheets.createForSite.useMutation({
+    onSuccess: async result => {
+      await producerSheet.refetch();
+      toast.success(result.reused ? "Se abrió la planilla permanente del Productor" : "Planilla del Productor creada");
+    },
+    onError: error => toast.error(error.message),
+  });
   const [assignmentsOpen, setAssignmentsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const utils = trpc.useUtils();
@@ -212,6 +229,37 @@ export default function AdminClientDetail() {
           </TabsList>
 
           <TabsContent value="notas" className="mt-4">
+            {isProducer && (user?.role === "admin" || producerSheet.data?.sheet) && (
+              <div className="surface-card mb-3 p-3.5 flex flex-wrap items-center gap-3 border-[color:color-mix(in_oklab,var(--hortimax-teal)_30%,var(--border))]">
+                <div className="grid place-items-center h-9 w-9 rounded-xl bg-[var(--hortimax-teal)]/12 text-[var(--hortimax-teal)] shrink-0">
+                  <FileSpreadsheet className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Planilla del Productor</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {producerSheet.data?.sheet ? "Planilla permanente vinculada a este cliente." : "Creala una vez desde esta ficha."}
+                  </p>
+                </div>
+                {producerSheet.isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                ) : producerSheet.data?.sheet ? (
+                  <Button size="sm" variant="outline" className="bg-background" asChild>
+                    <a href={producerSheet.data.sheet.url} target="_blank" rel="noreferrer">
+                      <ExternalLink className="h-4 w-4" />
+                      Abrir planilla
+                    </a>
+                  </Button>
+                ) : user?.role === "admin" && producerSheet.data?.connected ? (
+                  <Button
+                    size="sm"
+                    disabled={createProducerSheet.isPending}
+                    onClick={() => createProducerSheet.mutate({ siteId: site.id })}>
+                    {createProducerSheet.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                    Crear planilla
+                  </Button>
+                ) : null}
+              </div>
+            )}
             {notes.length === 0 ? (
               <p className="text-sm text-muted-foreground py-10 text-center surface-card">
                 Sin notas registradas.

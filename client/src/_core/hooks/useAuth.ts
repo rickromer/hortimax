@@ -1,7 +1,8 @@
 import { trpc } from "@/lib/trpc";
 import { canManageAll } from "@shared/permissions";
 import { TRPCClientError } from "@trpc/client";
-import { useCallback, useMemo } from "react";
+import { clearOfflineSession, getOfflineSession, onOfflineAuthChange } from "@/lib/offlineAuth";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Estado de autenticación de la app. El acceso es con usuario y contraseña
@@ -9,6 +10,9 @@ import { useCallback, useMemo } from "react";
  */
 export function useAuth() {
   const utils = trpc.useUtils();
+  const [offlineSession, setOfflineSession] = useState(() => getOfflineSession());
+
+  useEffect(() => onOfflineAuthChange(() => setOfflineSession(getOfflineSession())), []);
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
@@ -33,6 +37,7 @@ export function useAuth() {
       try {
         sessionStorage.removeItem("manus-cookie");
       } catch {}
+      clearOfflineSession();
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
       if (typeof window !== "undefined" && window.location.pathname !== "/acceso") {
@@ -41,19 +46,23 @@ export function useAuth() {
     }
   }, [logoutMutation, utils]);
 
+  const offlineAllowed = Boolean(offlineSession) && (meQuery.isError || (typeof navigator !== "undefined" && navigator.onLine === false));
+  const activeUser = meQuery.data ?? (offlineAllowed ? offlineSession : null);
+
   const state = useMemo(
     () => ({
-      user: meQuery.data ?? null,
-      loading: meQuery.isLoading || logoutMutation.isPending,
+      user: activeUser,
+      loading: (meQuery.isLoading && !offlineAllowed) || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
-      isAdmin: meQuery.data?.role === "admin",
-      canManageAll: canManageAll(meQuery.data?.role),
+      isAuthenticated: Boolean(activeUser),
+      isAdmin: activeUser?.role === "admin",
+      canManageAll: canManageAll(activeUser?.role),
     }),
     [
-      meQuery.data,
+      activeUser,
       meQuery.error,
       meQuery.isLoading,
+      offlineAllowed,
       logoutMutation.error,
       logoutMutation.isPending,
     ]

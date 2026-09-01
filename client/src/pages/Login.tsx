@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { BRAND_NAME } from "@/lib/brand";
 import { shouldShowInitialSetup } from "@/lib/loginScreenMode";
 import { trpc } from "@/lib/trpc";
+import { getRememberedOfflineUser, isNetworkFailure, rememberOfflineCredential, setOfflineSession, verifyOfflineCredential } from "@/lib/offlineAuth";
 import { ArrowLeft, KeyRound, Loader2, MapPinned, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,18 +41,53 @@ export default function Login() {
       setDisplayName(data.name);
       setStep(data.needsPassword ? "activar" : "clave");
     },
-    onError: () => toast.error("No se pudo verificar el usuario"),
+    onError: () => {
+      const remembered = getRememberedOfflineUser(username);
+      if (remembered) {
+        setDisplayName(remembered.name);
+        setStep("clave");
+        toast.info("Sin señal: podés ingresar con la credencial de este dispositivo");
+        return;
+      }
+      toast.error("No se pudo verificar el usuario. Revisá la conexión.");
+    },
   });
 
+  const completeOnlineLogin = async (user: any) => {
+    await rememberOfflineCredential(user, password);
+    setOfflineSession(user);
+    await finish();
+  };
+
   const login = trpc.auth.login.useMutation({
-    onSuccess: finish,
-    onError: error => toast.error(error.message),
+    onSuccess: user => {
+      void completeOnlineLogin(user);
+    },
+    onError: error => {
+      if (isNetworkFailure(error)) {
+        void verifyOfflineCredential(username, password).then(user => {
+          if (!user) {
+            toast.error("Sin señal: usuario o contraseña no válidos en este dispositivo");
+            return;
+          }
+          setOfflineSession(user);
+          toast.success("Ingresaste sin señal. Los datos se sincronizarán al recuperar Internet.");
+          void finish();
+        });
+        return;
+      }
+      toast.error(error.message);
+    },
   });
 
   const activate = trpc.auth.activate.useMutation({
-    onSuccess: () => {
-      toast.success("Contraseña definida. ¡Bienvenido!");
-      finish();
+    onSuccess: user => {
+      void (async () => {
+        await rememberOfflineCredential(user, password);
+        setOfflineSession(user);
+        toast.success("Contraseña definida. ¡Bienvenido!");
+        await finish();
+      })();
     },
     onError: error => toast.error(error.message),
   });

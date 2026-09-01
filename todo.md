@@ -507,3 +507,19 @@
 - [x] Definir y preparar el empaquetado Android instalable tipo APK
 - [ ] Probar el ciclo sin señal y sincronización al recuperar conectividad en un dispositivo real
 - [x] Publicar la versión web/PWA y entregar el procedimiento de instalación APK
+
+## Dominio corporativo y configuración de marca
+- [ ] Vincular `crm.fcg.com.py` como dominio principal del portal
+- [ ] Configurar nombre visible Portal de Seguimiento a Clientes HORTIMAX
+- [ ] Mantener el isologo HORTIMAX original y favicon en el nuevo dominio
+- [ ] Actualizar URI OAuth y API del APK para `crm.fcg.com.py`
+- [ ] Verificar HTTPS, login, planillas y PWA en el dominio corporativo
+
+## Autenticación offline por dispositivo
+- [x] Auditar el flujo actual de login, sesión y cierre de sesión offline
+- [x] Persistir de forma local y protegida la identidad de usuarios que ya iniciaron sesión
+- [x] Permitir reingreso offline solo en dispositivos previamente autorizados
+- [x] Evitar que un usuario nuevo o un dispositivo no autorizado entre sin servidor
+- [x] Mantener expiración, cierre de sesión y revocación al recuperar conexión
+- [x] Cubrir autenticación offline, aislamiento de roles y sincronización posterior
+- [x] Probar y publicar el flujo, dejando pendiente la confirmación en teléfono real

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
+import { rememberOfflineCredential } from "@/lib/offlineAuth";
 import { ArrowLeft, KeyRound, Loader2, UserCog } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -35,6 +36,7 @@ export default function Profile() {
 
   const changePassword = trpc.auth.changePassword.useMutation({
     onSuccess: () => {
+      if (user) void rememberOfflineCredential({ ...user, phone: user.phone ?? null }, next);
       setCurrent("");
       setNext("");
       setConfirm("");

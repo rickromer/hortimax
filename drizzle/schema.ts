@@ -67,6 +67,8 @@ export const sites = mysqlTable(
     createdBy: int("createdBy").notNull(),
     /** Identifica puntos enviados durante el modo temporal de carga pública. */
     publicSubmission: boolean("publicSubmission").default(false).notNull(),
+    /** Identificador generado por el dispositivo para reintentos offline seguros. */
+    clientRequestId: varchar("clientRequestId", { length: 64 }),
     active: boolean("active").default(true).notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -152,6 +154,8 @@ export const checkins = mysqlTable(
     /** Distancia en metros entre el vendedor y el sitio al hacer check-in. */
     distanceMeters: int("distanceMeters"),
     comment: text("comment"),
+    /** Clave única del dispositivo para evitar duplicados al sincronizar. */
+    clientRequestId: varchar("clientRequestId", { length: 64 }),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   table => ({
@@ -175,6 +179,8 @@ export const notes = mysqlTable(
     /** Categoría opcional: aplicación, visita, pedido, reclamo, otro. */
     category: varchar("category", { length: 80 }),
     content: text("content").notNull(),
+    /** Clave única del dispositivo para evitar duplicados al sincronizar. */
+    clientRequestId: varchar("clientRequestId", { length: 64 }),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
@@ -199,6 +205,8 @@ export const followups = mysqlTable(
     description: text("description").notNull(),
     scheduledFor: timestamp("scheduledFor").notNull(),
     status: mysqlEnum("status", ["pending", "completed", "cancelled"]).default("pending").notNull(),
+    /** Clave única del dispositivo para reintentos offline seguros. */
+    clientRequestId: varchar("clientRequestId", { length: 64 }),
     completedAt: timestamp("completedAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

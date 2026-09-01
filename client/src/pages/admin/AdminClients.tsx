@@ -21,7 +21,7 @@ import {
 import { downloadCsv, formatDateTime, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
 import { Download, ExternalLink, Search, X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
@@ -32,19 +32,25 @@ export default function AdminClients() {
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState(ALL);
   const [clientType, setClientType] = useState(ALL);
-  const [sellerId, setSellerId] = useState(ALL);
+  const [creatorId, setCreatorId] = useState(ALL);
 
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const usersQuery = trpc.admin.listUsers.useQuery();
+  const allSitesQuery = trpc.sites.list.useQuery(undefined, { staleTime: 30_000 });
   const sitesQuery = trpc.sites.list.useQuery({
     search: search.trim() || undefined,
     department: department === ALL ? undefined : department,
     clientType: clientType === ALL ? undefined : clientType,
-    sellerId: sellerId === ALL ? undefined : Number(sellerId),
+    creatorId: creatorId === ALL ? undefined : Number(creatorId),
   });
 
   const sites = sitesQuery.data ?? [];
-  const hasFilters = department !== ALL || clientType !== ALL || sellerId !== ALL || search !== "";
+  const createdCounts = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const site of allSitesQuery.data ?? []) counts.set(site.createdBy, (counts.get(site.createdBy) ?? 0) + 1);
+    return counts;
+  }, [allSitesQuery.data]);
+  const hasFilters = department !== ALL || clientType !== ALL || creatorId !== ALL || search !== "";
 
   const exportar = async () => {
     try {
@@ -104,16 +110,16 @@ export default function AdminClients() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={sellerId} onValueChange={setSellerId}>
-              <SelectTrigger className="h-10 sm:w-44 w-full col-span-2 sm:col-auto">
-                <SelectValue placeholder="Asignado a" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL}>Todos los comerciales</SelectItem>
-                  {(usersQuery.data ?? []).filter(user => user.role === "field" && user.active).map(user => (
-                    <SelectItem key={user.id} value={String(user.id)}>
-                      {user.name ?? user.username}
-                    </SelectItem>
+            <Select value={creatorId} onValueChange={setCreatorId}>
+              <SelectTrigger className="h-10 sm:w-48 w-full col-span-2 sm:col-auto">
+                <SelectValue placeholder="Creado por" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>Todos los creadores</SelectItem>
+                {(usersQuery.data ?? []).filter(user => user.active).map(user => (
+                  <SelectItem key={user.id} value={String(user.id)}>
+                    {user.name ?? user.username} ({createdCounts.get(user.id) ?? 0})
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -126,7 +132,7 @@ export default function AdminClients() {
                 setSearch("");
                 setDepartment(ALL);
                 setClientType(ALL);
-                setSellerId(ALL);
+                setCreatorId(ALL);
               }}>
               <X className="h-4 w-4" />
               Limpiar
@@ -154,7 +160,7 @@ export default function AdminClients() {
                     <TableHead>Tipo</TableHead>
                     <TableHead>Departamento</TableHead>
                     <TableHead>Distrito / municipio</TableHead>
-                    <TableHead>Registrado por</TableHead>
+                    <TableHead>Creado por</TableHead>
                     <TableHead>Última visita</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>

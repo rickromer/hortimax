@@ -52,9 +52,14 @@ export const notesRouter = router({
         registerVisit: z.boolean().optional().default(false),
         latitude: z.number().min(-90).max(90).optional(),
         longitude: z.number().min(-180).max(180).optional(),
+        clientRequestId: z.string().min(16).max(64).regex(/^[a-zA-Z0-9_-]+$/).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      if (input.clientRequestId) {
+        const existing = await db.getNoteByClientRequestId(input.clientRequestId);
+        if (existing) return { note: existing, registeredVisit: Boolean(input.registerVisit), checkinId: existing.checkinId };
+      }
       const site = await db.getSiteById(input.siteId);
       if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Sitio no encontrado" });
       if (!canManageAll(ctx.user.role) && site.createdBy !== ctx.user.id) {
@@ -75,6 +80,7 @@ export const notesRouter = router({
               )
             : null,
           comment: "Visita registrada desde nota",
+          clientRequestId: input.clientRequestId ? `${input.clientRequestId}_visit` : null,
         });
         linkedCheckinId = visit.id;
       }
@@ -85,6 +91,7 @@ export const notesRouter = router({
         checkinId: linkedCheckinId,
         category: input.category?.trim() || null,
         content: input.content.trim(),
+        clientRequestId: input.clientRequestId ?? null,
       });
       return { note, registeredVisit: Boolean(input.registerVisit), checkinId: linkedCheckinId };
     }),

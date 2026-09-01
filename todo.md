@@ -461,3 +461,28 @@
 ## Acceso simplificado a planillas para el equipo
 - [x] Mostrar Conectar o Crear planilla únicamente al administrador
 - [x] Mostrar a los demás usuarios autorizados solo Abrir planilla cuando ya exista
+
+## Responsive y operación offline en campo
+- [ ] Auditar y corregir desbordamientos horizontales en las vistas móviles existentes
+- [ ] Incorporar manifest e instalación PWA para celulares Android y escritorio compatible
+- [ ] Cachear la carcasa de la aplicación y recursos seguros sin almacenar secretos
+- [ ] Permitir registrar notas, visitas y nuevos puntos sin conexión
+- [ ] Encolar operaciones offline con identificadores idempotentes y sincronizarlas al recuperar señal
+- [ ] Mostrar estado de conexión, pendientes y errores de sincronización al vendedor
+- [ ] Cubrir responsive, cola offline y reintentos con pruebas automatizadas
+- [ ] Validar en viewport móvil y publicar la mejora
+
+> Alcance offline: el mapa de Google y la búsqueda de lugares requieren conexión; la captura de datos y la consulta de clientes previamente almacenados podrán funcionar sin señal. La sincronización se realizará cuando vuelva Internet.
+
+## Correcciones reportadas — formulario y cartera por representante
+- [x] Corregir el estado del formulario al cerrar Nuevo cliente para que las fichas sigan abriendo normalmente
+- [x] Verificar que la navegación a fichas de clientes funcione después de cancelar el alta
+- [x] Mostrar en Administración qué clientes creó cada representante
+- [x] Permitir consultar la cartera creada por Nelson y por cada representante sin depender de un único nombre
+- [x] Probar y publicar ambas correcciones
+
+## Navegación ficha → mapa principal
+- [x] Añadir acción Ver en mapa principal dentro de la ficha del cliente
+- [x] Pasar coordenadas e identificador del cliente al mapa principal
+- [x] Centrar y seleccionar el cliente al abrir /mapa
+- [x] Cubrir y publicar la navegación contextual

@@ -313,6 +313,12 @@ export async function getSiteById(id: number) {
   };
 }
 
+export async function getSiteByClientRequestId(clientRequestId: string) {
+  const db = await requireDb();
+  const rows = await db.select().from(sites).where(eq(sites.clientRequestId, clientRequestId)).limit(1);
+  return rows[0] ? getSiteById(rows[0].id) : undefined;
+}
+
 export async function createSite(values: InsertSite) {
   const db = await requireDb();
   const result = await db.insert(sites).values(values);
@@ -426,6 +432,12 @@ export async function replaceSiteAssignments(siteId: number, userIds: number[], 
 
 /* ------------------------------- Check-ins ------------------------------ */
 
+export async function getCheckinByClientRequestId(clientRequestId: string) {
+  const db = await requireDb();
+  const rows = await db.select().from(checkins).where(eq(checkins.clientRequestId, clientRequestId)).limit(1);
+  return rows[0];
+}
+
 export async function createCheckin(values: InsertCheckin) {
   const db = await requireDb();
   const result = await db.insert(checkins).values(values);
@@ -510,6 +522,12 @@ export async function lastCheckinBySite(siteIds: number[]) {
 
 /* --------------------------------- Notas -------------------------------- */
 
+export async function getNoteByClientRequestId(clientRequestId: string) {
+  const db = await requireDb();
+  const rows = await db.select().from(notes).where(eq(notes.clientRequestId, clientRequestId)).limit(1);
+  return rows[0];
+}
+
 export async function createNote(values: InsertNote) {
   const db = await requireDb();
   const result = await db.insert(notes).values(values);
@@ -592,6 +610,12 @@ export async function countNotes(options: { since?: Date; userId?: number } = {}
 }
 
 /* ----------------------- Próximos relevamientos ----------------------- */
+
+export async function getFollowupByClientRequestId(clientRequestId: string) {
+  const db = await requireDb();
+  const rows = await db.select().from(followups).where(eq(followups.clientRequestId, clientRequestId)).limit(1);
+  return rows[0];
+}
 
 export async function createFollowup(values: InsertFollowup) {
   const db = await requireDb();

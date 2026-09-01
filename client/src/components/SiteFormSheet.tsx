@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCoords } from "@/lib/format";
+import { enqueueOfflineOperation, isOffline } from "@/lib/offlineQueue";
 import { parsePointCoordinates } from "@/lib/locationLinks";
 import { trpc } from "@/lib/trpc";
 import { territoryFromGeocode } from "@/lib/zoneFromGeocode";
@@ -220,12 +221,22 @@ export function SiteFormSheet({
       return;
     }
 
-    createSite.mutate({
+    const createPayload = {
       ...payload,
       latitude: selectedCoords.latitude,
       longitude: selectedCoords.longitude,
       accuracy: selectedSource === "gps" ? selectedCoords.accuracy ?? null : null,
-    });
+    };
+    if (isOffline()) {
+      void enqueueOfflineOperation("site.create", createPayload)
+        .then(() => {
+          toast.success("Punto guardado en el teléfono. Se sincronizará al recuperar señal.");
+          onOpenChange(false);
+        })
+        .catch(error => toast.error(error instanceof Error ? error.message : "No se pudo guardar sin conexión"));
+      return;
+    }
+    createSite.mutate(createPayload);
   };
 
   return (

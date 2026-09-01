@@ -1,0 +1,19 @@
+{
+  "name": "HORTIMAX · Portal de Seguimiento a Clientes",
+  "short_name": "HORTIMAX",
+  "description": "Registro de clientes, visitas y notas para equipos de campo.",
+  "lang": "es-PY",
+  "start_url": "/mapa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f2",
+  "theme_color": "#123d2e",
+  "icons": [
+    {
+      "src": "/manus-storage/hortimax-favicon_6236a44b.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

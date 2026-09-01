@@ -17,6 +17,7 @@ const scheduleInput = z.object({
   description: z.string().trim().min(2).max(2000),
   scheduledFor: z.coerce.date(),
   type: z.enum(["reminder", "visit", "attention"]).default("reminder"),
+  clientRequestId: z.string().min(16).max(64).regex(/^[a-zA-Z0-9_-]+$/).optional(),
 });
 
 export const followupsRouter = router({
@@ -40,6 +41,10 @@ export const followupsRouter = router({
     .input(scheduleInput.extend({ siteId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
       await assertFollowupAccess(input.siteId, ctx.user);
+      if (input.clientRequestId) {
+        const existing = await db.getFollowupByClientRequestId(input.clientRequestId);
+        if (existing) return existing;
+      }
       return db.createFollowup({
         siteId: input.siteId,
         createdBy: ctx.user.id,
@@ -47,6 +52,7 @@ export const followupsRouter = router({
         description: input.description,
         scheduledFor: input.scheduledFor,
         status: "pending",
+        clientRequestId: input.clientRequestId ?? null,
       });
     }),
 

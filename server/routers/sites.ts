@@ -21,6 +21,7 @@ const siteInput = z.object({
   phone: z.string().max(40).optional().nullable(),
   address: z.string().max(500).optional().nullable(),
   accuracy: z.number().int().min(0).max(100000).optional().nullable(),
+  clientRequestId: z.string().min(16).max(64).regex(/^[a-zA-Z0-9_-]+$/).optional(),
 });
 
 export async function assertSiteViewAccess(siteId: number, user: { id: number; role: string }) {
@@ -47,6 +48,7 @@ export const sitesRouter = router({
           zone: z.string().max(120).optional(),
           clientType: z.string().max(80).optional(),
           sellerId: z.number().int().positive().optional(),
+          creatorId: z.number().int().positive().optional(),
           scope: z.enum(["mine", "all"]).optional(),
         })
         .optional()
@@ -60,6 +62,8 @@ export const sitesRouter = router({
       };
       if (!canManageAll(ctx.user.role) || input?.scope === "mine") {
         filters.createdBy = ctx.user.id;
+      } else if (canManageAll(ctx.user.role) && input?.creatorId) {
+        filters.createdBy = input.creatorId;
       } else if (canManageAll(ctx.user.role) && input?.sellerId) {
         filters.siteIds = await db.getAssignedSiteIds(input.sellerId);
       }
@@ -108,6 +112,10 @@ export const sitesRouter = router({
   create: protectedProcedure
     .input(siteInput.merge(coord))
     .mutation(async ({ ctx, input }) => {
+      if (input.clientRequestId) {
+        const existing = await db.getSiteByClientRequestId(input.clientRequestId);
+        if (existing) return existing;
+      }
       const territory = await territoryFromCoordinates(input.latitude, input.longitude).catch(() => ({
         department: input.department?.trim() || null,
         zone: input.zone?.trim() || null,
@@ -126,6 +134,7 @@ export const sitesRouter = router({
         longitude: input.longitude.toFixed(7),
         createdBy: ctx.user.id,
         publicSubmission: false,
+        clientRequestId: input.clientRequestId ?? null,
       });
       if (!created) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear el sitio" });
       await db.replaceSiteAssignments(created.id, [ctx.user.id], ctx.user.id);
@@ -165,9 +174,13 @@ export const sitesRouter = router({
     }),
 
   checkin: protectedProcedure
-    .input(z.object({ siteId: z.number().int().positive(), latitude: z.number().min(-90).max(90).optional(), longitude: z.number().min(-180).max(180).optional(), comment: z.string().max(1000).optional(), note: z.string().max(4000).optional(), noteCategory: z.string().max(80).optional() }))
+    .input(z.object({ siteId: z.number().int().positive(), latitude: z.number().min(-90).max(90).optional(), longitude: z.number().min(-180).max(180).optional(), comment: z.string().max(1000).optional(), note: z.string().max(4000).optional(), noteCategory: z.string().max(80).optional(), clientRequestId: z.string().min(16).max(64).regex(/^[a-zA-Z0-9_-]+$/).optional() }))
     .mutation(async ({ ctx, input }) => {
       const site = await assertSiteEditAccess(input.siteId, ctx.user);
+      if (input.clientRequestId) {
+        const existing = await db.getCheckinByClientRequestId(input.clientRequestId);
+        if (existing) return { checkin: existing, note: null };
+      }
       const distance = input.latitude !== undefined && input.longitude !== undefined
         ? distanceMeters({ lat: input.latitude, lng: input.longitude }, { lat: site.latitude, lng: site.longitude })
         : null;
@@ -178,6 +191,7 @@ export const sitesRouter = router({
         longitude: input.longitude !== undefined ? input.longitude.toFixed(7) : null,
         distanceMeters: distance,
         comment: input.comment?.trim() || null,
+        clientRequestId: input.clientRequestId ?? null,
       });
       let note = null;
       if (input.note?.trim()) {
@@ -187,6 +201,7 @@ export const sitesRouter = router({
           checkinId: checkin.id,
           category: input.noteCategory?.trim() || null,
           content: input.note.trim(),
+          clientRequestId: input.clientRequestId ? `${input.clientRequestId}_note` : null,
         });
       }
       return { checkin, note };

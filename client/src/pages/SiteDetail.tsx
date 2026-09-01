@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { downloadCsv, formatCoords, formatDateTime, formatDistance, timeAgo } from "@/lib/format";
+import { enqueueOfflineOperation, isOffline } from "@/lib/offlineQueue";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -29,6 +30,7 @@ import {
   ExternalLink,
   FileSpreadsheet,
   Loader2,
+  Map,
   MapPin,
   Navigation,
   NotebookPen,
@@ -260,6 +262,12 @@ export default function SiteDetail() {
               <Archive className="h-4 w-4" />
               Archivar punto
             </Button>}
+            <Button variant="outline" className="w-full bg-background" asChild>
+              <Link href={`/mapa?siteId=${site.id}`}>
+                <Map className="h-4 w-4" />
+                Ver en mapa principal
+              </Link>
+            </Button>
             <PointLocationActions
               name={site.name}
               coords={{ latitude: site.latitude, longitude: site.longitude }}
@@ -392,14 +400,26 @@ export default function SiteDetail() {
                       toast.error("Escribí el contenido de la nota");
                       return;
                     }
-                    createNote.mutate({
+                    const notePayload = {
                       siteId,
                       content: noteText,
                       category: noteCategory || undefined,
                       registerVisit,
                       latitude: registerVisit ? geo.position?.latitude : undefined,
                       longitude: registerVisit ? geo.position?.longitude : undefined,
-                    });
+                    };
+                    if (isOffline()) {
+                      void enqueueOfflineOperation("note.create", notePayload)
+                        .then(() => {
+                          setNoteText("");
+                          setNoteCategory("");
+                          setRegisterVisit(false);
+                          toast.success("Nota guardada en el teléfono. Se sincronizará al recuperar señal.");
+                        })
+                        .catch(error => toast.error(error instanceof Error ? error.message : "No se pudo guardar sin conexión"));
+                    } else {
+                      createNote.mutate(notePayload);
+                    }
                   }}
                   disabled={createNote.isPending}>
                   {createNote.isPending ? (

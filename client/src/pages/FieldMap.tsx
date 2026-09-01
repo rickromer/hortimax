@@ -28,9 +28,10 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function FieldMap() {
+  const [location] = useLocation();
   const { user } = useAuth();
   const canEdit = Boolean(user);
   const canCreatePoint = true;
@@ -74,6 +75,18 @@ export default function FieldMap() {
     setFocus({ latitude: position.latitude, longitude: position.longitude });
   }, [position]);
   const sites = sitesQuery.data ?? [];
+  const requestedSiteId = useMemo(() => {
+    const query = location.includes("?") ? location.slice(location.indexOf("?") + 1) : "";
+    const value = Number(new URLSearchParams(query).get("siteId"));
+    return Number.isInteger(value) && value > 0 ? value : null;
+  }, [location]);
+  useEffect(() => {
+    if (!requestedSiteId) return;
+    const requestedSite = sites.find(site => site.id === requestedSiteId);
+    if (!requestedSite) return;
+    setSelectedId(requestedSite.id);
+    setFocus({ latitude: requestedSite.latitude, longitude: requestedSite.longitude });
+  }, [requestedSiteId, sites]);
   const selected = useMemo(
     () => sites.find(site => site.id === selectedId) ?? null,
     [sites, selectedId]
@@ -362,7 +375,14 @@ export default function FieldMap() {
 
       {canCreatePoint && <SiteFormSheet
         open={newSiteOpen}
-        onOpenChange={setNewSiteOpen}
+        onOpenChange={open => {
+          setNewSiteOpen(open);
+          if (!open) {
+            setManualCoords(null);
+            setPlacementCoords(null);
+            setPlacementMode(false);
+          }
+        }}
         coords={manualCoords ?? position}
         locationSource={manualCoords ? "manual" : "gps"}
         autoDepartment={manualCoords?.department ?? undefined}

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateLong } from "@/lib/format";
+import { enqueueOfflineOperation, isOffline } from "@/lib/offlineQueue";
 import { trpc } from "@/lib/trpc";
 import { BellRing, CalendarPlus, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -102,12 +103,24 @@ export function FollowupsPanel({ siteId, followups, readOnly = false, canCreate 
       toast.error("Elegí una fecha");
       return;
     }
-    create.mutate({
+    const followupPayload = {
       siteId,
       description: description.trim(),
       scheduledFor: new Date(`${date}T12:00:00`),
       type,
-    });
+    };
+    if (isOffline()) {
+      void enqueueOfflineOperation("followup.create", followupPayload)
+        .then(() => {
+          setDescription("");
+          setDate(dateInputToday());
+          setType("reminder");
+          toast.success("Relevamiento guardado en el teléfono. Se sincronizará al recuperar señal.");
+        })
+        .catch(error => toast.error(error instanceof Error ? error.message : "No se pudo guardar sin conexión"));
+      return;
+    }
+    create.mutate(followupPayload);
   };
 
   return (

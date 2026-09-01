@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTime } from "@/lib/format";
+import { enqueueOfflineOperation, isOffline } from "@/lib/offlineQueue";
 import { trpc } from "@/lib/trpc";
 import { CheckCircle2, Clock, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -114,15 +115,25 @@ export function CheckinDialog({ open, onOpenChange, site, coords }: Props) {
             Cancelar
           </Button>
           <Button
-            onClick={() =>
-              checkin.mutate({
+            onClick={() => {
+              const checkinPayload = {
                 siteId: site.id,
                 latitude: coords?.latitude,
                 longitude: coords?.longitude,
                 note: note.trim() || undefined,
                 noteCategory: category || undefined,
-              })
-            }
+              };
+              if (isOffline()) {
+                void enqueueOfflineOperation("site.checkin", checkinPayload)
+                  .then(() => {
+                    toast.success("Check-in guardado en el teléfono. Se sincronizará al recuperar señal.");
+                    onOpenChange(false);
+                  })
+                  .catch(error => toast.error(error instanceof Error ? error.message : "No se pudo guardar sin conexión"));
+              } else {
+                checkin.mutate(checkinPayload);
+              }
+            }}
             disabled={checkin.isPending}>
             {checkin.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />

@@ -5,6 +5,7 @@ import { httpBatchLink } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
+import { OfflineSync } from "./components/OfflineSync";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -58,9 +59,16 @@ const trpcClient = trpc.createClient({
   ],
 });
 
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js");
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
+      <OfflineSync />
       <App />
     </QueryClientProvider>
   </trpc.Provider>

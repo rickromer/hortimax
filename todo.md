@@ -497,3 +497,13 @@
 - [ ] Verificar offline real en celular: abrir, capturar, cerrar y sincronizar al recuperar señal
 - [x] Corregir cualquier diferencia entre lo implementado y lo informado al usuario
 - [x] Preparar un informe completo y honesto antes del próximo checkpoint
+
+## Aplicación instalable offline y APK Android
+- [x] Auditar la PWA y la cola offline actuales frente al uso real en campo
+- [x] Permitir abrir la aplicación y consultar datos previamente sincronizados sin Internet
+- [x] Garantizar captura offline de nuevos puntos, notas, visitas y relevamientos con reintentos idempotentes
+- [x] Mostrar claramente pendientes, sincronización, conflictos y errores al vendedor
+- [x] Mejorar manifest, iconos, instalación y actualización de la PWA
+- [x] Definir y preparar el empaquetado Android instalable tipo APK
+- [ ] Probar el ciclo sin señal y sincronización al recuperar conectividad en un dispositivo real
+- [x] Publicar la versión web/PWA y entregar el procedimiento de instalación APK

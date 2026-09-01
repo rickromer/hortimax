@@ -1,6 +1,8 @@
 import { trpc } from "@/lib/trpc";
 import { COOKIE_NAME } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/query-persist-client-core";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { httpBatchLink } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
@@ -8,7 +10,38 @@ import App from "./App";
 import { OfflineSync } from "./components/OfflineSync";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      networkMode: "offlineFirst",
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
+
+if (typeof window !== "undefined") {
+  const persister = createSyncStoragePersister({
+    storage: window.localStorage,
+    key: "hortimax-operational-cache-v1",
+    throttleTime: 1000,
+  });
+  void persistQueryClient({
+    queryClient,
+    persister,
+    maxAge: 24 * 60 * 60 * 1000,
+    dehydrateOptions: {
+      shouldDehydrateQuery: query => {
+        const [router, procedure] = query.queryKey as string[];
+        return (
+          (router === "sites" && (procedure === "list" || procedure === "detail")) ||
+          (router === "notes" && procedure === "list") ||
+          (router === "followups" && procedure === "list") ||
+          (router === "calendar" && procedure === "team")
+        );
+      },
+    },
+  });
+}
 
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
@@ -24,10 +57,12 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+const apiBaseUrl = (import.meta.env.VITE_PORTAL_API_URL ?? "").replace(/\/$/, "");
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: `${apiBaseUrl}/api/trpc`,
       transformer: superjson,
       headers() {
         // Preview auto-login fallback: when the browser blocks iframe cookies

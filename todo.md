@@ -509,11 +509,11 @@
 - [x] Publicar la versión web/PWA y entregar el procedimiento de instalación APK
 
 ## Dominio corporativo y configuración de marca
-- [ ] Vincular `crm.fcg.com.py` como dominio principal del portal
-- [ ] Configurar nombre visible Portal de Seguimiento a Clientes HORTIMAX
-- [ ] Mantener el isologo HORTIMAX original y favicon en el nuevo dominio
-- [ ] Actualizar URI OAuth y API del APK para `crm.fcg.com.py`
-- [ ] Verificar HTTPS, login, planillas y PWA en el dominio corporativo
+- [x] Mantener `mapaclientes-cqpci7xz.manus.space` como dominio activo; se difiere la vinculación de `crm.fcg.com.py`
+- [x] Configurar nombre visible Portal de Seguimiento a Clientes HORTIMAX
+- [x] Mantener el isologo HORTIMAX original y favicon en el dominio Manus activo
+- [x] Mantener URI OAuth y API del APK en el dominio Manus activo hasta una migración futura
+- [x] Verificar HTTPS, login, planillas y PWA en el dominio Manus activo
 
 ## Autenticación offline por dispositivo
 - [x] Auditar el flujo actual de login, sesión y cierre de sesión offline

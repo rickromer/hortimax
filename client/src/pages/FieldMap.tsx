@@ -18,9 +18,11 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { canManageAll } from "@shared/permissions";
 import { Capacitor } from "@capacitor/core";
+import { Network } from "@capacitor/network";
 import {
   Check,
   ChevronRight,
+  CloudOff,
   Crosshair,
   Loader2,
   MapPin,
@@ -65,7 +67,13 @@ export default function FieldMap() {
   } | null>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
-  const offlineMode = !online || forceOfflinePreview;
+  const isNativeApp = Capacitor.isNativePlatform();
+  const [nativeConnected, setNativeConnected] = useState(
+    () => !isNativeApp || (typeof navigator === "undefined" || navigator.onLine)
+  );
+  const [googleMapUnavailable, setGoogleMapUnavailable] = useState(false);
+  const [forceOfflineMap, setForceOfflineMap] = useState(false);
+  const offlineMode = !online || !nativeConnected || googleMapUnavailable || forceOfflineMap || forceOfflinePreview;
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
   const hasAutoCentered = useRef(false);
 
@@ -85,6 +93,30 @@ export default function FieldMap() {
       window.removeEventListener("offline", goOffline);
     };
   }, []);
+  useEffect(() => {
+    if (!isNativeApp) return;
+    let active = true;
+    let listener: { remove: () => Promise<void> } | undefined;
+
+    void Network.getStatus()
+      .then(status => {
+        if (active) setNativeConnected(status.connected);
+      })
+      .catch(() => {
+        if (active) setNativeConnected(navigator.onLine);
+      });
+    void Network.addListener("networkStatusChange", status => {
+      setNativeConnected(status.connected);
+      if (status.connected) setGoogleMapUnavailable(false);
+    }).then(handle => {
+      listener = handle;
+    });
+
+    return () => {
+      active = false;
+      if (listener) void listener.remove();
+    };
+  }, [isNativeApp]);
   useEffect(() => {
     if (!position || hasAutoCentered.current) return;
     hasAutoCentered.current = true;
@@ -197,7 +229,13 @@ export default function FieldMap() {
             focus={focus}
             fitToMarkers
             mapTypeId={mapType}
-            onReady={setMapInstance}
+            onReady={map => {
+              setMapInstance(map);
+              setGoogleMapUnavailable(false);
+            }}
+            onLoadError={() => {
+              if (isNativeApp) setGoogleMapUnavailable(true);
+            }}
             onMapClick={coords => {
               if (!placementMode) return;
               setPlacementCoords(placeFromMapCenter(coords));
@@ -214,7 +252,7 @@ export default function FieldMap() {
               if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
             }}
           />
-        ) : Capacitor.isNativePlatform() || forceOfflinePreview ? (
+        ) : isNativeApp || forceOfflinePreview ? (
           <OfflineVectorMap
             markers={markers}
             userPosition={position}
@@ -263,6 +301,21 @@ export default function FieldMap() {
                 if (!placementMode) setPlacementMode(false);
               }}
             />
+          </div>
+        )}
+
+        {isNativeApp && (
+          <div className="absolute right-3 top-3 z-30">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="h-9 rounded-full bg-background/95 px-3 text-xs shadow-md backdrop-blur"
+              onClick={() => setForceOfflineMap(current => !current)}
+              aria-pressed={offlineMode}>
+              <CloudOff className="h-3.5 w-3.5" />
+              {offlineMode ? "Mapa sin señal" : "Usar mapa sin señal"}
+            </Button>
           </div>
         )}
 

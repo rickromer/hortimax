@@ -553,3 +553,9 @@
 - [x] Integrar carreteras, ciudades, departamentos y referencias en el APK
 - [x] Superponer los clientes sincronizados y conservar captura offline
 - [x] Compilar y validar técnicamente el APK; queda pendiente probar instalación y modo avión en el teléfono del usuario
+
+## Incidencia crítica: mapa offline APK no operativo
+- [x] Diagnosticar el arranque y la carga real de la cartografía en Android
+- [x] Corregir la lectura del mapa local y el cambio automático a modo sin señal
+- [x] Reconstruir un APK con la corrección y verificar contenido, permisos y tamaño
+- [ ] Validar en el teléfono real que aparecen mapa, carreteras y puntos sin señal

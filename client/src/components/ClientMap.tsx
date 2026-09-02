@@ -75,6 +75,7 @@ type ClientMapProps = {
   onMapClick?: (coords: { latitude: number; longitude: number }) => void;
   onCenterChanged?: (coords: { latitude: number; longitude: number }) => void;
   onReady?: (map: google.maps.Map) => void;
+  onLoadError?: () => void;
 };
 
 const PIN_COLORS: Record<string, string> = {
@@ -145,6 +146,7 @@ export function ClientMap({
   onMapClick,
   onCenterChanged,
   onReady,
+  onLoadError,
 }: ClientMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -155,8 +157,13 @@ export function ClientMap({
   const readyRef = useRef(false);
   const didFitRef = useRef(false);
   const automaticRetryAttemptsRef = useRef(0);
+  const onLoadErrorRef = useRef(onLoadError);
   const [loadError, setLoadError] = useState(false);
   const [retryToken, setRetryToken] = useState(0);
+
+  useEffect(() => {
+    onLoadErrorRef.current = onLoadError;
+  }, [onLoadError]);
 
   const retryMap = usePersistFn((automatic = false) => {
     if (automatic) {
@@ -175,6 +182,7 @@ export function ClientMap({
     } catch (error) {
       console.error(error);
       setLoadError(true);
+      onLoadErrorRef.current?.();
       window.setTimeout(() => retryMap(true), 900);
       return;
     }

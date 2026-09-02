@@ -314,3 +314,11 @@ El visor Android usa MapLibre con un worker local y decodificación MVT directa 
 El APK de prueba compiló correctamente con Android SDK 36 y Java 21. El instalador ocupa aproximadamente **173 MiB**, incluye permisos de ubicación precisa/aproximada y el paquete PMTiles completo. SHA-256: `f13199e57dd53caa9bc9c3626a044103d354c9ff0fdb07e6a24d4d9a30166cab`.
 
 La validación automatizada aprobó **96 pruebas** en 33 archivos, con 1 integración opcional omitida; `pnpm check` y `pnpm build` aprobaron. El emulador Android sin aceleración del sandbox no completó su arranque después de más de cinco minutos, por lo que la instalación, modo avión, cierre/reapertura y sincronización final deben confirmarse en el teléfono real del usuario.
+
+## Corrección del respaldo offline en APK
+
+La falla reportada no se trató como una diferencia visual: el selector del mapa confiaba solo en `navigator.onLine`. En Android, el WebView puede conservar ese valor aunque el teléfono ya no tenga una ruta de datos y, en ese caso, seguía intentando cargar Google Maps en vez de activar el paquete local.
+
+El APK actualizado incorpora el complemento nativo de red de Capacitor. Al reportar Android pérdida de conectividad, o al fallar la carga de Google Maps, FieldMap conmuta de inmediato a la cartografía PMTiles local. Además, el botón **Usar mapa sin señal** permite forzar manualmente el mapa offline desde el APK cuando el sistema tarda en actualizar el estado de red. La nueva compilación incluye el complemento, la cartografía de 174.661.701 bytes y conserva el tamaño aproximado de 173 MiB.
+
+La suite volvió a aprobar **96 pruebas** en 33 archivos, con 1 integración opcional omitida; `pnpm check`, `pnpm build` y la compilación Android aprobaron. SHA-256 del APK v3: `54590569e6aa86fe0351a8ababa9e64ae91e2acaf0f1447b40941ae91ef202f6`. Sigue pendiente únicamente la confirmación en el teléfono físico, porque el emulador sin aceleración no terminó de arrancar en el sandbox.

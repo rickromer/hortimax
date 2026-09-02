@@ -48,6 +48,9 @@ async function startServer() {
   );
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
+    app.get("/offline/paraguay-shortbread-1.0.pmtiles", (_req, res) => {
+      res.sendFile("/home/ubuntu/webdev-static-assets/paraguay-shortbread-1.0.pmtiles");
+    });
     await setupVite(app, server);
   } else {
     serveStatic(app);

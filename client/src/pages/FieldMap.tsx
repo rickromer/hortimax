@@ -1,5 +1,7 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
+import { OfflineParaguayMap } from "@/components/OfflineParaguayMap";
+import { OfflineVectorMap } from "@/components/OfflineVectorMap";
 import { FieldShell } from "@/components/FieldShell";
 import { MapPlaceSearch } from "@/components/MapPlaceSearch";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -15,6 +17,7 @@ import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { canManageAll } from "@shared/permissions";
+import { Capacitor } from "@capacitor/core";
 import {
   Check,
   ChevronRight,
@@ -32,6 +35,7 @@ import { Link, useLocation } from "wouter";
 
 export default function FieldMap() {
   const [location] = useLocation();
+  const forceOfflinePreview = import.meta.env.DEV && new URLSearchParams(window.location.search).has("offlineMap");
   const { user } = useAuth();
   const canEdit = Boolean(user);
   const canCreatePoint = true;
@@ -60,6 +64,8 @@ export default function FieldMap() {
     zone?: string | null;
   } | null>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+  const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
+  const offlineMode = !online || forceOfflinePreview;
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
   const hasAutoCentered = useRef(false);
 
@@ -69,6 +75,16 @@ export default function FieldMap() {
   );
 
   const position = geo.position;
+  useEffect(() => {
+    const goOnline = () => setOnline(true);
+    const goOffline = () => setOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
   useEffect(() => {
     if (!position || hasAutoCentered.current) return;
     hasAutoCentered.current = true;
@@ -174,41 +190,81 @@ export default function FieldMap() {
         </Button>
       }>
       <div className="absolute inset-0">
-        <ClientMap
-          markers={markers}
-          userPosition={position}
-          focus={focus}
-          fitToMarkers
-          mapTypeId={mapType}
-          onReady={setMapInstance}
-          onMapClick={coords => {
-            if (!placementMode) return;
-            setPlacementCoords(placeFromMapCenter(coords));
-            setFocus(coords);
-          }}
-          onCenterChanged={coords => {
-            setVisibleMapCenter(coords);
-            if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
-          }}
-          onMarkerClick={id => {
-            if (id === -1) return;
-            setSelectedId(id);
-            const site = sites.find(s => s.id === id);
-              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
-          }}
-        />
-
-        <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
-          <MapPlaceSearch
-            map={mapInstance}
-            onSelect={selection => {
-              const coords = placeFromMapCenter(selection);
+        {!offlineMode ? (
+          <ClientMap
+            markers={markers}
+            userPosition={position}
+            focus={focus}
+            fitToMarkers
+            mapTypeId={mapType}
+            onReady={setMapInstance}
+            onMapClick={coords => {
+              if (!placementMode) return;
+              setPlacementCoords(placeFromMapCenter(coords));
               setFocus(coords);
-              setPlacementCoords(coords);
-              if (!placementMode) setPlacementMode(false);
+            }}
+            onCenterChanged={coords => {
+              setVisibleMapCenter(coords);
+              if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
+            }}
+            onMarkerClick={id => {
+              if (id === -1) return;
+              setSelectedId(id);
+              const site = sites.find(s => s.id === id);
+              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
             }}
           />
-        </div>
+        ) : Capacitor.isNativePlatform() || forceOfflinePreview ? (
+          <OfflineVectorMap
+            markers={markers}
+            userPosition={position}
+            focus={focus}
+            placementMode={placementMode}
+            onMapClick={placementMode ? coords => {
+              setPlacementCoords(placeFromMapCenter(coords));
+              setFocus(coords);
+            } : undefined}
+            onCenterChanged={coords => {
+              setVisibleMapCenter(coords);
+              if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
+            }}
+            onMarkerClick={id => {
+              if (id === -1) return;
+              setSelectedId(id);
+              const site = sites.find(s => s.id === id);
+              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
+            }}
+          />
+        ) : (
+          <OfflineParaguayMap
+            markers={markers}
+            focus={focus}
+            onMapClick={placementMode ? coords => {
+              setPlacementCoords(placeFromMapCenter(coords));
+              setFocus(coords);
+            } : undefined}
+            onMarkerClick={id => {
+              if (id === -1) return;
+              setSelectedId(id);
+              const site = sites.find(s => s.id === id);
+              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
+            }}
+          />
+        )}
+
+        {!offlineMode && (
+          <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
+            <MapPlaceSearch
+              map={mapInstance}
+              onSelect={selection => {
+                const coords = placeFromMapCenter(selection);
+                setFocus(coords);
+                setPlacementCoords(coords);
+                if (!placementMode) setPlacementMode(false);
+              }}
+            />
+          </div>
+        )}
 
         {placementMode && (
           <>
@@ -290,7 +346,7 @@ export default function FieldMap() {
             aria-label="Mi ubicación">
             {geo.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Crosshair className="h-5 w-5" />}
           </Button>
-          <MapReferencePanel mapType={mapType} onMapTypeChange={setMapType} />
+          {!offlineMode && <MapReferencePanel mapType={mapType} onMapTypeChange={setMapType} />}
         </div>
 
         {/* Aviso de GPS */}

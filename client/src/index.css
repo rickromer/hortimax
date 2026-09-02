@@ -182,6 +182,46 @@
 }
 
 @layer components {
+  .offline-client-marker {
+    display: grid;
+    place-items: center;
+    border: 3px solid white;
+    border-radius: 999px 999px 999px 6px;
+    background: var(--marker-color, #0ba4a6);
+    box-shadow: 0 4px 12px rgb(15 40 30 / 35%);
+    transform: rotate(45deg);
+  }
+
+  .offline-client-marker::after {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: white;
+    content: "";
+  }
+
+  .offline-user-marker {
+    width: 18px;
+    height: 18px;
+    border: 3px solid white;
+    border-radius: 999px;
+    background: #2563eb;
+    box-shadow: 0 0 0 6px rgb(37 99 235 / 18%), 0 2px 6px rgb(0 0 0 / 30%);
+  }
+
+  .offline-city-label {
+    pointer-events: none;
+    border-radius: 5px;
+    background: rgb(255 255 255 / 82%);
+    padding: 2px 5px;
+    color: #263b2c;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgb(20 40 25 / 18%);
+  }
+
   /**
    * Custom container utility that centers content and adds responsive padding.
    *

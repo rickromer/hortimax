@@ -294,3 +294,23 @@ En responsive se capturaron `/acceso`, `/mapa`, `/sitios`, `/calendario` y `/adm
 Como refuerzo para jornadas con cobertura inestable, las cuatro altas de campo guardan la operación en IndexedDB cuando no hay señal y también convierten un fallo de red real durante un envío iniciado en una operación pendiente. Al recuperar conectividad, el sincronizador conserva el orden, reintenta, informa pendientes y usa `clientRequestId` para evitar duplicados. La instalación PWA y el cacheo público de la carcasa están configurados; el mapa de Google y la búsqueda de lugares siguen requiriendo conexión.
 
 La prueba automatizada final aprobó 90 tests en 30 archivos, con 1 integración opcional omitida; `pnpm check` y `pnpm build` también aprobaron. Falta una única validación externa: probar en un celular de campo el ciclo completo sin señal → captura → cierre/reapertura → recuperación de señal → sincronización, porque el entorno de desarrollo no puede simular de forma fiable la cobertura móvil real.
+
+## Corrección tras prueba real sin señal
+
+La prueba en dispositivo mostró que la cookie era de sesión y desaparecía al cerrar la aplicación. Se corrigió para persistir 30 días, conservando la firma, el uso HttpOnly y la política Secure; el logout explícito sigue revocando la confianza local. Tras un acceso online válido, el hook de autenticación precarga la cartera permitida por el servidor: Representante recibe sus puntos y Gerencia/Administración la cartera completa.
+
+Cuando el dispositivo informa ausencia de red, FieldMap deja de intentar cargar Google Maps y muestra un mapa territorial local de Paraguay con límites departamentales empaquetados y los clientes sincronizados. El modo offline no ofrece calles, búsqueda de lugares ni imágenes satelitales; esas funciones regresan con conexión. La geometría se basa en el GeoJSON público de departamentos de Paraguay consultado en el gist de aVolpe [1].
+
+La aplicación conserva el acceso del usuario previamente autorizado y reingresa automáticamente en el dispositivo; un dispositivo nuevo sigue requiriendo servidor. Validación de código: `pnpm test` aprobó 92 pruebas en 31 archivos, con 1 integración opcional omitida; `pnpm check` y `pnpm build` aprobaron. Queda pendiente repetir en teléfono real el ciclo completo de cierre, reapertura, captura sin señal y sincronización.
+
+[1]: https://gist.github.com/aVolpe/0e1b1e6e25efafa8185d "GeoJson de los departamentos del Paraguay, aVolpe"
+
+## APK Android con mapa cartográfico completo de Paraguay
+
+Se reemplazó el respaldo territorial simplificado del APK por cartografía vectorial completa basada en el paquete Shortbread de OpenStreetMap/Geofabrik. El MBTiles original de **202.948.608 bytes** se convirtió a PMTiles v3 de **174.661.701 bytes**, con cobertura de Paraguay entre zoom 0 y 14. El archivo queda empaquetado sin compresión ZIP para lectura local por rangos y no se incluye en el despliegue web.
+
+El visor Android usa MapLibre con un worker local y decodificación MVT directa desde PMTiles. La validación visual sin Google Maps mostró límites, agua, ciudades, carreteras y los **15 clientes sincronizados**; al enfocar un cliente a zoom operativo se renderizaron rutas troncales, secundarias y terciarias alrededor del punto. Con señal, FieldMap conserva Google Maps; sin señal dentro del APK usa el mapa local.
+
+El APK de prueba compiló correctamente con Android SDK 36 y Java 21. El instalador ocupa aproximadamente **173 MiB**, incluye permisos de ubicación precisa/aproximada y el paquete PMTiles completo. SHA-256: `f13199e57dd53caa9bc9c3626a044103d354c9ff0fdb07e6a24d4d9a30166cab`.
+
+La validación automatizada aprobó **96 pruebas** en 33 archivos, con 1 integración opcional omitida; `pnpm check` y `pnpm build` aprobaron. El emulador Android sin aceleración del sandbox no completó su arranque después de más de cinco minutos, por lo que la instalación, modo avión, cierre/reapertura y sincronización final deben confirmarse en el teléfono real del usuario.

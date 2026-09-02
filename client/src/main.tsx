@@ -2,12 +2,13 @@ import { trpc } from "@/lib/trpc";
 import { COOKIE_NAME } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { persistQueryClient } from "@tanstack/query-persist-client-core";
-import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { httpBatchLink } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
+import { OfflineDataPreloader } from "./components/OfflineDataPreloader";
 import { OfflineSync } from "./components/OfflineSync";
+import { createIndexedDbPersister, shouldPersistOperationalQuery } from "./lib/indexedDbPersister";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -20,24 +21,14 @@ const queryClient = new QueryClient({
 });
 
 if (typeof window !== "undefined") {
-  const persister = createSyncStoragePersister({
-    storage: window.localStorage,
-    key: "hortimax-operational-cache-v1",
-    throttleTime: 1000,
-  });
+  const persister = createIndexedDbPersister();
   void persistQueryClient({
     queryClient,
     persister,
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 30 * 24 * 60 * 60 * 1000,
     dehydrateOptions: {
       shouldDehydrateQuery: query => {
-        const [router, procedure] = query.queryKey as string[];
-        return (
-          (router === "sites" && (procedure === "list" || procedure === "detail")) ||
-          (router === "notes" && procedure === "list") ||
-          (router === "followups" && procedure === "list") ||
-          (router === "calendar" && procedure === "team")
-        );
+        return shouldPersistOperationalQuery(query.queryKey);
       },
     },
   });
@@ -103,6 +94,7 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
+      <OfflineDataPreloader />
       <OfflineSync />
       <App />
     </QueryClientProvider>

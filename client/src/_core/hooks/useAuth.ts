@@ -20,8 +20,12 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    if (meQuery.data) setOfflineSession(meQuery.data);
-  }, [meQuery.data]);
+    if (!meQuery.data) return;
+    setOfflineSession(meQuery.data);
+    // La consulta sin filtros respeta el alcance del servidor: cartera propia
+    // para Representante y cartera completa para Gerencia/Administración.
+    void utils.sites.list.prefetch({});
+  }, [meQuery.data, utils]);
 
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {

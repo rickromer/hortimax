@@ -531,3 +531,25 @@
 - [x] Conservar roles y cartera del usuario durante el modo offline
 - [x] Revocar y limpiar el acceso al cerrar sesión explícitamente o desde Administración
 - [x] Cubrir acceso automático, dispositivo nuevo y cambio de contraseña con pruebas
+
+## Corrección tras prueba real sin señal
+- [x] Mantener la sesión y la identidad al cerrar y reabrir la PWA o APK
+- [x] Precargar automáticamente todos los clientes permitidos para el rol antes de salir a campo
+- [x] Precargar fichas y actividad necesaria para consulta offline
+- [x] Mostrar mapa offline de Paraguay con puntos sincronizados cuando Google Maps no tenga red
+- [x] Mantener Google Maps, búsqueda y referencias completas cuando vuelva la conectividad
+- [ ] Probar en dispositivo real cierre, reapertura, mapa, captura y sincronización
+
+## Mapa offline cartográfico completo
+- [x] Sustituir la vista territorial simplificada por un mapa offline con carreteras, ciudades, departamentos y referencias de Paraguay
+- [x] Seleccionar una fuente cartográfica compatible con uso offline y su licencia
+- [x] Empaquetar el mapa para Android sin depender de Google Maps ni de red
+- [x] Mantener los puntos de clientes sincronizados sobre el mapa offline
+- [x] Definir el tamaño y el nivel de detalle del paquete para evitar una descarga excesiva
+- [x] Validar visualmente rutas y ciudades sin red mediante el modo offline local; queda pendiente la prueba en teléfono real
+
+## Mapa offline completo aprobado
+- [x] Descargar y preparar el paquete vectorial completo de Paraguay, hasta aproximadamente 250 MB
+- [x] Integrar carreteras, ciudades, departamentos y referencias en el APK
+- [x] Superponer los clientes sincronizados y conservar captura offline
+- [x] Compilar y validar técnicamente el APK; queda pendiente probar instalación y modo avión en el teléfono del usuario

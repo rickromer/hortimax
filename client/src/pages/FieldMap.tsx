@@ -1,8 +1,5 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
-import { OfflineMapDownload } from "@/components/OfflineMapDownload";
-import { OfflineParaguayMap } from "@/components/OfflineParaguayMap";
-import { OfflineVectorMap } from "@/components/OfflineVectorMap";
 import { FieldShell } from "@/components/FieldShell";
 import { MapPlaceSearch } from "@/components/MapPlaceSearch";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -13,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { formatDistance, timeAgo } from "@/lib/format";
-import { getOfflineMapFile } from "@/lib/offlineMapStorage";
+import { NativeOfflineMap } from "@/lib/nativeOfflineMap";
 import { placeFromMapCenter, startMapPlacement } from "@/lib/mapPlacement";
 import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
@@ -24,7 +21,6 @@ import { Network } from "@capacitor/network";
 import {
   Check,
   ChevronRight,
-  CloudOff,
   Crosshair,
   Loader2,
   MapPin,
@@ -38,7 +34,7 @@ import { toast } from "sonner";
 import { Link, useLocation } from "wouter";
 
 export default function FieldMap() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const forceOfflinePreview = import.meta.env.DEV && new URLSearchParams(window.location.search).has("offlineMap");
   const { user } = useAuth();
   const canEdit = Boolean(user);
@@ -74,10 +70,7 @@ export default function FieldMap() {
     () => !isNativeApp || (typeof navigator === "undefined" || navigator.onLine)
   );
   const [googleMapUnavailable, setGoogleMapUnavailable] = useState(false);
-  const [forceOfflineMap, setForceOfflineMap] = useState(false);
-  const [offlineMapFile, setOfflineMapFile] = useState<File | null>(null);
-  const offlineMode = !online || !nativeConnected || googleMapUnavailable || forceOfflineMap || forceOfflinePreview;
-  const hasFullOfflineMap = isNativeApp || Boolean(offlineMapFile) || forceOfflinePreview;
+  const offlineMode = !online || !nativeConnected || googleMapUnavailable || forceOfflinePreview;
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
   const hasAutoCentered = useRef(false);
 
@@ -119,16 +112,6 @@ export default function FieldMap() {
     return () => {
       active = false;
       if (listener) void listener.remove();
-    };
-  }, [isNativeApp]);
-  useEffect(() => {
-    if (isNativeApp) return;
-    let active = true;
-    void getOfflineMapFile().then(file => {
-      if (active) setOfflineMapFile(file);
-    });
-    return () => {
-      active = false;
     };
   }, [isNativeApp]);
   useEffect(() => {
@@ -182,6 +165,54 @@ export default function FieldMap() {
     }
     return mapped;
   }, [sites, selectedId, manualCoords]);
+
+  useEffect(() => {
+    if (!isNativeApp) return;
+    let disposed = false;
+    let markerTapListener: { remove: () => Promise<void> } | undefined;
+    let locationListener: { remove: () => Promise<void> } | undefined;
+
+    const syncNativeMap = async () => {
+      try {
+        if (!offlineMode) {
+          await NativeOfflineMap.hide();
+          return;
+        }
+        markerTapListener = await NativeOfflineMap.addListener("markerTap", event => {
+          if (disposed || typeof event.id !== "number" || event.id < 0) return;
+          const site = sites.find(item => item.id === event.id);
+          if (!site) return;
+          setSelectedId(site.id);
+          setFocus({ latitude: site.latitude, longitude: site.longitude });
+          setLocation(`/sitios/${site.id}`);
+        });
+        locationListener = await NativeOfflineMap.addListener("chooseLocation", event => {
+          if (disposed || typeof event.latitude !== "number" || typeof event.longitude !== "number") return;
+          setManualCoords({ latitude: event.latitude, longitude: event.longitude });
+          setPlacementCoords(null);
+          setPlacementMode(false);
+          setNewSiteOpen(true);
+        });
+        await NativeOfflineMap.show({
+          markers,
+          focus,
+          userPosition: position
+            ? { latitude: position.latitude, longitude: position.longitude }
+            : null,
+        });
+      } catch (error) {
+        console.error("No se pudo abrir el mapa Android sin señal", error);
+        toast.error("No se pudo abrir el mapa sin señal. Volvé a abrir la aplicación.");
+      }
+    };
+
+    void syncNativeMap();
+    return () => {
+      disposed = true;
+      if (markerTapListener) void markerTapListener.remove();
+      if (locationListener) void locationListener.remove();
+    };
+  }, [focus, isNativeApp, markers, offlineMode, position, setLocation, sites]);
 
   const centerOnMe = async () => {
     const pos = position ?? (await geo.request());
@@ -266,51 +297,14 @@ export default function FieldMap() {
               if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
             }}
           />
-        ) : hasFullOfflineMap ? (
-          <OfflineVectorMap
-            markers={markers}
-            localFile={isNativeApp ? null : offlineMapFile}
-            userPosition={position}
-            focus={focus}
-            placementMode={placementMode}
-            onMapClick={placementMode ? coords => {
-              setPlacementCoords(placeFromMapCenter(coords));
-              setFocus(coords);
-            } : undefined}
-            onCenterChanged={coords => {
-              setVisibleMapCenter(coords);
-              if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
-            }}
-            onMarkerClick={id => {
-              if (id === -1) return;
-              setSelectedId(id);
-              const site = sites.find(s => s.id === id);
-              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
-            }}
-          />
-        ) : (
-          <OfflineParaguayMap
-            markers={markers}
-            focus={focus}
-            onMapClick={placementMode ? coords => {
-              setPlacementCoords(placeFromMapCenter(coords));
-              setFocus(coords);
-            } : undefined}
-            onMarkerClick={id => {
-              if (id === -1) return;
-              setSelectedId(id);
-              const site = sites.find(s => s.id === id);
-              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
-            }}
-          />
-        )}
-
-        {!isNativeApp && (
-          <OfflineMapDownload
-            online={online}
-            onReady={file => setOfflineMapFile(file)}
-          />
-        )}
+        ) : !isNativeApp ? (
+          <div className="grid h-full place-items-center bg-muted/40 px-8 text-center">
+            <div className="max-w-sm rounded-2xl border border-border/70 bg-background p-5 shadow-sm">
+              <p className="font-semibold">Mapa sin señal disponible en la aplicación Android</p>
+              <p className="mt-2 text-sm text-muted-foreground">La versión de Chrome necesita Internet para Google Maps. El APK HORTIMAX incluye el mapa local completo de Paraguay y cambia automáticamente al perder señal.</p>
+            </div>
+          </div>
+        ) : null}
 
         {!offlineMode && (
           <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
@@ -323,21 +317,6 @@ export default function FieldMap() {
                 if (!placementMode) setPlacementMode(false);
               }}
             />
-          </div>
-        )}
-
-        {(isNativeApp || offlineMapFile) && (
-          <div className="absolute right-3 top-3 z-30">
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className="h-9 rounded-full bg-background/95 px-3 text-xs shadow-md backdrop-blur"
-              onClick={() => setForceOfflineMap(current => !current)}
-              aria-pressed={offlineMode}>
-              <CloudOff className="h-3.5 w-3.5" />
-              {offlineMode ? "Mapa sin señal" : "Usar mapa sin señal"}
-            </Button>
           </div>
         )}
 

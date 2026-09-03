@@ -558,17 +558,25 @@
 - [x] Diagnosticar el arranque y la carga real de la cartografía en Android
 - [x] Corregir la lectura del mapa local y el cambio automático a modo sin señal
 - [x] Reconstruir un APK con la corrección y verificar contenido, permisos y tamaño
-- [ ] Validar en el teléfono real que aparecen mapa, carreteras y puntos sin señal
+- [ ] Validar en el teléfono real v4 que aparecen mapa, carreteras y puntos sin señal
 
 ## Mapa offline navegable para PWA
 - [x] Reemplazar el respaldo territorial básico de Chrome/PWA por cartografía vectorial navegable
 - [x] Descargar el paquete completo de Paraguay bajo demanda y guardarlo en el dispositivo
 - [x] Mostrar progreso, almacenamiento ocupado y la opción de actualizar o eliminar el mapa local
 - [x] Usar rutas, ciudades, departamentos y clientes en la PWA sin señal
-- [ ] Probar modo avión desde Chrome/PWA y recuperar Google Maps al volver Internet
+- [x] Retirar del flujo operativo PWA el mapa experimental y sus controles manuales; el modo completo se entrega en APK nativo
 
 ## Corrección de visor offline vacío
 - [x] Corregir el render de calles, ciudades y rutas desde el archivo local de la PWA
 - [x] Mostrar un estado de error accionable si el visor local no puede cargar cartografía
 - [x] Permitir minimizar o cerrar el panel de mapa descargado sin eliminar el paquete
-- [ ] Validar en Chrome/PWA y Android que el mapa no quede vacío
+- [x] Sustituir el visor PWA no fiable por el visor mapsforge nativo dentro del APK
+
+## Visor nativo Android tipo Google Maps sin señal
+- [x] Reemplazar el visor PWA de respaldo por un motor Android nativo con gestos fluidos
+- [x] Cargar automáticamente la cartografía local completa desde el APK al no haber señal
+- [x] Mantener arrastre, zoom, pellizco, brújula, ubicación actual y pines interactivos
+- [x] Sincronizar pines de clientes permitidos con el visor Android sin exponer otra cartera
+- [x] Quitar botones y paneles manuales de mapa sin señal del flujo operativo
+- [x] Compilar y validar el nuevo APK antes de prueba física

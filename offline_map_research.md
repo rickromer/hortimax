@@ -25,3 +25,7 @@ La arquitectura recomendada es: descargar el paquete una vez con señal desde la
 El archivo Geofabrik completo se descargó con **202.948.608 bytes** y se convirtió correctamente a PMTiles v3. El PMTiles resultante ocupa **174.661.701 bytes**, cubre Paraguay entre zoom 0 y 14 e incluye 186.464 mosaicos direccionables. El APK Android compiló correctamente e incluye el PMTiles sin compresión ZIP para acceso por rangos; su tamaño de prueba es aproximadamente **173 MiB**.
 
 El manifiesto compilado incluye Internet, estado de red y ubicación precisa/aproximada. La lectura directa desde el navegador confirmó una cabecera válida y un mosaico vectorial de 70.238 bytes en el centro de Paraguay. La primera integración MapLibre quedó bloqueada en la carga de fuente con PMTiles 4.5; se alineó a PMTiles 3.2, la versión usada por el ejemplo oficial de MapLibre, para repetir la validación.
+
+## Alternativa nativa Android: mapsforge
+
+El servidor oficial de mapsforge publica mapas preconstruidos en `https://download.mapsforge.org/maps/v5/`, incluido el directorio de Sudamérica. Sus mapas se basan en OpenStreetMap y requieren atribución visible a OpenStreetMap y el cumplimiento de ODbL. El formato `.map` está concebido para un visor Android nativo mapsforge, que permite desplazamiento, zoom, gestos y renderizado de vías sin depender del WebView ni de Google Maps. Esta alternativa elimina la ruta de render web que produjo el lienzo vacío en Chrome/PWA.

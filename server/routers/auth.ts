@@ -42,6 +42,24 @@ async function issueSession(ctx: any, openId: string, name: string) {
   return token;
 }
 
+function isTrustedAndroidApp(ctx: any) {
+  const origin = ctx.req.get("origin");
+  return (
+    ctx.req.get("x-hortimax-client") === "android" &&
+    (origin === "http://localhost" || origin === "https://localhost" || origin === "capacitor://localhost")
+  );
+}
+
+async function issueClientSession(ctx: any, user: any) {
+  const token = await issueSession(ctx, user.openId, user.name ?? user.username ?? "");
+  return {
+    ...publicUser(user),
+    // El token solo se entrega a la aplicación Android identificada para que el
+    // WebView pueda autenticar requests cross-origin. Nunca se devuelve a la web.
+    ...(isTrustedAndroidApp(ctx) ? { mobileSessionToken: token } : {}),
+  };
+}
+
 export const authRouter = router({
   /** Usuario actual de la sesión (o null). */
   me: publicProcedure.query(({ ctx }) => (ctx.user ? publicUser(ctx.user as any) : null)),
@@ -107,8 +125,7 @@ export const authRouter = router({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo crear la cuenta" });
       }
 
-      await issueSession(ctx, created.openId, created.name ?? username);
-      return publicUser(created as any);
+      return issueClientSession(ctx, created);
     }),
 
   /** Verifica si un usuario debe definir contraseña en su primer ingreso. */
@@ -151,8 +168,7 @@ export const authRouter = router({
       }
 
       await db.updateUser(user.id, { lastSignedIn: new Date() });
-      await issueSession(ctx, user.openId, user.name ?? user.username ?? "");
-      return publicUser({ ...user, mustChangePassword: user.mustChangePassword } as any);
+      return issueClientSession(ctx, { ...user, mustChangePassword: user.mustChangePassword });
     }),
 
   /** Primer ingreso: el usuario define su propia contraseña con el código de activación. */
@@ -191,8 +207,7 @@ export const authRouter = router({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo activar la cuenta" });
       }
 
-      await issueSession(ctx, updated.openId, updated.name ?? updated.username ?? "");
-      return publicUser(updated as any);
+      return issueClientSession(ctx, updated);
     }),
 
   /** Cambio de contraseña del usuario autenticado. */

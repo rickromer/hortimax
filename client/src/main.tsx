@@ -9,6 +9,7 @@ import App from "./App";
 import { OfflineDataPreloader } from "./components/OfflineDataPreloader";
 import { OfflineSync } from "./components/OfflineSync";
 import { createIndexedDbPersister, shouldPersistOperationalQuery } from "./lib/indexedDbPersister";
+import { getNativeSessionToken, isNativeAndroidApp } from "./lib/nativeSession";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -56,6 +57,10 @@ const trpcClient = trpc.createClient({
       url: `${apiBaseUrl}/api/trpc`,
       transformer: superjson,
       headers() {
+        if (isNativeAndroidApp()) {
+          const token = getNativeSessionToken();
+          return token ? { Authorization: `Bearer ${token}`, "X-Hortimax-Client": "android" } : { "X-Hortimax-Client": "android" };
+        }
         // Preview auto-login fallback: when the browser blocks iframe cookies
         // (Safari ITP / private browsing / WebView), the runtime mirrors the
         // session into sessionStorage so we can forward it as a Bearer token.

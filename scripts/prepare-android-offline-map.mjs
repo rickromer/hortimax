@@ -9,6 +9,8 @@ const destination = path.join(
   projectRoot,
   "android/app/src/main/assets/public/offline/paraguay.map"
 );
+const logoSource = "/home/ubuntu/webdev-static-assets/hortimax-logo-original.png";
+const logoDestination = path.join(projectRoot, "android/app/src/main/assets/public/offline/hortimax-logo-original.png");
 
 try {
   await access(source);
@@ -20,8 +22,10 @@ try {
 
 await mkdir(path.dirname(destination), { recursive: true });
 await copyFile(source, destination);
+await copyFile(logoSource, logoDestination);
 const info = await stat(destination);
 if (info.size < 100_000_000 || info.size > 250_000_000) {
   throw new Error(`El paquete offline tiene un tamaño inesperado: ${info.size} bytes`);
 }
 console.log(`Mapa offline listo para Android: ${destination} (${info.size} bytes)`);
+console.log(`Isologo original listo para Android: ${logoDestination}`);

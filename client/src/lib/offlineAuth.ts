@@ -20,6 +20,7 @@ const CREDENTIAL_KEY = "hortimax-offline-credential-v1";
 const SESSION_KEY = "hortimax-offline-session-v1";
 const DEVICE_KEY = "hortimax-device-id-v1";
 const CHANGE_EVENT = "hortimax-offline-auth-change";
+const NATIVE_SESSION_TOKEN_KEY = "hortimax-native-session-token-v1";
 
 function available() {
   return typeof window !== "undefined" && typeof localStorage !== "undefined";
@@ -153,6 +154,7 @@ export function forgetOfflineCredential() {
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(CREDENTIAL_KEY);
   localStorage.removeItem(DEVICE_KEY);
+  localStorage.removeItem(NATIVE_SESSION_TOKEN_KEY);
   emitChange();
 }
 

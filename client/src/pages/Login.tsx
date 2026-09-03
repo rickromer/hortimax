@@ -7,6 +7,7 @@ import { shouldShowInitialSetup } from "@/lib/loginScreenMode";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { getRememberedOfflineUser, isNetworkFailure, rememberOfflineCredential, setOfflineSession, verifyOfflineCredential } from "@/lib/offlineAuth";
+import { saveNativeSessionToken } from "@/lib/nativeSession";
 import { ArrowLeft, KeyRound, Loader2, MapPinned, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -59,7 +60,9 @@ export default function Login() {
     },
   });
 
-  const completeOnlineLogin = async (user: any) => {
+  const completeOnlineLogin = async (response: any) => {
+    const { mobileSessionToken, ...user } = response;
+    saveNativeSessionToken(mobileSessionToken);
     await rememberOfflineCredential(user, password);
     setOfflineSession(user);
     await finish();
@@ -99,9 +102,9 @@ export default function Login() {
   });
 
   const setupAdmin = trpc.auth.setupAdmin.useMutation({
-    onSuccess: () => {
+    onSuccess: response => {
       toast.success("Cuenta de administrador creada");
-      finish();
+      void completeOnlineLogin(response);
     },
     onError: error => toast.error(error.message),
   });

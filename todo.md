@@ -580,3 +580,9 @@
 - [x] Sincronizar pines de clientes permitidos con el visor Android sin exponer otra cartera
 - [x] Quitar botones y paneles manuales de mapa sin señal del flujo operativo
 - [x] Compilar y validar el nuevo APK antes de prueba física
+
+## Corrección crítica de APK: login y marca
+- [x] Diagnosticar la conexión del APK al portal publicado y la validación de usuario
+- [x] Corregir la autenticación del APK sin debilitar cookies ni permisos por rol
+- [x] Restaurar el isologo HORTIMAX original dentro del APK
+- [x] Reconstruir y validar técnicamente el instalador con login y marca correctos

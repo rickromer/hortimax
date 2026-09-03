@@ -5,7 +5,7 @@ import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { GeoJSONSource, StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { PbfReader } from "pbf";
-import { PMTiles } from "pmtiles";
+import { FileSource, PMTiles } from "pmtiles";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type OfflineMarker = {
@@ -19,6 +19,7 @@ type OfflineMarker = {
 
 type OfflineVectorMapProps = {
   markers: OfflineMarker[];
+  localFile?: File | null;
   userPosition?: { latitude: number; longitude: number; accuracy?: number } | null;
   focus?: { latitude: number; longitude: number } | null;
   placementMode?: boolean;
@@ -205,6 +206,7 @@ export function createOfflineMapStyle(): StyleSpecification {
 
 export function OfflineVectorMap({
   markers,
+  localFile,
   userPosition,
   focus,
   placementMode,
@@ -233,7 +235,7 @@ export function OfflineVectorMap({
   useEffect(() => {
     if (!containerRef.current) return;
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
-    const archive = new PMTiles(archiveUrl);
+    const archive = new PMTiles(localFile ? new FileSource(localFile) : archiveUrl);
     if (import.meta.env.DEV) {
       (window as typeof window & { __hortimaxArchive?: PMTiles }).__hortimaxArchive = archive;
     }
@@ -297,7 +299,7 @@ export function OfflineVectorMap({
       }
       mapRef.current = null;
     };
-  }, [archiveUrl]);
+  }, [archiveUrl, localFile]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -322,3 +322,9 @@ La falla reportada no se trató como una diferencia visual: el selector del mapa
 El APK actualizado incorpora el complemento nativo de red de Capacitor. Al reportar Android pérdida de conectividad, o al fallar la carga de Google Maps, FieldMap conmuta de inmediato a la cartografía PMTiles local. Además, el botón **Usar mapa sin señal** permite forzar manualmente el mapa offline desde el APK cuando el sistema tarda en actualizar el estado de red. La nueva compilación incluye el complemento, la cartografía de 174.661.701 bytes y conserva el tamaño aproximado de 173 MiB.
 
 La suite volvió a aprobar **96 pruebas** en 33 archivos, con 1 integración opcional omitida; `pnpm check`, `pnpm build` y la compilación Android aprobaron. SHA-256 del APK v3: `54590569e6aa86fe0351a8ababa9e64ae91e2acaf0f1447b40941ae91ef202f6`. Sigue pendiente únicamente la confirmación en el teléfono físico, porque el emulador sin aceleración no terminó de arrancar en el sandbox.
+
+## Mapa completo descargable en PWA
+
+La PWA ya no necesita conformarse con el respaldo territorial básico. Cuando tiene señal muestra una tarjeta **Mapa completo sin señal** desde la que el usuario descarga una vez el paquete PMTiles de Paraguay. El archivo se transmite por streaming y se guarda en el almacenamiento privado persistente del navegador, no dentro de la caché de respuestas de la aplicación.
+
+Una vez guardado, el visor MapLibre abre el mismo archivo vectorial local mediante lectura por rangos. Así conserva rutas, calles, ciudades, límites, agua y los puntos HORTIMAX también en Chrome/PWA sin datos. La interfaz muestra progreso, tamaño local, y permite eliminar el paquete desde ese teléfono. La descarga rechaza archivos truncados antes de activar el visor completo. Validación: **98 pruebas** en 34 archivos, con 1 integración opcional omitida; tipos y build aprobaron. La prueba física de descarga y modo avión en Chrome/PWA sigue pendiente.

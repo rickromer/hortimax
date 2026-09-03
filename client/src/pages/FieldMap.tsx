@@ -1,5 +1,6 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
+import { OfflineMapDownload } from "@/components/OfflineMapDownload";
 import { OfflineParaguayMap } from "@/components/OfflineParaguayMap";
 import { OfflineVectorMap } from "@/components/OfflineVectorMap";
 import { FieldShell } from "@/components/FieldShell";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { formatDistance, timeAgo } from "@/lib/format";
+import { getOfflineMapFile } from "@/lib/offlineMapStorage";
 import { placeFromMapCenter, startMapPlacement } from "@/lib/mapPlacement";
 import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
@@ -73,7 +75,9 @@ export default function FieldMap() {
   );
   const [googleMapUnavailable, setGoogleMapUnavailable] = useState(false);
   const [forceOfflineMap, setForceOfflineMap] = useState(false);
+  const [offlineMapFile, setOfflineMapFile] = useState<File | null>(null);
   const offlineMode = !online || !nativeConnected || googleMapUnavailable || forceOfflineMap || forceOfflinePreview;
+  const hasFullOfflineMap = isNativeApp || Boolean(offlineMapFile) || forceOfflinePreview;
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
   const hasAutoCentered = useRef(false);
 
@@ -115,6 +119,16 @@ export default function FieldMap() {
     return () => {
       active = false;
       if (listener) void listener.remove();
+    };
+  }, [isNativeApp]);
+  useEffect(() => {
+    if (isNativeApp) return;
+    let active = true;
+    void getOfflineMapFile().then(file => {
+      if (active) setOfflineMapFile(file);
+    });
+    return () => {
+      active = false;
     };
   }, [isNativeApp]);
   useEffect(() => {
@@ -252,9 +266,10 @@ export default function FieldMap() {
               if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
             }}
           />
-        ) : isNativeApp || forceOfflinePreview ? (
+        ) : hasFullOfflineMap ? (
           <OfflineVectorMap
             markers={markers}
+            localFile={isNativeApp ? null : offlineMapFile}
             userPosition={position}
             focus={focus}
             placementMode={placementMode}
@@ -290,6 +305,13 @@ export default function FieldMap() {
           />
         )}
 
+        {!isNativeApp && (
+          <OfflineMapDownload
+            online={online}
+            onReady={file => setOfflineMapFile(file)}
+          />
+        )}
+
         {!offlineMode && (
           <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
             <MapPlaceSearch
@@ -304,7 +326,7 @@ export default function FieldMap() {
           </div>
         )}
 
-        {isNativeApp && (
+        {(isNativeApp || offlineMapFile) && (
           <div className="absolute right-3 top-3 z-30">
             <Button
               type="button"

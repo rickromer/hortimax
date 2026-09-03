@@ -559,3 +559,10 @@
 - [x] Corregir la lectura del mapa local y el cambio automático a modo sin señal
 - [x] Reconstruir un APK con la corrección y verificar contenido, permisos y tamaño
 - [ ] Validar en el teléfono real que aparecen mapa, carreteras y puntos sin señal
+
+## Mapa offline navegable para PWA
+- [x] Reemplazar el respaldo territorial básico de Chrome/PWA por cartografía vectorial navegable
+- [x] Descargar el paquete completo de Paraguay bajo demanda y guardarlo en el dispositivo
+- [x] Mostrar progreso, almacenamiento ocupado y la opción de actualizar o eliminar el mapa local
+- [x] Usar rutas, ciudades, departamentos y clientes en la PWA sin señal
+- [ ] Probar modo avión desde Chrome/PWA y recuperar Google Maps al volver Internet

@@ -7,7 +7,7 @@ import {
   removeOfflineMap,
   type OfflineMapStatus,
 } from "@/lib/offlineMapStorage";
-import { Download, Map, Trash2 } from "lucide-react";
+import { Download, Map, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -20,6 +20,7 @@ export function OfflineMapDownload({ online, onReady }: OfflineMapDownloadProps)
   const [status, setStatus] = useState<OfflineMapStatus>({ available: false, bytes: 0, updatedAt: null });
   const [progress, setProgress] = useState<number | null>(null);
   const [working, setWorking] = useState(false);
+  const [minimized, setMinimized] = useState(false);
 
   useEffect(() => {
     void getOfflineMapStatus().then(setStatus);
@@ -56,6 +57,20 @@ export function OfflineMapDownload({ online, onReady }: OfflineMapDownloadProps)
     toast.success("Mapa offline eliminado de este dispositivo.");
   };
 
+  if (minimized) {
+    return (
+      <Button
+        type="button"
+        size="sm"
+        variant="secondary"
+        className="absolute right-3 top-14 z-30 h-9 rounded-full bg-background/95 px-3 text-xs shadow-md backdrop-blur"
+        onClick={() => setMinimized(false)}>
+        <Map className="h-3.5 w-3.5" />
+        Mapa offline
+      </Button>
+    );
+  }
+
   return (
     <div className="absolute left-3 right-3 top-14 z-30 mx-auto max-w-md rounded-2xl border border-border/80 bg-background/95 p-3 shadow-lg backdrop-blur sm:left-auto sm:right-3">
       <div className="flex items-start gap-2.5">
@@ -74,14 +89,24 @@ export function OfflineMapDownload({ online, onReady }: OfflineMapDownloadProps)
           )}
         </div>
         {status.available ? (
-          <Button type="button" size="icon" variant="ghost" className="h-8 w-8" disabled={working} onClick={() => void remove()} aria-label="Eliminar mapa offline">
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <Button type="button" size="icon" variant="ghost" className="h-8 w-8" disabled={working} onClick={() => void remove()} aria-label="Eliminar mapa offline">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <Button type="button" size="icon" variant="ghost" className="h-8 w-8" onClick={() => setMinimized(true)} aria-label="Cerrar panel de mapa offline">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         ) : (
-          <Button type="button" size="sm" className="h-8 shrink-0" disabled={working || !online} onClick={() => void download()}>
-            <Download className="h-3.5 w-3.5" />
-            {working ? `${progress ?? 0}%` : "Descargar"}
-          </Button>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <Button type="button" size="sm" className="h-8" disabled={working || !online} onClick={() => void download()}>
+              <Download className="h-3.5 w-3.5" />
+              {working ? `${progress ?? 0}%` : "Descargar"}
+            </Button>
+            <Button type="button" size="icon" variant="ghost" className="h-8 w-8" disabled={working} onClick={() => setMinimized(true)} aria-label="Cerrar panel de mapa offline">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         )}
       </div>
     </div>

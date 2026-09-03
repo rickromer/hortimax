@@ -566,3 +566,9 @@
 - [x] Mostrar progreso, almacenamiento ocupado y la opción de actualizar o eliminar el mapa local
 - [x] Usar rutas, ciudades, departamentos y clientes en la PWA sin señal
 - [ ] Probar modo avión desde Chrome/PWA y recuperar Google Maps al volver Internet
+
+## Corrección de visor offline vacío
+- [x] Corregir el render de calles, ciudades y rutas desde el archivo local de la PWA
+- [x] Mostrar un estado de error accionable si el visor local no puede cargar cartografía
+- [x] Permitir minimizar o cerrar el panel de mapa descargado sin eliminar el paquete
+- [ ] Validar en Chrome/PWA y Android que el mapa no quede vacío

@@ -3,6 +3,7 @@ import {
   createOfflineMapStyle,
   latitudeToTileY,
   longitudeToTileX,
+  resolveOfflineInitialView,
 } from "./OfflineVectorMap";
 
 describe("mapa vectorial offline", () => {
@@ -27,5 +28,16 @@ describe("mapa vectorial offline", () => {
       ["get", "_layer"],
       "streets",
     ]);
+  });
+
+  it("abre con detalle vial sobre el GPS o el cliente elegido", () => {
+    expect(resolveOfflineInitialView({ latitude: -25.3, longitude: -57.55 })).toEqual({
+      center: [-57.55, -25.3],
+      zoom: 14,
+    });
+    expect(resolveOfflineInitialView(null, { latitude: -25.2, longitude: -57.5 })).toEqual({
+      center: [-57.5, -25.2],
+      zoom: 14,
+    });
   });
 });

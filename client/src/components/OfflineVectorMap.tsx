@@ -77,6 +77,16 @@ export function latitudeToTileY(latitude: number, zoom: number) {
   return Math.floor(((1 - Math.asinh(Math.tan(radians)) / Math.PI) / 2) * 2 ** zoom);
 }
 
+export function resolveOfflineInitialView(
+  focus?: { latitude: number; longitude: number } | null,
+  userPosition?: { latitude: number; longitude: number } | null,
+) {
+  const target = focus ?? userPosition;
+  return target
+    ? { center: [target.longitude, target.latitude] as [number, number], zoom: 14 }
+    : { center: [-58.448255, -23.448435] as [number, number], zoom: 6.5 };
+}
+
 async function readVisibleFeatures(archive: PMTiles, map: maplibregl.Map) {
   const zoom = Math.max(0, Math.min(14, Math.floor(map.getZoom())));
   const bounds = map.getBounds();
@@ -221,6 +231,7 @@ export function OfflineVectorMap({
   const tileLoadGeneration = useRef(0);
   const onMapClickRef = useRef(onMapClick);
   const onCenterChangedRef = useRef(onCenterChanged);
+  const preferredFocusRef = useRef(focus ?? userPosition ?? null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const archiveUrl = useMemo(
     () => new URL("/offline/paraguay-shortbread-1.0.pmtiles", window.location.href).toString(),
@@ -231,6 +242,9 @@ export function OfflineVectorMap({
     onMapClickRef.current = onMapClick;
     onCenterChangedRef.current = onCenterChanged;
   }, [onCenterChanged, onMapClick]);
+  useEffect(() => {
+    preferredFocusRef.current = focus ?? userPosition ?? null;
+  }, [focus, userPosition]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -240,11 +254,13 @@ export function OfflineVectorMap({
       (window as typeof window & { __hortimaxArchive?: PMTiles }).__hortimaxArchive = archive;
     }
 
+    const preferredFocus = preferredFocusRef.current;
+    const initialView = resolveOfflineInitialView(focus, userPosition);
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: createOfflineMapStyle(),
-      center: [-58.448255, -23.448435],
-      zoom: 5.4,
+      center: initialView.center,
+      zoom: initialView.zoom,
       minZoom: 4.6,
       maxZoom: 14,
       maxBounds: [[-63.4, -28.25], [-53.5, -18.55]],
@@ -275,7 +291,14 @@ export function OfflineVectorMap({
         }
       }
     };
-    map.on("load", () => {
+    let initialized = false;
+    const initializeOfflineMap = () => {
+      if (initialized) return;
+      initialized = true;
+      const latestFocus = preferredFocusRef.current;
+      if (latestFocus) {
+        map.jumpTo({ center: [latestFocus.longitude, latestFocus.latitude], zoom: 14 });
+      }
       cityRefs.current = CITIES.map(([name, latitude, longitude]) => {
         const label = document.createElement("div");
         label.className = "offline-city-label";
@@ -285,13 +308,23 @@ export function OfflineVectorMap({
           .addTo(map);
       });
       void loadVisibleTiles();
-    });
+    };
+    // `load` can wait indefinitely in Chrome mobile while a local GeoJSON source has no
+    // network request. `style.load` is enough to add labels and the first local tile data.
+    map.on("style.load", initializeOfflineMap);
+    const styleTimer = window.setTimeout(() => {
+      if (!initialized) {
+        setLoadError("El visor local tardó demasiado en iniciar. Cerrá y abrí Mapa sin señal nuevamente.");
+      }
+    }, 8_000);
     map.on("moveend", loadVisibleTiles);
     return () => {
+      window.clearTimeout(styleTimer);
       markerRefs.current.forEach(marker => marker.remove());
       cityRefs.current.forEach(marker => marker.remove());
       markerRefs.current = [];
       cityRefs.current = [];
+      map.off("style.load", initializeOfflineMap);
       map.remove();
       if (import.meta.env.DEV) {
         delete (window as typeof window & { __hortimaxOfflineMap?: maplibregl.Map }).__hortimaxOfflineMap;
@@ -334,15 +367,14 @@ export function OfflineVectorMap({
 
   useEffect(() => {
     if (!focus || !mapRef.current) return;
-    mapRef.current.easeTo({ center: [focus.longitude, focus.latitude], zoom: Math.max(mapRef.current.getZoom(), 10), duration: 350 });
+    mapRef.current.easeTo({ center: [focus.longitude, focus.latitude], zoom: Math.max(mapRef.current.getZoom(), 14), duration: 350 });
   }, [focus]);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[#e9f0e6]">
       <div ref={containerRef} className="h-full w-full" />
-      <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)] rounded-xl border border-emerald-200 bg-white/95 px-3 py-2 text-xs text-foreground shadow-md backdrop-blur">
-        <p className="font-semibold">Mapa completo sin conexión</p>
-        <p className="mt-0.5 text-muted-foreground">Carreteras, ciudades y {markers.length} cliente{markers.length === 1 ? "" : "s"} sincronizado{markers.length === 1 ? "" : "s"}.</p>
+      <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-full border border-emerald-200 bg-white/95 px-3 py-1.5 text-xs font-medium text-foreground shadow-md backdrop-blur">
+        Mapa sin señal · {markers.length} cliente{markers.length === 1 ? "" : "s"}
       </div>
       {placementMode && <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white bg-primary shadow-lg" />}
       {loadError && (

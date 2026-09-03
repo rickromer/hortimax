@@ -586,3 +586,10 @@
 - [x] Corregir la autenticación del APK sin debilitar cookies ni permisos por rol
 - [x] Restaurar el isologo HORTIMAX original dentro del APK
 - [x] Reconstruir y validar técnicamente el instalador con login y marca correctos
+
+## Regresión crítica: interfaz y mapa en APK
+- [x] Retirar la sustitución automática por el visor nativo que reemplaza cabecera, comandos y navegación
+- [x] Mantener Google Maps y la interfaz HORTIMAX completa en Android mientras exista conectividad verificable
+- [x] Conservar clientes, GPS, búsqueda, selección y Nuevo punto dentro de la interfaz principal del APK
+- [x] Mantener la cola y consulta offline sin sustituir toda la pantalla por un mapa alternativo
+- [ ] Compilar, validar y probar físicamente un APK corregido antes de recomendar su uso

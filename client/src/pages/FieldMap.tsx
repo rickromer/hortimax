@@ -10,14 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { formatDistance, timeAgo } from "@/lib/format";
-import { NativeOfflineMap } from "@/lib/nativeOfflineMap";
 import { placeFromMapCenter, startMapPlacement } from "@/lib/mapPlacement";
 import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { canManageAll } from "@shared/permissions";
-import { Capacitor } from "@capacitor/core";
-import { Network } from "@capacitor/network";
 import {
   Check,
   ChevronRight,
@@ -35,7 +32,6 @@ import { Link, useLocation } from "wouter";
 
 export default function FieldMap() {
   const [location, setLocation] = useLocation();
-  const forceOfflinePreview = import.meta.env.DEV && new URLSearchParams(window.location.search).has("offlineMap");
   const { user } = useAuth();
   const canEdit = Boolean(user);
   const canCreatePoint = true;
@@ -65,12 +61,6 @@ export default function FieldMap() {
   } | null>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
-  const isNativeApp = Capacitor.isNativePlatform();
-  const [nativeConnected, setNativeConnected] = useState(
-    () => !isNativeApp || (typeof navigator === "undefined" || navigator.onLine)
-  );
-  const [googleMapUnavailable, setGoogleMapUnavailable] = useState(false);
-  const offlineMode = !online || !nativeConnected || googleMapUnavailable || forceOfflinePreview;
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
   const hasAutoCentered = useRef(false);
 
@@ -90,30 +80,6 @@ export default function FieldMap() {
       window.removeEventListener("offline", goOffline);
     };
   }, []);
-  useEffect(() => {
-    if (!isNativeApp) return;
-    let active = true;
-    let listener: { remove: () => Promise<void> } | undefined;
-
-    void Network.getStatus()
-      .then(status => {
-        if (active) setNativeConnected(status.connected);
-      })
-      .catch(() => {
-        if (active) setNativeConnected(navigator.onLine);
-      });
-    void Network.addListener("networkStatusChange", status => {
-      setNativeConnected(status.connected);
-      if (status.connected) setGoogleMapUnavailable(false);
-    }).then(handle => {
-      listener = handle;
-    });
-
-    return () => {
-      active = false;
-      if (listener) void listener.remove();
-    };
-  }, [isNativeApp]);
   useEffect(() => {
     if (!position || hasAutoCentered.current) return;
     hasAutoCentered.current = true;
@@ -165,54 +131,6 @@ export default function FieldMap() {
     }
     return mapped;
   }, [sites, selectedId, manualCoords]);
-
-  useEffect(() => {
-    if (!isNativeApp) return;
-    let disposed = false;
-    let markerTapListener: { remove: () => Promise<void> } | undefined;
-    let locationListener: { remove: () => Promise<void> } | undefined;
-
-    const syncNativeMap = async () => {
-      try {
-        if (!offlineMode) {
-          await NativeOfflineMap.hide();
-          return;
-        }
-        markerTapListener = await NativeOfflineMap.addListener("markerTap", event => {
-          if (disposed || typeof event.id !== "number" || event.id < 0) return;
-          const site = sites.find(item => item.id === event.id);
-          if (!site) return;
-          setSelectedId(site.id);
-          setFocus({ latitude: site.latitude, longitude: site.longitude });
-          setLocation(`/sitios/${site.id}`);
-        });
-        locationListener = await NativeOfflineMap.addListener("chooseLocation", event => {
-          if (disposed || typeof event.latitude !== "number" || typeof event.longitude !== "number") return;
-          setManualCoords({ latitude: event.latitude, longitude: event.longitude });
-          setPlacementCoords(null);
-          setPlacementMode(false);
-          setNewSiteOpen(true);
-        });
-        await NativeOfflineMap.show({
-          markers,
-          focus,
-          userPosition: position
-            ? { latitude: position.latitude, longitude: position.longitude }
-            : null,
-        });
-      } catch (error) {
-        console.error("No se pudo abrir el mapa Android sin señal", error);
-        toast.error("No se pudo abrir el mapa sin señal. Volvé a abrir la aplicación.");
-      }
-    };
-
-    void syncNativeMap();
-    return () => {
-      disposed = true;
-      if (markerTapListener) void markerTapListener.remove();
-      if (locationListener) void locationListener.remove();
-    };
-  }, [focus, isNativeApp, markers, offlineMode, position, setLocation, sites]);
 
   const centerOnMe = async () => {
     const pos = position ?? (await geo.request());
@@ -267,46 +185,39 @@ export default function FieldMap() {
         </Button>
       }>
       <div className="absolute inset-0">
-        {!offlineMode ? (
-          <ClientMap
-            markers={markers}
-            userPosition={position}
-            focus={focus}
-            fitToMarkers
-            mapTypeId={mapType}
-            onReady={map => {
-              setMapInstance(map);
-              setGoogleMapUnavailable(false);
-            }}
-            onLoadError={() => {
-              if (isNativeApp) setGoogleMapUnavailable(true);
-            }}
-            onMapClick={coords => {
-              if (!placementMode) return;
-              setPlacementCoords(placeFromMapCenter(coords));
-              setFocus(coords);
-            }}
-            onCenterChanged={coords => {
-              setVisibleMapCenter(coords);
-              if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
-            }}
-            onMarkerClick={id => {
-              if (id === -1) return;
-              setSelectedId(id);
-              const site = sites.find(s => s.id === id);
-              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
-            }}
-          />
-        ) : !isNativeApp ? (
-          <div className="grid h-full place-items-center bg-muted/40 px-8 text-center">
-            <div className="max-w-sm rounded-2xl border border-border/70 bg-background p-5 shadow-sm">
-              <p className="font-semibold">Mapa sin señal disponible en la aplicación Android</p>
-              <p className="mt-2 text-sm text-muted-foreground">La versión de Chrome necesita Internet para Google Maps. El APK HORTIMAX incluye el mapa local completo de Paraguay y cambia automáticamente al perder señal.</p>
+        <ClientMap
+          markers={markers}
+          userPosition={position}
+          focus={focus}
+          fitToMarkers
+          mapTypeId={mapType}
+          onReady={map => setMapInstance(map)}
+          onMapClick={coords => {
+            if (!placementMode) return;
+            setPlacementCoords(placeFromMapCenter(coords));
+            setFocus(coords);
+          }}
+          onCenterChanged={coords => {
+            setVisibleMapCenter(coords);
+            if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
+          }}
+          onMarkerClick={id => {
+            if (id === -1) return;
+            setSelectedId(id);
+            const site = sites.find(s => s.id === id);
+            if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
+          }}
+        />
+
+        {!online && (
+          <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 sm:right-auto sm:max-w-md">
+            <div className="rounded-xl border border-amber-300 bg-amber-50/95 px-3 py-2 text-sm text-amber-950 shadow-md backdrop-blur">
+              Sin señal: Google Maps requiere Internet. Tus clientes ya sincronizados y los registros nuevos siguen disponibles en esta aplicación.
             </div>
           </div>
-        ) : null}
+        )}
 
-        {!offlineMode && (
+        {online && (
           <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
             <MapPlaceSearch
               map={mapInstance}
@@ -400,7 +311,7 @@ export default function FieldMap() {
             aria-label="Mi ubicación">
             {geo.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Crosshair className="h-5 w-5" />}
           </Button>
-          {!offlineMode && <MapReferencePanel mapType={mapType} onMapTypeChange={setMapType} />}
+          {online && <MapReferencePanel mapType={mapType} onMapTypeChange={setMapType} />}
         </div>
 
         {/* Aviso de GPS */}

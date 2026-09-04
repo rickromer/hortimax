@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
-    "cap:sync": "VITE_PORTAL_API_URL=\"${VITE_PORTAL_API_URL:-https://mapaclientes-cqpci7xz.manus.space}\" VITE_CAPACITOR_BUILD=true pnpm build && cap sync android && node scripts/prepare-android-offline-map.mjs",
+    "cap:sync": "VITE_GOOGLE_MAPS_API_KEY=\"$VITE_CAPACITOR_GOOGLE_MAPS_API_KEY\" VITE_PORTAL_API_URL=\"${VITE_PORTAL_API_URL:-https://mapaclientes-cqpci7xz.manus.space}\" VITE_CAPACITOR_BUILD=true pnpm build && cap sync android && node scripts/prepare-android-offline-map.mjs",
     "cap:brand": "node scripts/prepare-android-offline-map.mjs",
     "cap:apk": "pnpm cap:sync && cd android && ./gradlew assembleDebug",
     "cap:open": "cap open android"

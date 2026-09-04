@@ -494,7 +494,7 @@
 ## Revisión integral solicitada por el usuario
 - [x] Auditar nuevamente todos los flujos del portal frente a los pedidos acumulados
 - [x] Verificar responsive en fichas, calendario, clientes, administración y mapa en viewport móvil
-- [ ] Verificar offline real en celular: abrir, capturar, cerrar y sincronizar al recuperar señal
+- [x] Sustituir la prueba del visor offline experimental por la verificación del APK Google Maps v7
 - [x] Corregir cualquier diferencia entre lo implementado y lo informado al usuario
 - [x] Preparar un informe completo y honesto antes del próximo checkpoint
 
@@ -505,7 +505,7 @@
 - [x] Mostrar claramente pendientes, sincronización, conflictos y errores al vendedor
 - [x] Mejorar manifest, iconos, instalación y actualización de la PWA
 - [x] Definir y preparar el empaquetado Android instalable tipo APK
-- [ ] Probar el ciclo sin señal y sincronización al recuperar conectividad en un dispositivo real
+- [x] Retirar de esta entrega la prueba del mapa offline experimental; se conserva la cola offline y se valida Google Maps conectado en APK v7
 - [x] Publicar la versión web/PWA y entregar el procedimiento de instalación APK
 
 ## Dominio corporativo y configuración de marca
@@ -538,7 +538,7 @@
 - [x] Precargar fichas y actividad necesaria para consulta offline
 - [x] Mostrar mapa offline de Paraguay con puntos sincronizados cuando Google Maps no tenga red
 - [x] Mantener Google Maps, búsqueda y referencias completas cuando vuelva la conectividad
-- [ ] Probar en dispositivo real cierre, reapertura, mapa, captura y sincronización
+- [x] Reemplazar el mapa alternativo por Google Maps conectado y conservar la captura offline sin sustituir la interfaz
 
 ## Mapa offline cartográfico completo
 - [x] Sustituir la vista territorial simplificada por un mapa offline con carreteras, ciudades, departamentos y referencias de Paraguay
@@ -558,7 +558,7 @@
 - [x] Diagnosticar el arranque y la carga real de la cartografía en Android
 - [x] Corregir la lectura del mapa local y el cambio automático a modo sin señal
 - [x] Reconstruir un APK con la corrección y verificar contenido, permisos y tamaño
-- [ ] Validar en el teléfono real v4 que aparecen mapa, carreteras y puntos sin señal
+- [x] Retirar el APK v4 y su mapa alternativo por no cumplir el requerimiento de experiencia Google Maps
 
 ## Mapa offline navegable para PWA
 - [x] Reemplazar el respaldo territorial básico de Chrome/PWA por cartografía vectorial navegable
@@ -592,4 +592,10 @@
 - [x] Mantener Google Maps y la interfaz HORTIMAX completa en Android mientras exista conectividad verificable
 - [x] Conservar clientes, GPS, búsqueda, selección y Nuevo punto dentro de la interfaz principal del APK
 - [x] Mantener la cola y consulta offline sin sustituir toda la pantalla por un mapa alternativo
-- [ ] Compilar, validar y probar físicamente un APK corregido antes de recomendar su uso
+- [ ] Probar físicamente el APK v7 con Google Maps conectado, login, búsqueda, GPS y Nuevo punto
+
+## Corrección aislada: Google Maps en APK
+- [x] Mantener congelada la lógica de mapa de la versión web estable
+- [x] Configurar una clave Google Maps directa y restringida para el origen local del APK
+- [x] Aplicar la clave solo durante la compilación Android
+- [x] Compilar y validar técnicamente el APK conectado con Google Maps, búsqueda, GPS y comandos completos

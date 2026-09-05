@@ -599,3 +599,15 @@
 - [x] Configurar una clave Google Maps directa y restringida para el origen local del APK
 - [x] Aplicar la clave solo durante la compilación Android
 - [x] Compilar y validar técnicamente el APK conectado con Google Maps, búsqueda, GPS y comandos completos
+
+## Corrección visual y activación de Google Maps Android
+- [x] Retirar el recuadro superior de “Sin señal” que tapa la interfaz
+- [x] Mantener solo el indicador discreto de cola offline cuando corresponda
+- [ ] Activar facturación de Google Maps Platform en el proyecto de la clave Android
+- [ ] Validar Google Maps sin la marca “For development purposes only” en el APK
+
+## Corrección de usuarios de prueba y autoría histórica
+- [x] Auditar todos los registros creados por Prueba 1 y Prueba 2
+- [x] Reasignar registros de Prueba 1 a Luis David y retirar el usuario de prueba
+- [x] Reasignar registros de Prueba 2 a Nelson Galarza y retirar el usuario de prueba
+- [x] Verificar que clientes, notas, visitas y recordatorios muestren la autoría corregida

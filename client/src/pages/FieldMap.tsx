@@ -209,14 +209,6 @@ export default function FieldMap() {
           }}
         />
 
-        {!online && (
-          <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 sm:right-auto sm:max-w-md">
-            <div className="rounded-xl border border-amber-300 bg-amber-50/95 px-3 py-2 text-sm text-amber-950 shadow-md backdrop-blur">
-              Sin señal: Google Maps requiere Internet. Tus clientes ya sincronizados y los registros nuevos siguen disponibles en esta aplicación.
-            </div>
-          </div>
-        )}
-
         {online && (
           <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
             <MapPlaceSearch

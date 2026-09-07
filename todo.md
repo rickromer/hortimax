@@ -630,3 +630,13 @@
 - [x] Mantener el reingreso automático solo en la instalación previamente autorizada
 - [x] Conservar cierre de sesión y revocación administrativa como forma de retirar el acceso
 - [x] Cubrir y validar el cierre/reapertura de la app sin volver a pedir credenciales
+
+## APK actualizado de entrega
+- [x] Recompilar el instalador Android desde la versión consolidada vigente
+- [x] Verificar logo original, cargador Google Maps y exclusión del APK del repositorio
+- [x] Entregar el APK actualizado para la prueba física en teléfono
+
+## Ícono Android con isotipo HORTIMAX
+- [x] Reemplazar los recursos de ícono Android por el favicon isotipo publicado
+- [x] Verificar los tamaños de launcher y el manifiesto Android
+- [ ] Recompilar y entregar el APK con el isotipo original como ícono

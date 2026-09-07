@@ -385,3 +385,9 @@ Los cuatro clientes archivados ahora aparecen en **Administración → Papelera*
 El APK usa Google Maps cuando hay conexión. Si el estado de red nativo de Android queda sin conexión, la misma pantalla HORTIMAX reemplaza solo el lienzo por un visor local de Paraguay que conserva los pines, GPS, selección y alta manual. El archivo `paraguay-shortbread-1.0.pmtiles` se copia durante el build y quedó incluido en el APK como activo **sin compresión**, con 174.661.701 bytes; esa condición permite lecturas por rangos desde el WebView.
 
 La validación técnica final aprobó **112 pruebas** en 42 archivos, con 1 integración opcional omitida; `pnpm check`, `pnpm build` y Gradle aprobaron. Falta confirmación física en un Android sin conexión para cerrar la incidencia de campo.
+
+## Acceso conectado Android: corrección de transporte
+
+La prueba física del APK 1.0.8 reportó que la verificación de usuario seguía fallando aun con Internet. El flujo Android se ajustó para usar solicitudes tRPC individuales mediante HTTP nativo, evitando el lote del WebView. El cuerpo JSON se convierte explícitamente antes de enviarse, se conserva el encabezado de identificación móvil y el servidor puede reconocer la solicitud Android aunque el transporte nativo no incluya `Origin`.
+
+La web continúa usando el transporte por lotes y `fetch` del navegador. La corrección aprobó **113 pruebas** en 43 archivos, con una integración opcional omitida, además de TypeScript, compilación web y Gradle. El APK de prueba **1.0.9** requiere una comprobación física conectada antes de considerar resuelto el acceso.

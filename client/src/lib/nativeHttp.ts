@@ -13,11 +13,20 @@ export async function nativeMobileFetch(input: RequestInfo | URL, init?: Request
   headers["X-Hortimax-Client"] = "android";
   const allowsBody = !["GET", "HEAD"].includes(request.method.toUpperCase());
   const body = allowsBody ? await request.text() : undefined;
+  if (allowsBody && !headers["content-type"]) headers["content-type"] = "application/json";
+  let data: unknown = body || undefined;
+  if (body && headers["content-type"]?.includes("application/json")) {
+    try {
+      data = JSON.parse(body);
+    } catch {
+      // El cuerpo no es JSON; Capacitor lo enviará como texto.
+    }
+  }
   const result = await CapacitorHttp.request({
     url: request.url,
     method: request.method,
     headers,
-    data: body || undefined,
+    data,
     responseType: "text",
   });
 

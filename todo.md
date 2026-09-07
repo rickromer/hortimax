@@ -699,3 +699,8 @@
 - [x] Corregir inicio de sesión Android que no llega a la API aun con Internet
 - [x] Corregir carga de clientes Android posterior al acceso conectado
 - [ ] Verificar en teléfono el flujo acceso → mapa → clientes antes de reparar el modo offline
+
+## Revisión de transporte Android tras prueba física fallida
+- [x] Instrumentar la respuesta de verificación de usuario sin exponer credenciales
+- [x] Distinguir fallo de red, CORS, certificado, API o formato de respuesta en el APK
+- [x] Corregir el transporte Android validado por evidencia y recompilar una versión nueva

@@ -2,7 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { COOKIE_NAME } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { persistQueryClient } from "@tanstack/query-persist-client-core";
-import { httpBatchLink } from "@trpc/client";
+import { httpBatchLink, httpLink } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
@@ -51,44 +51,31 @@ queryClient.getMutationCache().subscribe(event => {
 });
 
 const apiBaseUrl = (import.meta.env.VITE_PORTAL_API_URL ?? "").replace(/\/$/, "");
+const apiHeaders = () => {
+  if (isNativeAndroidApp()) {
+    const token = getNativeSessionToken();
+    return token ? { Authorization: `Bearer ${token}`, "X-Hortimax-Client": "android" } : { "X-Hortimax-Client": "android" };
+  }
+  try {
+    const raw = sessionStorage.getItem("manus-cookie");
+    if (raw) {
+      const prefix = `${COOKIE_NAME}=`;
+      const pair = raw.split(";").find(s => s.trim().startsWith(prefix));
+      const token = pair?.trim().slice(prefix.length);
+      if (token) return { Authorization: `Bearer ${token}` };
+    }
+  } catch {
+    // sessionStorage no está disponible.
+  }
+  return {};
+};
+const apiFetch = (input: RequestInfo | URL, init?: RequestInit) => nativeMobileFetch(input, { ...(init ?? {}), credentials: "include" });
+const apiLink = isNativeAndroidApp()
+  ? httpLink({ url: `${apiBaseUrl}/api/trpc`, transformer: superjson, headers: apiHeaders, fetch: apiFetch })
+  : httpBatchLink({ url: `${apiBaseUrl}/api/trpc`, transformer: superjson, headers: apiHeaders, fetch: apiFetch });
 
 const trpcClient = trpc.createClient({
-  links: [
-    httpBatchLink({
-      url: `${apiBaseUrl}/api/trpc`,
-      transformer: superjson,
-      headers() {
-        if (isNativeAndroidApp()) {
-          const token = getNativeSessionToken();
-          return token ? { Authorization: `Bearer ${token}`, "X-Hortimax-Client": "android" } : { "X-Hortimax-Client": "android" };
-        }
-        // Preview auto-login fallback: when the browser blocks iframe cookies
-        // (Safari ITP / private browsing / WebView), the runtime mirrors the
-        // session into sessionStorage so we can forward it as a Bearer token.
-        // The regular OAuth cookie flow keeps working and takes priority server-side.
-        try {
-          const raw = sessionStorage.getItem("manus-cookie");
-          if (raw) {
-            const prefix = `${COOKIE_NAME}=`;
-            const pair = raw.split(";").find(s => s.trim().startsWith(prefix));
-            const token = pair?.trim().slice(prefix.length);
-            if (token) {
-              return { Authorization: `Bearer ${token}` };
-            }
-          }
-        } catch {
-          // sessionStorage unavailable
-        }
-        return {};
-      },
-      fetch(input, init) {
-        return nativeMobileFetch(input, {
-          ...(init ?? {}),
-          credentials: "include",
-        });
-      },
-    }),
-  ],
+  links: [apiLink],
 });
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {

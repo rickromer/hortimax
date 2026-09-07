@@ -12,7 +12,9 @@ describe("transporte nativo del APK", () => {
 
     expect(transport).toContain("CapacitorHttp.request");
     expect(transport).toContain('headers["X-Hortimax-Client"] = "android"');
-    expect(main).toContain("return nativeMobileFetch(input");
+    expect(transport).toContain("data = JSON.parse(body)");
+    expect(main).toContain("httpLink({ url:");
+    expect(main).toContain("const apiFetch = (input: RequestInfo | URL");
     expect(auth).toContain("(!origin || origin === \"http://localhost\"");
     expect(login).toContain("void completeOnlineLogin(response)");
   });

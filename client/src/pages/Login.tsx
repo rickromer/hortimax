@@ -9,6 +9,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { getRememberedOfflineUser, isNetworkFailure, rememberOfflineCredential, setOfflineSession, verifyOfflineCredential } from "@/lib/offlineAuth";
 import { saveNativeSessionToken } from "@/lib/nativeSession";
+import { TRPCClientError } from "@trpc/client";
 import { ArrowLeft, KeyRound, Loader2, MapPinned, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -51,7 +52,7 @@ export default function Login() {
       setDisplayName(data.name);
       setStep(data.needsPassword ? "activar" : "clave");
     },
-    onError: () => {
+    onError: error => {
       const remembered = getRememberedOfflineUser(username);
       if (remembered) {
         setDisplayName(remembered.name);
@@ -59,7 +60,8 @@ export default function Login() {
         toast.info("Sin señal: podés ingresar con la credencial de este dispositivo");
         return;
       }
-      toast.error("No se pudo verificar el usuario. Revisá la conexión.");
+      const status = error instanceof TRPCClientError ? error.data?.httpStatus : undefined;
+      toast.error(status ? `No se pudo verificar el usuario (código ${status}).` : "No se pudo verificar el usuario. Revisá la conexión.");
     },
   });
 

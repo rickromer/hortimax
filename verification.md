@@ -403,3 +403,7 @@ Después de la confirmación física de que el flujo aún fallaba, se agregó un
 El foco recibido desde ficha ahora propaga un zoom de detalle de nivel 17 a Google Maps y al visor local del APK. El centrado por GPS no participa en este flujo y sigue limitado al inicio de sesión o al control manual. La prueba `mapFocusZoom.test.ts`, TypeScript y la compilación web aprobaron; falta confirmación física.
 
 El instalador **APK 1.0.13** fue compilado con el bundle que incluye el zoom de detalle y conserva la cartografía PMTiles de Paraguay empaquetada sin compresión. Se comprobó la presencia del bundle y del archivo cartográfico dentro del APK; la confirmación de comportamiento queda pendiente en un teléfono.
+
+Confirmación física del usuario: el recorrido **ficha → mapa principal → cliente seleccionado con zoom** funciona correctamente en la web publicada. La validación equivalente del APK continúa pendiente.
+
+Para Android se añadió un respaldo específico de Capacitor: la solicitud de foco se guarda de forma temporal tanto en `sessionStorage` como en `localStorage`, y se elimina al ser consumida. Así, aunque el WebView descarte el almacenamiento de sesión durante el cambio de ruta, el mapa recibe el cliente y el zoom solicitado. El APK **1.0.14** contiene este ajuste y se verificó que incluye el bundle actualizado y PMTiles; requiere confirmación física.

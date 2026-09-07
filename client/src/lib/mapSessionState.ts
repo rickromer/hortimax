@@ -26,6 +26,15 @@ function browserSessionStorage(): Storage | null {
   }
 }
 
+function browserLocalStorage(): Storage | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 function validCoordinates(value: unknown): value is MapCoordinates {
   if (!value || typeof value !== "object") return false;
   const { latitude, longitude } = value as Record<string, unknown>;
@@ -76,10 +85,19 @@ export function requestMapFocus(
 ) {
   const siteId = request.siteId;
   if (!Number.isInteger(siteId) || siteId <= 0 || !validCoordinates(request)) return;
+  const serialized = JSON.stringify({ ...request, siteId });
   try {
-    storage?.setItem(MAP_FOCUS_REQUEST_KEY, JSON.stringify({ ...request, siteId }));
+    storage?.setItem(MAP_FOCUS_REQUEST_KEY, serialized);
   } catch {
     // La URL conserva siteId como respaldo si el almacenamiento temporal no está disponible.
+  }
+  try {
+    // Capacitor puede descartar sessionStorage durante la navegación interna;
+    // este valor se consume y elimina apenas FieldMap se monta.
+    const local = browserLocalStorage();
+    if (local !== storage) local?.setItem(MAP_FOCUS_REQUEST_KEY, serialized);
+  } catch {
+    // siteId en la URL conserva una tercera vía de respaldo.
   }
 }
 
@@ -88,8 +106,10 @@ export function consumeRequestedMapFocus(
   storage: Storage | null = browserSessionStorage()
 ): RequestedMapFocus | null {
   try {
-    const raw = storage?.getItem(MAP_FOCUS_REQUEST_KEY);
+    const local = browserLocalStorage();
+    const raw = storage?.getItem(MAP_FOCUS_REQUEST_KEY) ?? local?.getItem(MAP_FOCUS_REQUEST_KEY);
     storage?.removeItem(MAP_FOCUS_REQUEST_KEY);
+    if (local !== storage) local?.removeItem(MAP_FOCUS_REQUEST_KEY);
     if (!raw) return null;
     const value = JSON.parse(raw) as Partial<RequestedMapFocus>;
     const siteId = value.siteId;

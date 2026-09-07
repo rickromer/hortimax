@@ -726,3 +726,8 @@
 - [x] Aplicar zoom de detalle al cliente seleccionado al abrir el mapa principal
 - [x] Conservar el centrado GPS solamente para inicio de sesión y acción manual
 - [ ] Validar físicamente el foco y zoom desde la ficha en móvil
+
+## Foco ficha → mapa exclusivo de Android
+- [x] Diagnosticar por qué Capacitor no conserva la solicitud de foco de la ficha
+- [x] Transferir el punto y zoom mediante un mecanismo compatible con Android
+- [ ] Compilar y confirmar físicamente que el APK iguala el recorrido web

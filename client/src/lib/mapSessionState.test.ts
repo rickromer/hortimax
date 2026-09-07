@@ -78,6 +78,15 @@ describe("estado de sesión del mapa", () => {
     expect(consumeRequestedMapFocus(storage)).toBeNull();
   });
 
+  it("elimina el destino de ficha una vez consumido para que no afecte futuras aperturas", () => {
+    const storage = new MemoryStorage();
+    requestMapFocus({ siteId: 9, latitude: -25.3, longitude: -57.6 }, storage);
+
+    consumeRequestedMapFocus(storage);
+
+    expect(storage.getItem(MAP_FOCUS_REQUEST_KEY)).toBeNull();
+  });
+
   it("rechaza ubicaciones inválidas y permite limpiar la vista anterior al iniciar una sesión", () => {
     const storage = new MemoryStorage();
     storage.setItem(MAP_VIEW_KEY, JSON.stringify({ center: { latitude: 120, longitude: 0 } }));

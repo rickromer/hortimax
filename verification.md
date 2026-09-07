@@ -356,3 +356,9 @@ El mapa nativo permite arrastrar, desplazar, acercar/alejar con pellizco y contr
 - Validación técnica final: `pnpm test` aprobó **103 pruebas** en 38 archivos, con 1 integración opcional omitida; `pnpm check`, `pnpm build` y Gradle Android finalizaron correctamente. Aún se requiere una prueba física conectada para afirmar que Google Maps no muestra la marca de desarrollo en el teléfono.
 
 [2]: https://developers.google.com/maps/documentation/javascript/error-messages "Google Maps JavaScript API Error Messages"
+
+## Sesión persistente por dispositivo único
+
+Después del primer acceso válido con Internet, cada instalación conserva la cookie segura y la credencial local de su propio dispositivo. La cookie del portal y el token móvil se alinearon a una vigencia máxima de **un año**, por lo que cerrar y reabrir el navegador, PWA o APK no debe pedir nuevamente usuario ni contraseña durante ese plazo. La contraseña nunca se almacena: el modo offline conserva solamente un verificador PBKDF2 asociado al identificador local de instalación.
+
+El cierre de sesión explícito elimina cookie, token móvil, sesión offline, verificador y el identificador del dispositivo. La desactivación o revocación administrativa sigue invalidando el usuario en el servidor. La validación final aprobó **105 pruebas** en 39 archivos, con una integración opcional omitida, además de `pnpm check` y `pnpm build`.

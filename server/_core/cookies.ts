@@ -1,5 +1,7 @@
 import type { CookieOptions, Request } from "express";
 
+import { ONE_YEAR_MS } from "@shared/const";
+
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
 function isIpAddress(host: string) {
@@ -41,7 +43,7 @@ export function getSessionCookieOptions(
 
   return {
     httpOnly: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    maxAge: ONE_YEAR_MS,
     path: "/",
     sameSite: "none",
     secure: isSecureRequest(req),

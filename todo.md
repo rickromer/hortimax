@@ -624,3 +624,9 @@
 - [x] Inspeccionar el paquete Android sin incorporar secretos ni activos grandes al repositorio
 - [ ] Realizar prueba física conectada final del APK: acceso, mapa, búsqueda, GPS, clientes, check-in y Nuevo punto
 - [x] Corregir la persistencia IndexedDB cuando la caché contenga valores no serializables
+
+## Sesión persistente por dispositivo único
+- [x] Confirmar y ajustar la vigencia de sesión posterior al primer acceso online
+- [x] Mantener el reingreso automático solo en la instalación previamente autorizada
+- [x] Conservar cierre de sesión y revocación administrativa como forma de retirar el acceso
+- [x] Cubrir y validar el cierre/reapertura de la app sin volver a pedir credenciales

@@ -395,3 +395,5 @@ La web continúa usando el transporte por lotes y `fetch` del navegador. La corr
 ## Navegación directa desde ficha de cliente
 
 El mapa embebido de la ficha ahora tiene una capa táctil explícita que navega directamente a `/mapa?siteId=<id>`. El recorrido ya no abre un diálogo intermedio: el mapa principal recibe el identificador, enfoca el cliente y conserva la selección. La prueba `SiteDetail.locationActions.test.ts`, TypeScript, la compilación web y el empaquetado Android aprobaron. El APK de prueba **1.0.10** contiene este cambio y requiere confirmación física de la interacción táctil.
+
+La causa de la falla posterior fue identificada y corregida: Wouter entrega la ruta y la consulta URL mediante hooks distintos. El mapa principal leía `siteId` desde la ruta, donde ese parámetro no existe; ahora usa `useSearch` y una utilidad probada para extraerlo. El APK **1.0.11** incluye el bundle actualizado y el recurso PMTiles sin compresión; la verificación física de ficha → mapa sigue pendiente.

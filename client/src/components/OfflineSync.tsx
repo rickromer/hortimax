@@ -83,16 +83,25 @@ export function OfflineSync() {
     return () => window.clearInterval(timer);
   }, [flush]);
 
-  if (!pending && online && !syncing) return null;
+  if (!online) {
+    return (
+      <div className="pointer-events-none fixed right-3 top-[4.8rem] z-40 flex h-9 w-9 items-center justify-center rounded-full border border-amber-200 bg-card/95 text-amber-700 shadow-md backdrop-blur" title="Sin señal. Los registros se guardan en este dispositivo.">
+        <CloudOff className="h-4 w-4" />
+        <span className="sr-only">Sin señal. Los registros se guardan en este dispositivo.</span>
+      </div>
+    );
+  }
+
+  if (!pending && !syncing) return null;
   return (
     <div className="fixed inset-x-0 bottom-[4.6rem] z-40 flex justify-center px-3 pointer-events-none sm:bottom-4">
       <div className="pointer-events-auto flex max-w-xl items-center gap-2 rounded-full border border-border/70 bg-card/95 px-3 py-2 text-xs text-card-foreground shadow-lg backdrop-blur">
-        {online ? <Cloud className="h-4 w-4 text-primary" /> : <CloudOff className="h-4 w-4 text-amber-600" />}
+        <Cloud className="h-4 w-4 text-primary" />
         <span>
-          {!online ? "Sin señal. Los registros nuevos quedan guardados en este dispositivo." : syncing ? "Sincronizando registros…" : `${pending} registro${pending === 1 ? "" : "s"} pendiente${pending === 1 ? "" : "s"}.`}
+          {syncing ? "Sincronizando registros…" : `${pending} registro${pending === 1 ? "" : "s"} pendiente${pending === 1 ? "" : "s"}.`}
         </span>
         {syncing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        {online && pending > 0 && !syncing && (
+        {pending > 0 && !syncing && (
           <button className="ml-1 inline-flex items-center gap-1 font-medium text-primary" onClick={() => void flush()}>
             <RefreshCw className="h-3.5 w-3.5" /> Reintentar
           </button>

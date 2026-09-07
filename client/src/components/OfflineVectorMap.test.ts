@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AndroidAssetBlobSource, createOfflineMapStyle, latitudeToTileY, longitudeToTileX, resolveOfflineInitialView } from "./OfflineVectorMap";
+import { AndroidAssetBlobSource, AndroidNativeAssetSource, createOfflineMapStyle, latitudeToTileY, longitudeToTileX, resolveOfflineInitialView } from "./OfflineVectorMap";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("mapa vectorial offline", () => {
@@ -32,5 +32,9 @@ describe("mapa vectorial offline", () => {
     expect([...second]).toEqual([3, 4]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     globalThis.fetch = originalFetch;
+  });
+
+  it("expone una fuente nativa para evitar HTTP Range dentro del APK", () => {
+    expect(new AndroidNativeAssetSource().getKey()).toContain("hortimax-native-asset");
   });
 });

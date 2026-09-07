@@ -7,6 +7,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { PbfReader } from "pbf";
 import { PMTiles, type Source } from "pmtiles";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { registerPlugin } from "@capacitor/core";
+import { isNativeAndroidApp } from "@/lib/nativeSession";
 
 type OfflineMarker = {
   id: number;
@@ -40,6 +42,19 @@ const CLIENT_COLORS: Record<string, string> = {
 };
 const VECTOR_LAYERS = ["water_polygons", "water_lines", "boundaries", "street_labels", "streets", "buildings"] as const;
 
+type OfflineMapAssetPlugin = {
+  readRange(options: { offset: number; length: number }): Promise<{ data: string }>;
+};
+
+const offlineMapAsset = registerPlugin<OfflineMapAssetPlugin>("OfflineMapAsset");
+
+function decodeBase64Range(value: string) {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return bytes.buffer;
+}
+
 /**
  * El servidor de activos de Capacitor no responde de forma uniforme a solicitudes
  * HTTP Range grandes. Se lee una sola vez el PMTiles empaquetado y luego se sirven
@@ -67,6 +82,18 @@ export class AndroidAssetBlobSource implements Source {
   async getBytes(offset: number, length: number) {
     const asset = await this.loadAsset();
     return { data: await asset.slice(offset, offset + length).arrayBuffer() };
+  }
+}
+
+/** Fuente de APK: lee rangos desde AssetManager, sin HTTP del WebView. */
+export class AndroidNativeAssetSource implements Source {
+  getKey() {
+    return "hortimax-native-asset:paraguay-shortbread-1.0.pmtiles";
+  }
+
+  async getBytes(offset: number, length: number) {
+    const response = await offlineMapAsset.readRange({ offset, length });
+    return { data: decodeBase64Range(response.data) };
   }
 }
 
@@ -176,7 +203,9 @@ export function OfflineVectorMap({
   useEffect(() => {
     if (!containerRef.current) return;
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
-    const archive = new PMTiles(new AndroidAssetBlobSource(archiveUrl));
+    const archive = new PMTiles(
+      isNativeAndroidApp() ? new AndroidNativeAssetSource() : new AndroidAssetBlobSource(archiveUrl)
+    );
     const initialView = resolveOfflineInitialView(focus, userPosition);
     if (focus && focusZoom) initialView.zoom = focusZoom;
     const map = new maplibregl.Map({

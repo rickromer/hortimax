@@ -631,6 +631,12 @@
 - [x] Conservar cierre de sesión y revocación administrativa como forma de retirar el acceso
 - [x] Cubrir y validar el cierre/reapertura de la app sin volver a pedir credenciales
 
+## Operación offline completa por dispositivo
+- [ ] Auditar sesión, cartera, fichas, notas, visitas, recordatorios, calendario y mapa local disponibles sin señal
+- [ ] Confirmar que cada alta o edición offline se encola sin duplicados y se sincroniza automáticamente
+- [ ] Aislar la caché de cada usuario y limpiar datos al cerrar o revocar sesión
+- [ ] Validar físicamente el ciclo completo: uso con modo avión y sincronización posterior
+
 ## APK actualizado de entrega
 - [x] Recompilar el instalador Android desde la versión consolidada vigente
 - [x] Verificar logo original, cargador Google Maps y exclusión del APK del repositorio
@@ -682,6 +688,16 @@
 - [x] Sustituir la lectura HTTP por rangos por lectura local del PMTiles empaquetado
 - [x] Corregir el renderizado de calles y rutas bajo los pines sin conexión
 - [ ] Probar modo avión: mapa, zoom, pines y ficha previamente sincronizada
+
+## Regresión física APK 1.0.15 sin señal
+- [x] Diagnosticar la incompatibilidad del WebView con rangos de activos y reemplazarla por lectura nativa
+- [x] Evitar que el aviso offline cubra los controles de selección y creación de punto
+- [ ] Verificar físicamente nuevo punto y cartografía con modo avión antes de entregar otro APK
+
+## Corrección de arranque del puente offline Android
+- [x] Registrar OfflineMapAsset antes de que Capacitor cree el puente WebView
+- [x] Compilar el APK 1.0.18 con el lector nativo y el aviso compacto
+- [ ] Verificar en teléfono que aparezcan calles, rutas y controles de nuevo punto sin señal
 
 ## Regresión crítica APK conectado — septiembre 2026
 - [x] Diagnosticar por qué el APK no carga correctamente aun con conexión

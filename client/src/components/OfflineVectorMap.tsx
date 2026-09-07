@@ -5,7 +5,7 @@ import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { GeoJSONSource, StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { PbfReader } from "pbf";
-import { PMTiles } from "pmtiles";
+import { PMTiles, type Source } from "pmtiles";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type OfflineMarker = {
@@ -39,6 +39,36 @@ const CLIENT_COLORS: Record<string, string> = {
   Productor: "#3AA44B", Revendedor: "#E3A008", Cooperativa: "#0BA4A6", Acopio: "#CE0A0A",
 };
 const VECTOR_LAYERS = ["water_polygons", "water_lines", "boundaries", "street_labels", "streets", "buildings"] as const;
+
+/**
+ * El servidor de activos de Capacitor no responde de forma uniforme a solicitudes
+ * HTTP Range grandes. Se lee una sola vez el PMTiles empaquetado y luego se sirven
+ * los tramos desde el Blob local, sin volver a depender de la red ni de Range.
+ */
+export class AndroidAssetBlobSource implements Source {
+  private assetPromise: Promise<Blob> | null = null;
+
+  constructor(private readonly url: string) {}
+
+  getKey() {
+    return `hortimax-asset:${this.url}`;
+  }
+
+  private loadAsset() {
+    if (!this.assetPromise) {
+      this.assetPromise = fetch(this.url, { cache: "force-cache" }).then(async response => {
+        if (!response.ok) throw new Error(`No se pudo leer el mapa local (${response.status})`);
+        return response.blob();
+      });
+    }
+    return this.assetPromise;
+  }
+
+  async getBytes(offset: number, length: number) {
+    const asset = await this.loadAsset();
+    return { data: await asset.slice(offset, offset + length).arrayBuffer() };
+  }
+}
 
 function clientColor(type?: string | null) {
   return CLIENT_COLORS[type ?? ""] ?? "#53666A";
@@ -146,7 +176,7 @@ export function OfflineVectorMap({
   useEffect(() => {
     if (!containerRef.current) return;
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
-    const archive = new PMTiles(archiveUrl);
+    const archive = new PMTiles(new AndroidAssetBlobSource(archiveUrl));
     const initialView = resolveOfflineInitialView(focus, userPosition);
     if (focus && focusZoom) initialView.zoom = focusZoom;
     const map = new maplibregl.Map({

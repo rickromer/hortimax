@@ -678,6 +678,11 @@
 - [ ] Añadir pruebas de regresión para archivo PMTiles local y recuperación de detalle offline
 - [ ] Compilar y confirmar físicamente el APK reparado con modo avión, sin modificar la web
 
+## Reanudación de cartografía offline integrada
+- [x] Sustituir la lectura HTTP por rangos por lectura local del PMTiles empaquetado
+- [x] Corregir el renderizado de calles y rutas bajo los pines sin conexión
+- [ ] Probar modo avión: mapa, zoom, pines y ficha previamente sincronizada
+
 ## Regresión crítica APK conectado — septiembre 2026
 - [x] Diagnosticar por qué el APK no carga correctamente aun con conexión
 - [x] Verificar API, autenticación móvil y cargador directo de Google Maps sin exponer claves

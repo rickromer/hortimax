@@ -603,11 +603,24 @@
 ## Corrección visual y activación de Google Maps Android
 - [x] Retirar el recuadro superior de “Sin señal” que tapa la interfaz
 - [x] Mantener solo el indicador discreto de cola offline cuando corresponda
-- [ ] Activar facturación de Google Maps Platform en el proyecto de la clave Android
+- [x] Activar facturación de Google Maps Platform en el proyecto de la clave Android
 - [ ] Validar Google Maps sin la marca “For development purposes only” en el APK
+
+## Centrado de mapa y retorno desde ficha
+- [x] Centrar en GPS solo al iniciar una sesión nueva
+- [x] Conservar la vista o cliente enfocado al volver desde Ver ficha
+- [x] Mantener Mi ubicación como única acción manual de recentrado posterior
+- [ ] Verificar retorno de ficha y selección de cliente en móvil y escritorio
 
 ## Corrección de usuarios de prueba y autoría histórica
 - [x] Auditar todos los registros creados por Prueba 1 y Prueba 2
 - [x] Reasignar registros de Prueba 1 a Luis David y retirar el usuario de prueba
 - [x] Reasignar registros de Prueba 2 a Nelson Galarza y retirar el usuario de prueba
 - [x] Verificar que clientes, notas, visitas y recordatorios muestren la autoría corregida
+
+## Cierre de versión consolidada
+- [x] Ejecutar la suite de regresión, chequeo de tipos y compilación web final
+- [x] Compilar el APK Android con la clave de Maps inyectada solo durante el build
+- [x] Inspeccionar el paquete Android sin incorporar secretos ni activos grandes al repositorio
+- [ ] Realizar prueba física conectada final del APK: acceso, mapa, búsqueda, GPS, clientes, check-in y Nuevo punto
+- [x] Corregir la persistencia IndexedDB cuando la caché contenga valores no serializables

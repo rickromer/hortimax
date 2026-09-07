@@ -73,7 +73,7 @@ type ClientMapProps = {
   mapTypeId?: "roadmap" | "hybrid" | "satellite" | "terrain";
   onMarkerClick?: (id: number) => void;
   onMapClick?: (coords: { latitude: number; longitude: number }) => void;
-  onCenterChanged?: (coords: { latitude: number; longitude: number }) => void;
+  onCenterChanged?: (coords: { latitude: number; longitude: number; zoom?: number }) => void;
   onReady?: (map: google.maps.Map) => void;
   onLoadError?: () => void;
 };
@@ -213,7 +213,11 @@ export function ClientMap({
       mapRef.current.addListener("idle", () => {
         const center = mapRef.current?.getCenter();
         if (!center) return;
-        onCenterChanged({ latitude: center.lat(), longitude: center.lng() });
+        onCenterChanged({
+          latitude: center.lat(),
+          longitude: center.lng(),
+          zoom: mapRef.current?.getZoom(),
+        });
       });
     }
     mapRef.current.addListener("idle", () => syncMarkers());

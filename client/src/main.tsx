@@ -8,7 +8,7 @@ import superjson from "superjson";
 import App from "./App";
 import { OfflineDataPreloader } from "./components/OfflineDataPreloader";
 import { OfflineSync } from "./components/OfflineSync";
-import { createIndexedDbPersister, shouldPersistOperationalQuery } from "./lib/indexedDbPersister";
+import { createIndexedDbPersister, shouldDehydrateOperationalQuery } from "./lib/indexedDbPersister";
 import { getNativeSessionToken, isNativeAndroidApp } from "./lib/nativeSession";
 import "./index.css";
 
@@ -29,7 +29,7 @@ if (typeof window !== "undefined") {
     maxAge: 30 * 24 * 60 * 60 * 1000,
     dehydrateOptions: {
       shouldDehydrateQuery: query => {
-        return shouldPersistOperationalQuery(query.queryKey);
+        return shouldDehydrateOperationalQuery(query);
       },
     },
   });

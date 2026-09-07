@@ -11,6 +11,12 @@ import { Input } from "@/components/ui/input";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { formatDistance, timeAgo } from "@/lib/format";
 import { placeFromMapCenter, startMapPlacement } from "@/lib/mapPlacement";
+import {
+  consumeGpsCenterAfterLogin,
+  hasGpsCenterAfterLogin,
+  readSavedMapView,
+  saveMapView,
+} from "@/lib/mapSessionState";
 import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
@@ -36,10 +42,19 @@ export default function FieldMap() {
   const canEdit = Boolean(user);
   const canCreatePoint = true;
   const geo = useGeolocation({ enabled: true });
+  const restoredMapViewRef = useRef(readSavedMapView());
+  const [shouldCenterGpsAfterLogin, setShouldCenterGpsAfterLogin] = useState(() =>
+    hasGpsCenterAfterLogin()
+  );
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [focus, setFocus] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(
+    () => restoredMapViewRef.current?.selectedId ?? null
+  );
+  const selectedIdRef = useRef<number | null>(restoredMapViewRef.current?.selectedId ?? null);
+  const [focus, setFocus] = useState<{ latitude: number; longitude: number } | null>(
+    () => restoredMapViewRef.current?.center ?? null
+  );
   const [visibleMapCenter, setVisibleMapCenter] = useState<{
     latitude: number;
     longitude: number;
@@ -71,6 +86,9 @@ export default function FieldMap() {
 
   const position = geo.position;
   useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+  useEffect(() => {
     const goOnline = () => setOnline(true);
     const goOffline = () => setOnline(false);
     window.addEventListener("online", goOnline);
@@ -81,10 +99,12 @@ export default function FieldMap() {
     };
   }, []);
   useEffect(() => {
-    if (!position || hasAutoCentered.current) return;
+    if (!position || !shouldCenterGpsAfterLogin || hasAutoCentered.current) return;
     hasAutoCentered.current = true;
     setFocus({ latitude: position.latitude, longitude: position.longitude });
-  }, [position]);
+    consumeGpsCenterAfterLogin();
+    setShouldCenterGpsAfterLogin(false);
+  }, [position, shouldCenterGpsAfterLogin]);
   const sites = sitesQuery.data ?? [];
   const requestedSiteId = useMemo(() => {
     const query = location.includes("?") ? location.slice(location.indexOf("?") + 1) : "";
@@ -95,6 +115,7 @@ export default function FieldMap() {
     if (!requestedSiteId) return;
     const requestedSite = sites.find(site => site.id === requestedSiteId);
     if (!requestedSite) return;
+    selectedIdRef.current = requestedSite.id;
     setSelectedId(requestedSite.id);
     setFocus({ latitude: requestedSite.latitude, longitude: requestedSite.longitude });
   }, [requestedSiteId, sites]);
@@ -189,7 +210,7 @@ export default function FieldMap() {
           markers={markers}
           userPosition={position}
           focus={focus}
-          fitToMarkers
+          initialZoom={restoredMapViewRef.current?.zoom}
           mapTypeId={mapType}
           onReady={map => setMapInstance(map)}
           onMapClick={coords => {
@@ -199,10 +220,16 @@ export default function FieldMap() {
           }}
           onCenterChanged={coords => {
             setVisibleMapCenter(coords);
+            saveMapView({
+              center: { latitude: coords.latitude, longitude: coords.longitude },
+              selectedId: selectedIdRef.current,
+              zoom: coords.zoom,
+            });
             if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
           }}
           onMarkerClick={id => {
             if (id === -1) return;
+            selectedIdRef.current = id;
             setSelectedId(id);
             const site = sites.find(s => s.id === id);
             if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
@@ -276,6 +303,7 @@ export default function FieldMap() {
                       key={site.id}
                       className="w-full text-left px-3 py-2.5 hover:bg-accent/60 transition-colors"
                       onClick={() => {
+                        selectedIdRef.current = site.id;
                         setSelectedId(site.id);
                         setFocus({ latitude: site.latitude, longitude: site.longitude });
                         setSearchOpen(false);
@@ -348,7 +376,10 @@ export default function FieldMap() {
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 shrink-0"
-                  onClick={() => setSelectedId(null)}>
+                  onClick={() => {
+                    selectedIdRef.current = null;
+                    setSelectedId(null);
+                  }}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -409,6 +440,7 @@ export default function FieldMap() {
           beginPlacement(manualCoords ?? pickerStartCoords);
         }}
         onSaved={id => {
+          selectedIdRef.current = id;
           setSelectedId(id);
           const savedAt = manualCoords ?? position;
           if (savedAt) setFocus({ latitude: savedAt.latitude, longitude: savedAt.longitude });

@@ -6,6 +6,12 @@ El 22 de agosto de 2026 se verificó el componente `ClientMap` directamente en l
 
 La herramienta de capturas internas usa `127.0.0.1`, un origen que el proxy de mapas rechaza, por lo que esas capturas pueden mostrar un fondo gris. Esto no afecta la vista previa pública ni el uso desde un navegador normal.
 
+### Facturación para Google Maps Android
+
+El 7 de septiembre de 2026 se comprobó en la consola Google Cloud de la cuenta autorizada que la cuenta **“Mi cuenta de facturación de Maps”** figura con estado **Activo**. En la pestaña de proyectos de esa misma cuenta, **Hortisheets** (ID `hortisheets`) aparece asociado explícitamente a dicha cuenta de facturación. La clave usada exclusivamente durante el empaquetado Android debe pertenecer a ese proyecto. La compilación no expone esa clave a la web publicada; la validación pendiente es exclusivamente física, al abrir el APK conectado en un teléfono.
+
+La navegación directa al panel de APIs de Hortisheets solicitó una nueva autenticación de Google en el navegador conectado. No se realizó ningún cambio de cuenta, facturación, APIs ni restricciones; para completar esa comprobación visual se requiere revalidar la sesión de Google Cloud.
+
 ## Flujos inspeccionados
 
 | Flujo | Evidencia verificada |
@@ -340,3 +346,13 @@ La actualización actual eleva la versión de caché de la PWA para reemplazar e
 El visor experimental de Chrome/PWA se retiró del recorrido operativo porque las pruebas físicas demostraron que no rendía cartografía de forma fiable. El modo sin señal definitivo queda en el APK Android, con mapsforge y el archivo vectorial oficial de Paraguay incluido en los activos de la aplicación. Al perder conexión, Android detecta el estado de red nativo y coloca automáticamente el mapa sobre el portal; al recuperar Internet se oculta y vuelve Google Maps.
 
 El mapa nativo permite arrastrar, desplazar, acercar/alejar con pellizco y controles, muestra la escala y usa tema de conducción para priorizar rutas y localidades. Los clientes que la sesión puede ver se dibujan como pines: al tocar uno, se abre su ficha; el control “+” del encabezado toma el centro al que se desplazó el vendedor y permite registrar un punto sin señal. El paquete `paraguay.map` de 149,666,906 bytes fue empaquetado sin compresión en el APK de 149 MB. La compilación Android, `pnpm check` y las **99 pruebas** aprobaron. Falta exclusivamente probar la versión v4 en el teléfono físico del usuario.
+
+## Versión consolidada de cierre
+
+- El mapa principal conserva el centro, zoom y cliente seleccionado de la sesión actual. Al volver de **Ver ficha**, no utiliza una lectura GPS posterior para desplazar la vista; solo enfoca el cliente indicado. El GPS se centra una única vez tras un inicio de sesión nuevo y el botón **Mi ubicación** conserva el recentrado manual.
+- La caché offline vuelve a respetar la regla estándar de TanStack: persiste únicamente consultas operativas que terminaron con éxito. De ese modo, una consulta pendiente y su promesa interna no llegan a IndexedDB, eliminando el `DataCloneError` observado en la vista previa.
+- La cuenta **Mi cuenta de facturación de Maps** fue comprobada como activa y **Hortisheets** (ID `hortisheets`) figura asociada a ella. Google exige una cuenta de facturación habilitada y una API key válida para evitar la marca de desarrollo; la comprobación visual definitiva depende de abrir el APK con conexión en un teléfono [2].
+- La compilación aislada de Android completó correctamente con Google Maps JavaScript directo, sin modificar la carga por proxy de la web. El paquete final conservó el isologo original y contiene la referencia al cargador `maps.googleapis.com/maps/api/js`; el APK de entrega `HORTIMAX-v8-consolidado.apk` pesa **5.7 MB** y tiene SHA-256 `e6a651937c3a707e334111667d94924aabbf576f55f98c8c8affc459a9c2f09d`.
+- Validación técnica final: `pnpm test` aprobó **103 pruebas** en 38 archivos, con 1 integración opcional omitida; `pnpm check`, `pnpm build` y Gradle Android finalizaron correctamente. Aún se requiere una prueba física conectada para afirmar que Google Maps no muestra la marca de desarrollo en el teléfono.
+
+[2]: https://developers.google.com/maps/documentation/javascript/error-messages "Google Maps JavaScript API Error Messages"

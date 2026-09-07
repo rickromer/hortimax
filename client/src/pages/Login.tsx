@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BRAND_NAME } from "@/lib/brand";
 import { shouldShowInitialSetup } from "@/lib/loginScreenMode";
+import { clearSavedMapView, requestGpsCenterAfterLogin } from "@/lib/mapSessionState";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { getRememberedOfflineUser, isNetworkFailure, rememberOfflineCredential, setOfflineSession, verifyOfflineCredential } from "@/lib/offlineAuth";
@@ -36,6 +37,8 @@ export default function Login() {
   const finish = async () => {
     await utils.auth.me.invalidate();
     await utils.auth.needsSetup.invalidate();
+    clearSavedMapView();
+    requestGpsCenterAfterLogin();
     window.location.href = "/mapa";
   };
 

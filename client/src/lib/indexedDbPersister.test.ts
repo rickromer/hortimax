@@ -1,6 +1,10 @@
 import "fake-indexeddb/auto";
 import { describe, expect, it } from "vitest";
-import { createIndexedDbPersister, shouldPersistOperationalQuery } from "./indexedDbPersister";
+import {
+  createIndexedDbPersister,
+  shouldDehydrateOperationalQuery,
+  shouldPersistOperationalQuery,
+} from "./indexedDbPersister";
 
 describe("persistencia operativa offline", () => {
   it("reconoce las claves reales de tRPC y excluye administración y autenticación", () => {
@@ -22,5 +26,19 @@ describe("persistencia operativa offline", () => {
     expect(await persister.restoreClient()).toEqual(client);
     await persister.removeClient();
     expect(await persister.restoreClient()).toBeUndefined();
+  });
+
+  it("excluye consultas pendientes para no intentar guardar su promesa interna", () => {
+    const pending = {
+      queryKey: [["sites", "list"], { input: {} }],
+      state: { status: "pending" },
+    };
+    const successful = {
+      queryKey: [["sites", "list"], { input: {} }],
+      state: { status: "success" },
+    };
+
+    expect(shouldDehydrateOperationalQuery(pending)).toBe(false);
+    expect(shouldDehydrateOperationalQuery(successful)).toBe(true);
   });
 });

@@ -42,3 +42,15 @@ export function shouldPersistOperationalQuery(queryKey: readonly unknown[]) {
   const path = Array.isArray(rawPath) ? rawPath.join(".") : String(rawPath ?? "");
   return ["sites.list", "sites.detail", "notes.list", "followups.list", "calendar.timeline"].includes(path);
 }
+
+/**
+ * Mantiene el criterio estándar de TanStack: una consulta pendiente conserva
+ * una promesa interna que IndexedDB no puede clonar. Solo se persisten datos
+ * operativos que ya terminaron correctamente.
+ */
+export function shouldDehydrateOperationalQuery(query: {
+  queryKey: readonly unknown[];
+  state: { status: string };
+}) {
+  return query.state.status === "success" && shouldPersistOperationalQuery(query.queryKey);
+}

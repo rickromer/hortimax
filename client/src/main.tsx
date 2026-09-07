@@ -9,6 +9,7 @@ import App from "./App";
 import { OfflineDataPreloader } from "./components/OfflineDataPreloader";
 import { OfflineSync } from "./components/OfflineSync";
 import { createIndexedDbPersister, shouldDehydrateOperationalQuery } from "./lib/indexedDbPersister";
+import { nativeMobileFetch } from "./lib/nativeHttp";
 import { getNativeSessionToken, isNativeAndroidApp } from "./lib/nativeSession";
 import "./index.css";
 
@@ -81,7 +82,7 @@ const trpcClient = trpc.createClient({
         return {};
       },
       fetch(input, init) {
-        return globalThis.fetch(input, {
+        return nativeMobileFetch(input, {
           ...(init ?? {}),
           credentials: "include",
         });

@@ -93,13 +93,9 @@ export default function Login() {
   });
 
   const activate = trpc.auth.activate.useMutation({
-    onSuccess: user => {
-      void (async () => {
-        await rememberOfflineCredential(user, password);
-        setOfflineSession(user);
-        toast.success("Contraseña definida. ¡Bienvenido!");
-        await finish();
-      })();
+    onSuccess: response => {
+      toast.success("Contraseña definida. ¡Bienvenido!");
+      void completeOnlineLogin(response);
     },
     onError: error => toast.error(error.message),
   });

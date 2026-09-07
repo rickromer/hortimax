@@ -679,18 +679,23 @@
 - [ ] Compilar y confirmar físicamente el APK reparado con modo avión, sin modificar la web
 
 ## Regresión crítica APK conectado — septiembre 2026
-- [ ] Diagnosticar por qué el APK no carga correctamente aun con conexión
-- [ ] Verificar API, autenticación móvil y cargador directo de Google Maps sin exponer claves
-- [ ] Corregir solo el empaquetado o ruta Android necesaria, sin modificar la web estable
+- [x] Diagnosticar por qué el APK no carga correctamente aun con conexión
+- [x] Verificar API, autenticación móvil y cargador directo de Google Maps sin exponer claves
+- [x] Corregir solo el empaquetado o ruta Android necesaria, sin modificar la web estable
 - [ ] Compilar y confirmar físicamente el APK conectado antes de retomar el modo offline
 
 ## Regresión crítica APK conectado — septiembre 2026
-- [ ] Diagnosticar por qué el APK no carga correctamente aun con conexión
-- [ ] Verificar API, autenticación móvil y cargador directo de Google Maps sin exponer claves
-- [ ] Corregir solo el empaquetado o ruta Android necesaria, sin modificar la web estable
+- [x] Diagnosticar por qué el APK no carga correctamente aun con conexión
+- [x] Verificar API, autenticación móvil y cargador directo de Google Maps sin exponer claves
+- [x] Corregir solo el empaquetado o ruta Android necesaria, sin modificar la web estable
 - [ ] Compilar y confirmar físicamente el APK conectado antes de retomar el modo offline
 
 ## Corrección de toque en miniatura de ficha
 - [x] Evitar que Google Maps embebido capture el toque destinado a ir al punto
 - [x] Abrir de forma fiable las opciones de navegación al tocar la miniatura
 - [ ] Validar y publicar la interacción corregida en móvil
+
+## Diagnóstico APK conectado confirmado
+- [x] Corregir inicio de sesión Android que no llega a la API aun con Internet
+- [x] Corregir carga de clientes Android posterior al acceso conectado
+- [ ] Verificar en teléfono el flujo acceso → mapa → clientes antes de reparar el modo offline

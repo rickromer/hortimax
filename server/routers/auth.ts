@@ -46,7 +46,7 @@ function isTrustedAndroidApp(ctx: any) {
   const origin = ctx.req.get("origin");
   return (
     ctx.req.get("x-hortimax-client") === "android" &&
-    (origin === "http://localhost" || origin === "https://localhost" || origin === "capacitor://localhost")
+    (!origin || origin === "http://localhost" || origin === "https://localhost" || origin === "capacitor://localhost")
   );
 }
 

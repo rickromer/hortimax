@@ -699,6 +699,11 @@
 - [x] Compilar el APK 1.0.18 con el lector nativo y el aviso compacto
 - [ ] Verificar en teléfono que aparezcan calles, rutas y controles de nuevo punto sin señal
 
+## Regresión física APK 1.0.18
+- [x] Corregir el formulario de Nuevo punto que se desborda horizontalmente en móvil
+- [x] Corregir la conversión de rangos del mapa offline desde el WebView Android
+- [ ] Validar operación offline completa: crear punto, ver cartera y sincronizar al recuperar señal
+
 ## Regresión crítica APK conectado — septiembre 2026
 - [x] Diagnosticar por qué el APK no carga correctamente aun con conexión
 - [x] Verificar API, autenticación móvil y cargador directo de Google Maps sin exponer claves

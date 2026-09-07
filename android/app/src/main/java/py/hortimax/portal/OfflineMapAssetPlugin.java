@@ -21,12 +21,17 @@ public class OfflineMapAssetPlugin extends Plugin {
 
     @PluginMethod
     public void readRange(PluginCall call) {
-        Long offsetValue = call.getLong("offset", -1L);
-        Integer lengthValue = call.getInt("length", 0);
-        long offset = offsetValue == null ? -1L : offsetValue;
-        int length = lengthValue == null ? 0 : lengthValue;
+        // Capacitor recibe los números JSON del WebView como Integer o Double,
+        // no necesariamente como Long. getLong() rechaza esos valores y hacía
+        // fallar cada lectura del PMTiles aunque el archivo estuviera incluido.
+        Double offsetValue = call.getDouble("offset", -1D);
+        Double lengthValue = call.getDouble("length", 0D);
+        long offset = offsetValue == null ? -1L : offsetValue.longValue();
+        int length = lengthValue == null ? 0 : lengthValue.intValue();
 
-        if (offset < 0 || length <= 0 || length > MAX_RANGE_BYTES) {
+        if (offset < 0 || offsetValue == null || offsetValue != Math.floor(offsetValue)
+                || length <= 0 || lengthValue == null || lengthValue != Math.floor(lengthValue)
+                || length > MAX_RANGE_BYTES) {
             call.reject("Rango de cartografía inválido");
             return;
         }

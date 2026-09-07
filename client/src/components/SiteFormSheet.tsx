@@ -252,7 +252,7 @@ export function SiteFormSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[92dvh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-lg max-h-[92dvh] overflow-x-hidden overflow-y-auto px-4 py-5 sm:px-6">
         <DialogHeader>
           <DialogTitle>
             {mode === "edit" ? "Editar punto" : "Nuevo punto de cliente"}
@@ -281,13 +281,13 @@ export function SiteFormSheet({
               <span className="text-muted-foreground flex-1">Todavía no elegiste una ubicación</span>
             )}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col min-[420px]:flex-row min-[420px]:flex-wrap gap-2">
               {onRequestLocation && (
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="h-8 bg-background"
+                  className="h-9 w-full min-[420px]:w-auto bg-background"
                   onClick={() => {
                     setSelectedSource("gps");
                     onRequestLocation();
@@ -301,7 +301,7 @@ export function SiteFormSheet({
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="h-8 bg-background"
+                  className="h-9 w-full min-[420px]:w-auto bg-background"
                   onClick={onSelectOnMap}>
                   <MousePointer2 className="h-3.5 w-3.5" />
                   Elegir en mapa
@@ -311,13 +311,13 @@ export function SiteFormSheet({
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="h-8"
+                className="h-9 w-full min-[420px]:w-auto"
                 onClick={() => setShowCoordinates(show => !show)}>
                 Coordenadas
               </Button>
             </div>
             {showCoordinates && (
-              <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end pt-1">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-[1fr_1fr_auto] gap-2 items-end pt-1">
                 <div className="space-y-1">
                   <Label htmlFor="point-lat" className="text-xs">Latitud</Label>
                   <Input
@@ -340,7 +340,7 @@ export function SiteFormSheet({
                     className="h-9 text-xs"
                   />
                 </div>
-                <Button type="button" size="sm" className="h-9" onClick={applyManualCoordinates}>
+                <Button type="button" size="sm" className="h-9 w-full min-[420px]:w-auto" onClick={applyManualCoordinates}>
                   Usar
                 </Button>
               </div>
@@ -361,7 +361,7 @@ export function SiteFormSheet({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Tipo de cliente</Label>
               <Select
@@ -404,7 +404,7 @@ export function SiteFormSheet({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="site-contact">Contacto</Label>
               <Input
@@ -451,16 +451,16 @@ export function SiteFormSheet({
             />
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-2">
+          <DialogFooter className="flex-col gap-2 sm:flex-row sm:gap-2">
             <Button
               type="button"
               variant="outline"
-              className="bg-background"
+              className="w-full bg-background sm:w-auto"
               onClick={() => onOpenChange(false)}
               disabled={busy}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={busy}>
+            <Button type="submit" className="w-full sm:w-auto" disabled={busy}>
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
               {mode === "edit" ? "Guardar cambios" : "Registrar punto"}
             </Button>

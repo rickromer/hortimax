@@ -207,18 +207,7 @@ export default function SiteDetail() {
 
         {/* Mapa del punto */}
         <div className="surface-card overflow-hidden">
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label={`Elegir cómo ir a ${site.name}`}
-            className="group relative h-44 cursor-pointer overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
-            onClick={() => setLocationActionsOpen(true)}
-            onKeyDown={event => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                setLocationActionsOpen(true);
-              }
-            }}>
+          <div className="group relative h-44 overflow-hidden">
             <div className="pointer-events-none h-full w-full">
               <ClientMap
                 markers={[
@@ -236,7 +225,14 @@ export default function SiteDetail() {
                 initialZoom={15}
               />
             </div>
-            <div className="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-lg bg-background/92 px-3 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur transition-transform duration-150 group-active:scale-[0.98]">
+            <button
+              type="button"
+              aria-label={`Elegir cómo ir a ${site.name}`}
+              className="absolute inset-0 z-10 cursor-pointer bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+              onClick={() => setLocationActionsOpen(true)}>
+              <span className="sr-only">Tocá para elegir cómo ir a este punto</span>
+            </button>
+            <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 flex items-center justify-between rounded-lg bg-background/92 px-3 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur transition-transform duration-150 group-active:scale-[0.98]">
               <span className="flex items-center gap-2"><Navigation className="h-4 w-4 text-primary" />Tocá para ir a este punto</span>
               <ExternalLink className="h-4 w-4 text-muted-foreground" />
             </div>

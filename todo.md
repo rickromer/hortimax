@@ -670,3 +670,27 @@
 - [x] Retirar la tarjeta técnica redundante de configuración de Mapa
 - [x] Hacer visible el acceso a puntos archivados y su recuperación dentro de Administración
 - [x] Verificar que el archivo conserve datos y no ejecute una eliminación definitiva
+
+## Regresión física APK offline — septiembre 2026
+- [ ] Verificar que la web publicada conserve Google Maps y fichas operativas antes de tocar Android
+- [ ] Corregir el visor offline Android que muestra pines sobre un fondo vacío
+- [ ] Corregir la apertura offline de fichas previamente sincronizadas
+- [ ] Añadir pruebas de regresión para archivo PMTiles local y recuperación de detalle offline
+- [ ] Compilar y confirmar físicamente el APK reparado con modo avión, sin modificar la web
+
+## Regresión crítica APK conectado — septiembre 2026
+- [ ] Diagnosticar por qué el APK no carga correctamente aun con conexión
+- [ ] Verificar API, autenticación móvil y cargador directo de Google Maps sin exponer claves
+- [ ] Corregir solo el empaquetado o ruta Android necesaria, sin modificar la web estable
+- [ ] Compilar y confirmar físicamente el APK conectado antes de retomar el modo offline
+
+## Regresión crítica APK conectado — septiembre 2026
+- [ ] Diagnosticar por qué el APK no carga correctamente aun con conexión
+- [ ] Verificar API, autenticación móvil y cargador directo de Google Maps sin exponer claves
+- [ ] Corregir solo el empaquetado o ruta Android necesaria, sin modificar la web estable
+- [ ] Compilar y confirmar físicamente el APK conectado antes de retomar el modo offline
+
+## Corrección de toque en miniatura de ficha
+- [x] Evitar que Google Maps embebido capture el toque destinado a ir al punto
+- [x] Abrir de forma fiable las opciones de navegación al tocar la miniatura
+- [ ] Validar y publicar la interacción corregida en móvil

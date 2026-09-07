@@ -1,6 +1,7 @@
 import { AdminShell } from "@/components/AdminShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { downloadCsv, formatDateTime, timeAgo } from "@/lib/format";
 import { trpc } from "@/lib/trpc";
-import { Download, ExternalLink, Search, X } from "lucide-react";
+import { Archive, Download, ExternalLink, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -29,6 +30,7 @@ const ALL = "__todos__";
 
 export default function AdminClients() {
   const utils = trpc.useUtils();
+  const { isAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState(ALL);
   const [clientType, setClientType] = useState(ALL);
@@ -36,6 +38,7 @@ export default function AdminClients() {
 
   const catalog = trpc.admin.catalog.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const usersQuery = trpc.admin.listUsers.useQuery();
+  const archivedQuery = trpc.admin.archivedClients.useQuery(undefined, { enabled: isAdmin });
   const allSitesQuery = trpc.sites.list.useQuery(undefined, { staleTime: 30_000 });
   const sitesQuery = trpc.sites.list.useQuery({
     search: search.trim() || undefined,
@@ -67,10 +70,25 @@ export default function AdminClients() {
       title="Clientes"
       description={`${sites.length} sitio${sites.length === 1 ? "" : "s"} registrado${sites.length === 1 ? "" : "s"}`}
       actions={
-        <Button variant="outline" className="bg-background" onClick={exportar}>
-          <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">Exportar CSV</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button variant="outline" className="bg-background" asChild>
+              <Link href="/admin/archivados">
+                <Archive className="h-4 w-4" />
+                <span className="hidden sm:inline">Papelera</span>
+                {(archivedQuery.data?.length ?? 0) > 0 && (
+                  <Badge variant="secondary" className="ml-0.5 h-5 min-w-5 justify-center px-1 text-[10px]">
+                    {archivedQuery.data?.length}
+                  </Badge>
+                )}
+              </Link>
+            </Button>
+          )}
+          <Button variant="outline" className="bg-background" onClick={exportar}>
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Exportar CSV</span>
+          </Button>
+        </div>
       }>
       <div className="space-y-4 max-w-7xl">
         <div className="surface-card p-3 flex flex-col sm:flex-row gap-2">

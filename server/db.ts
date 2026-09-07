@@ -242,12 +242,19 @@ export type SiteFilters = {
   clientType?: string;
   createdBy?: number;
   siteIds?: number[];
+  /** Filtra explícitamente por estado activo o archivado. */
+  active?: boolean;
+  /** Compatibilidad con consultas previas; omitir para usar solo activos. */
   onlyActive?: boolean;
 };
 
 function siteConditions(filters: SiteFilters) {
   const conditions = [] as any[];
-  if (filters.onlyActive !== false) conditions.push(eq(sites.active, true));
+  if (filters.active !== undefined) {
+    conditions.push(eq(sites.active, filters.active));
+  } else if (filters.onlyActive !== false) {
+    conditions.push(eq(sites.active, true));
+  }
   if (filters.createdBy) conditions.push(eq(sites.createdBy, filters.createdBy));
   if (filters.siteIds) {
     conditions.push(

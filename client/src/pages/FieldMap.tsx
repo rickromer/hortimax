@@ -1,5 +1,6 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
+import { OfflineVectorMap } from "@/components/OfflineVectorMap";
 import { FieldShell } from "@/components/FieldShell";
 import { MapPlaceSearch } from "@/components/MapPlaceSearch";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -21,6 +22,8 @@ import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { canManageAll } from "@shared/permissions";
+import { Capacitor } from "@capacitor/core";
+import { Network } from "@capacitor/network";
 import {
   Check,
   ChevronRight,
@@ -76,6 +79,8 @@ export default function FieldMap() {
   } | null>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
+  const isNativeApp = Capacitor.isNativePlatform();
+  const offlineMode = isNativeApp && !online;
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
   const hasAutoCentered = useRef(false);
 
@@ -89,6 +94,20 @@ export default function FieldMap() {
     selectedIdRef.current = selectedId;
   }, [selectedId]);
   useEffect(() => {
+    if (isNativeApp) {
+      let listening = true;
+      let listener: { remove: () => Promise<void> } | undefined;
+      void Network.getStatus().then(status => {
+        if (listening) setOnline(status.connected);
+      });
+      void Network.addListener("networkStatusChange", status => setOnline(status.connected)).then(value => {
+        listener = value;
+      });
+      return () => {
+        listening = false;
+        void listener?.remove();
+      };
+    }
     const goOnline = () => setOnline(true);
     const goOffline = () => setOnline(false);
     window.addEventListener("online", goOnline);
@@ -97,7 +116,10 @@ export default function FieldMap() {
       window.removeEventListener("online", goOnline);
       window.removeEventListener("offline", goOffline);
     };
-  }, []);
+  }, [isNativeApp]);
+  useEffect(() => {
+    if (offlineMode) setMapInstance(null);
+  }, [offlineMode]);
   useEffect(() => {
     if (!position || !shouldCenterGpsAfterLogin || hasAutoCentered.current) return;
     hasAutoCentered.current = true;
@@ -206,37 +228,62 @@ export default function FieldMap() {
         </Button>
       }>
       <div className="absolute inset-0">
-        <ClientMap
-          markers={markers}
-          userPosition={position}
-          focus={focus}
-          initialZoom={restoredMapViewRef.current?.zoom}
-          mapTypeId={mapType}
-          onReady={map => setMapInstance(map)}
-          onMapClick={coords => {
-            if (!placementMode) return;
-            setPlacementCoords(placeFromMapCenter(coords));
-            setFocus(coords);
-          }}
-          onCenterChanged={coords => {
-            setVisibleMapCenter(coords);
-            saveMapView({
-              center: { latitude: coords.latitude, longitude: coords.longitude },
-              selectedId: selectedIdRef.current,
-              zoom: coords.zoom,
-            });
-            if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
-          }}
-          onMarkerClick={id => {
-            if (id === -1) return;
-            selectedIdRef.current = id;
-            setSelectedId(id);
-            const site = sites.find(s => s.id === id);
-            if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
-          }}
-        />
+        {offlineMode ? (
+          <OfflineVectorMap
+            markers={markers}
+            userPosition={position}
+            focus={focus}
+            placementMode={placementMode}
+            onMapClick={coords => {
+              if (!placementMode) return;
+              setPlacementCoords(placeFromMapCenter(coords));
+              setFocus(coords);
+            }}
+            onCenterChanged={coords => {
+              setVisibleMapCenter(coords);
+              saveMapView({ center: { latitude: coords.latitude, longitude: coords.longitude }, selectedId: selectedIdRef.current, zoom: coords.zoom });
+              if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
+            }}
+            onMarkerClick={id => {
+              selectedIdRef.current = id;
+              setSelectedId(id);
+              const site = sites.find(s => s.id === id);
+              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
+            }}
+          />
+        ) : (
+          <ClientMap
+            markers={markers}
+            userPosition={position}
+            focus={focus}
+            initialZoom={restoredMapViewRef.current?.zoom}
+            mapTypeId={mapType}
+            onReady={map => setMapInstance(map)}
+            onMapClick={coords => {
+              if (!placementMode) return;
+              setPlacementCoords(placeFromMapCenter(coords));
+              setFocus(coords);
+            }}
+            onCenterChanged={coords => {
+              setVisibleMapCenter(coords);
+              saveMapView({
+                center: { latitude: coords.latitude, longitude: coords.longitude },
+                selectedId: selectedIdRef.current,
+                zoom: coords.zoom,
+              });
+              if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
+            }}
+            onMarkerClick={id => {
+              if (id === -1) return;
+              selectedIdRef.current = id;
+              setSelectedId(id);
+              const site = sites.find(s => s.id === id);
+              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
+            }}
+          />
+        )}
 
-        {online && (
+        {!offlineMode && (
           <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
             <MapPlaceSearch
               map={mapInstance}
@@ -331,7 +378,7 @@ export default function FieldMap() {
             aria-label="Mi ubicación">
             {geo.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Crosshair className="h-5 w-5" />}
           </Button>
-          {online && <MapReferencePanel mapType={mapType} onMapTypeChange={setMapType} />}
+          {!offlineMode && <MapReferencePanel mapType={mapType} onMapTypeChange={setMapType} />}
         </div>
 
         {/* Aviso de GPS */}

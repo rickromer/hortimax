@@ -119,6 +119,24 @@ export const adminRouter = router({
       return { success: true as const, name: site.name };
     }),
 
+  /** Papelera recuperable: los puntos archivados mantienen su historial completo. */
+  archivedClients: adminProcedure.query(async () => {
+    return db.listSites({ active: false });
+  }),
+
+  /** Solo Administración puede devolver un punto archivado al mapa operativo. */
+  restoreClient: adminProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ input }) => {
+      const site = await db.getSiteById(input.id);
+      if (!site) throw new TRPCError({ code: "NOT_FOUND", message: "Cliente no encontrado" });
+      if (site.active) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Este cliente ya está activo" });
+      }
+      await db.updateSite(input.id, { active: true });
+      return { success: true as const, name: site.name };
+    }),
+
   /* ------------------------------ Usuarios ------------------------------ */
 
   listUsers: managementProcedure.query(async ({ ctx }) => {

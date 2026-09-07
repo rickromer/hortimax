@@ -164,7 +164,7 @@ export default function AdminSettings() {
               </div>
 
               <form
-                className="flex gap-2"
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-2"
                 onSubmit={event => {
                   event.preventDefault();
                   const value = drafts[section.kind].trim();
@@ -178,9 +178,9 @@ export default function AdminSettings() {
                     setDrafts(prev => ({ ...prev, [section.kind]: e.target.value }))
                   }
                   placeholder="Agregar nuevo valor"
-                  className="h-10 max-w-xs"
+                  className="h-10 min-w-0 w-full"
                 />
-                <Button type="submit" variant="secondary" disabled={addValue.isPending}>
+                <Button type="submit" variant="secondary" className="whitespace-nowrap" disabled={addValue.isPending}>
                   <Plus className="h-4 w-4" />
                   Agregar
                 </Button>
@@ -189,17 +189,6 @@ export default function AdminSettings() {
           );
         })}
 
-        <div className="surface-card p-5">
-          <p className="font-semibold">Mapa</p>
-          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-            El mapa usa Google Maps con centro en Paraguay. Si más adelante querés usar la API
-            key propia de la empresa, se configura la variable{" "}
-            <code className="font-mono text-xs bg-secondary px-1.5 py-0.5 rounded">
-              VITE_GOOGLE_MAPS_API_KEY
-            </code>{" "}
-            y la aplicación pasa a facturar contra esa cuenta sin ningún otro cambio.
-          </p>
-        </div>
       </div>
     </AdminShell>
   );

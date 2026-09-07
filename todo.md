@@ -639,4 +639,34 @@
 ## Ícono Android con isotipo HORTIMAX
 - [x] Reemplazar los recursos de ícono Android por el favicon isotipo publicado
 - [x] Verificar los tamaños de launcher y el manifiesto Android
-- [ ] Recompilar y entregar el APK con el isotipo original como ícono
+- [x] Recompilar y entregar el APK con el isotipo original como ícono
+
+## Navegación desde mapa en Clientes
+- [x] Hacer táctil la miniatura de mapa dentro de la ficha del cliente
+- [x] Mostrar opciones para ver el punto en mapa principal, Google Maps o Waze
+- [x] Validar la interacción en la ficha móvil sin retirar los accesos existentes
+
+## Incidencia crítica: cartografía offline vacía en APK
+- [x] Diagnosticar por qué el modo sin señal muestra pines pero no el mapa de fondo
+- [x] Corregir la carga automática de cartografía local sin modificar la web
+- [x] Compilar un APK aislado y verificar que incluya los recursos de mapa requeridos
+- [ ] Confirmar físicamente el mapa sin conexión en un teléfono antes de cerrar el incidente
+
+## Navegación offline con Google Maps oficial (descartada por decisión de producto)
+- [x] Evaluar apertura externa de Google Maps cuando HORTIMAX no tenga señal
+- [x] Descartar apertura externa: el mapa debe permanecer dentro de HORTIMAX
+- [x] Reemplazar esta alternativa por cartografía local en la misma pantalla del APK
+
+## Mapa offline integrado en HORTIMAX
+- [x] Mantener la interfaz HORTIMAX dentro del APK al perder señal
+- [x] Mostrar calles, rutas, ciudades y pines de la cartera sin conexión
+- [x] Regresar automáticamente a Google Maps integrado cuando vuelva Internet
+- [x] No abrir una aplicación externa ni modificar el mapa web
+- [x] Empaquetar PMTiles sin compresión para permitir lectura local por rangos en Android
+
+## Administración móvil y puntos archivados
+- [x] Compactar y hacer responsive la distribución por departamento en Administración
+- [x] Normalizar departamentos duplicados o traducidos, incluido “Caaguazú Department”
+- [x] Retirar la tarjeta técnica redundante de configuración de Mapa
+- [x] Hacer visible el acceso a puntos archivados y su recuperación dentro de Administración
+- [x] Verificar que el archivo conserve datos y no ejecute una eliminación definitiva

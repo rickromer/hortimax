@@ -3,7 +3,7 @@ import type { TrpcContext } from "./_core/context";
 
 const store = vi.hoisted(() => ({
   countSites: vi.fn(), countCheckins: vi.fn(), countNotes: vi.fn(), listUsers: vi.fn(), listSites: vi.fn(), listCheckins: vi.fn(), listNotes: vi.fn(), listFollowups: vi.fn(),
-  getSiteById: vi.fn(), deleteSiteCompletely: vi.fn(),
+  getSiteById: vi.fn(), deleteSiteCompletely: vi.fn(), updateSite: vi.fn(),
 }));
 vi.mock("./db", () => store);
 import { adminRouter } from "./routers/admin";
@@ -20,6 +20,7 @@ beforeEach(() => {
   store.listUsers.mockResolvedValue([{ id: 10, role: "field", active: true }]);
   store.listSites.mockResolvedValue([{ id: 1, department: "Caaguazú", clientType: "Productor" }]);
   store.getSiteById.mockResolvedValue({ id: 1, name: "Cliente de prueba" });
+  store.updateSite.mockResolvedValue({ id: 1, name: "Cliente de prueba", active: true });
   store.listCheckins.mockResolvedValue([{ id: 1, siteId: 1, siteName: "Cliente de prueba", userId: 10, userName: "María López", username: "mlopez", comment: "Visita", distanceMeters: 4, createdAt: new Date("2026-08-25T12:00:00Z") }]);
   store.listNotes.mockResolvedValue([{ id: 2, siteId: 1, siteName: "Cliente de prueba", userId: 10, userName: "María López", username: "mlopez", content: "Seguimiento", createdAt: new Date("2026-08-24T12:00:00Z") }]);
   store.listFollowups.mockResolvedValue([]);
@@ -45,5 +46,17 @@ describe("gestión comercial", () => {
     await expect(adminRouter.createCaller(contextFor("manager")).deleteClient({ id: 1 })).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(adminRouter.createCaller(contextFor("admin")).deleteClient({ id: 1 })).resolves.toMatchObject({ success: true });
     expect(store.deleteSiteCompletely).toHaveBeenCalledWith(1);
+  });
+
+  it("reserva la papelera y la recuperación de puntos para Administrador", async () => {
+    store.listSites.mockResolvedValue([{ id: 9, name: "Cliente archivado", active: false }]);
+    store.getSiteById.mockResolvedValue({ id: 9, name: "Cliente archivado", active: false });
+
+    await expect(adminRouter.createCaller(contextFor("manager")).archivedClients()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(adminRouter.createCaller(contextFor("field")).restoreClient({ id: 9 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(adminRouter.createCaller(contextFor("admin")).archivedClients()).resolves.toHaveLength(1);
+    await expect(adminRouter.createCaller(contextFor("admin")).restoreClient({ id: 9 })).resolves.toMatchObject({ success: true });
+    expect(store.listSites).toHaveBeenCalledWith({ active: false });
+    expect(store.updateSite).toHaveBeenCalledWith(9, { active: true });
   });
 });

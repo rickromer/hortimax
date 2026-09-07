@@ -9,6 +9,7 @@ import { Redirect, Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import AdminActivity from "./pages/admin/AdminActivity";
+import AdminArchived from "./pages/admin/AdminArchived";
 import AdminClientDetail from "./pages/admin/AdminClientDetail";
 import AdminClients from "./pages/admin/AdminClients";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -75,6 +76,7 @@ function Router() {
       </Route>
       <Route path="/admin/notas">{() => <Redirect to="/admin/clientes" />}</Route>
       <Route path="/admin/actividad">{() => <Guard component={AdminActivity} managementOnly />}</Route>
+      <Route path="/admin/archivados">{() => <Guard component={AdminArchived} adminOnly />}</Route>
       <Route path="/admin/usuarios">{() => <Guard component={AdminUsers} adminOnly />}</Route>
       <Route path="/admin/configuracion">
         {() => <Guard component={AdminSettings} adminOnly />}

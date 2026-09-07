@@ -366,3 +366,22 @@ El cierre de sesión explícito elimina cookie, token móvil, sesión offline, v
 ## Ícono Android alineado al favicon
 
 El recurso de launcher Android se regeneró directamente desde el favicon HORTIMAX publicado, manteniendo el lienzo cuadrado y el isotipo multicolor original, sin recorte ni redibujo. La comprobación visual del recurso `mipmap-xxxhdpi/ic_launcher.png` confirma el mismo isotipo sobre fondo blanco; se generaron también los tamaños mdpi, hdpi, xhdpi y xxhdpi, además de las variantes launcher redonda y adaptativa.
+
+## Alcance de Google Maps sin conexión
+
+Las políticas de Google Maps JavaScript restringen la precarga, el almacenamiento y la caché del contenido cartográfico. La política específica de Map Tiles prohíbe expresamente los usos offline. Por ello, HORTIMAX mantiene Google Maps integrado mientras existe conexión y el APK solo puede mostrar una cartografía local propia cuando no hay red; la aplicación no descarga ni empaqueta mosaicos de Google [3] [4].
+
+[3]: https://developers.google.com/maps/documentation/javascript/policies "Policies and attributions for Maps JavaScript API"
+[4]: https://developers.google.com/maps/documentation/tile/policies "Map Tiles API Policies"
+
+## Administración móvil, territorio y papelera
+
+La tarjeta técnica de Mapa se retiró de Configuración. La distribución territorial se compactó en filas responsive con contador y se normalizó el valor histórico `Caaguazú Department` a `Caaguazú`, sin alterar los clientes, su estado ni su historial. La consulta posterior dejó 18 clientes activos y 1 archivado en Caaguazú, 1 activo y 3 archivados en Alto Paraná, 1 activo en Boquerón y 1 activo sin departamento.
+
+Los cuatro clientes archivados ahora aparecen en **Administración → Papelera**. La recuperación está reservada a Administrador y cambia exclusivamente el estado `active` del punto, conservando notas, visitas, relevamientos, asignaciones y autoría. Los clientes eliminados definitivamente mediante la función administrativa anterior no pueden aparecer en la papelera porque esa operación ya borra sus datos dependientes.
+
+## Mapa offline integrado en APK 1.0.7
+
+El APK usa Google Maps cuando hay conexión. Si el estado de red nativo de Android queda sin conexión, la misma pantalla HORTIMAX reemplaza solo el lienzo por un visor local de Paraguay que conserva los pines, GPS, selección y alta manual. El archivo `paraguay-shortbread-1.0.pmtiles` se copia durante el build y quedó incluido en el APK como activo **sin compresión**, con 174.661.701 bytes; esa condición permite lecturas por rangos desde el WebView.
+
+La validación técnica final aprobó **112 pruebas** en 42 archivos, con 1 integración opcional omitida; `pnpm check`, `pnpm build` y Gradle aprobaron. Falta confirmación física en un Android sin conexión para cerrar la incidencia de campo.

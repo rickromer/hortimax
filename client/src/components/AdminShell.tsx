@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { BRAND_NAME, BRAND_SHORT_NAME } from "@/lib/brand";
 import {
   Activity,
+  Archive,
   LayoutDashboard,
   LogOut,
   MapPinned,
@@ -30,6 +31,7 @@ const NAV = [
   { href: "/admin", label: "Resumen", icon: LayoutDashboard },
   { href: "/admin/clientes", label: "Clientes", icon: MapPinned },
   { href: "/admin/actividad", label: "Actividad", icon: Activity },
+  { href: "/admin/archivados", label: "Papelera", icon: Archive, adminOnly: true },
   { href: "/admin/usuarios", label: "Usuarios", icon: Users, adminOnly: true },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings2, adminOnly: true },
 ];

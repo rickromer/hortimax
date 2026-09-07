@@ -127,35 +127,29 @@ export default function AdminOverview() {
 
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="surface-card p-5 lg:col-span-1">
-            <p className="font-semibold">Distribución por departamento</p>
-            <p className="text-xs text-muted-foreground mb-4">Cantidad de clientes</p>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <p className="font-semibold">Por departamento</p>
+                <p className="text-xs text-muted-foreground">Clientes activos</p>
+              </div>
+              <MapPinned className="h-4 w-4 shrink-0 text-primary" />
+            </div>
             {statsQuery.isLoading ? (
-              <Skeleton className="h-40" />
+              <Skeleton className="h-32" />
             ) : (stats?.byDepartment.length ?? 0) === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">
                 Sin datos todavía.
               </p>
             ) : (
-              <div className="space-y-2.5">
-                {stats!.byDepartment.slice(0, 8).map(item => {
-                  const max = stats!.byDepartment[0].count || 1;
-                  return (
-                    <div key={item.department} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="truncate">{item.department}</span>
-                        <span className="font-medium tabular-nums text-muted-foreground">
-                          {item.count}
-                        </span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-primary transition-[width] duration-500"
-                          style={{ width: `${(item.count / max) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {stats!.byDepartment.slice(0, 6).map(item => (
+                  <div
+                    key={item.department}
+                    className="flex min-w-0 items-center justify-between gap-2 rounded-lg bg-secondary/60 px-3 py-2">
+                    <span className="min-w-0 truncate text-sm font-medium">{item.department}</span>
+                    <Badge variant="secondary" className="shrink-0 tabular-nums">{item.count}</Badge>
+                  </div>
+                ))}
               </div>
             )}
           </div>

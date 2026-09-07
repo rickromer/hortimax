@@ -66,6 +66,9 @@ export default function FieldMap() {
       ? { latitude: requestedFocusRef.current.latitude, longitude: requestedFocusRef.current.longitude }
       : restoredMapViewRef.current?.center ?? null
   );
+  const [focusZoom, setFocusZoom] = useState<number | undefined>(
+    () => requestedFocusRef.current ? 17 : undefined
+  );
   const [visibleMapCenter, setVisibleMapCenter] = useState<{
     latitude: number;
     longitude: number;
@@ -143,6 +146,7 @@ export default function FieldMap() {
     selectedIdRef.current = requestedFocus.siteId;
     setSelectedId(requestedFocus.siteId);
     setFocus({ latitude: requestedFocus.latitude, longitude: requestedFocus.longitude });
+    setFocusZoom(17);
   }, []);
   useEffect(() => {
     if (!requestedSiteId) return;
@@ -151,6 +155,7 @@ export default function FieldMap() {
     selectedIdRef.current = requestedSite.id;
     setSelectedId(requestedSite.id);
     setFocus({ latitude: requestedSite.latitude, longitude: requestedSite.longitude });
+    setFocusZoom(17);
   }, [requestedSiteId, sites]);
   const selected = useMemo(
     () => sites.find(site => site.id === selectedId) ?? null,
@@ -244,6 +249,7 @@ export default function FieldMap() {
             markers={markers}
             userPosition={position}
             focus={focus}
+            focusZoom={focusZoom}
             placementMode={placementMode}
             onMapClick={coords => {
               if (!placementMode) return;
@@ -267,6 +273,7 @@ export default function FieldMap() {
             markers={markers}
             userPosition={position}
             focus={focus}
+            focusZoom={focusZoom}
             initialZoom={restoredMapViewRef.current?.zoom}
             mapTypeId={mapType}
             onReady={map => setMapInstance(map)}

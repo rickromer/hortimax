@@ -68,6 +68,7 @@ type ClientMapProps = {
   markers: MapMarker[];
   userPosition?: { latitude: number; longitude: number; accuracy?: number } | null;
   focus?: { latitude: number; longitude: number } | null;
+  focusZoom?: number;
   initialZoom?: number;
   fitToMarkers?: boolean;
   mapTypeId?: "roadmap" | "hybrid" | "satellite" | "terrain";
@@ -139,6 +140,7 @@ export function ClientMap({
   markers,
   userPosition,
   focus,
+  focusZoom,
   initialZoom = PARAGUAY_DEFAULT_ZOOM,
   fitToMarkers = false,
   mapTypeId = "roadmap",
@@ -192,7 +194,7 @@ export function ClientMap({
       center: focus
         ? { lat: focus.latitude, lng: focus.longitude }
         : PARAGUAY_CENTER,
-      zoom: initialZoom,
+      zoom: focus ? (focusZoom ?? initialZoom) : initialZoom,
       mapId: "DEMO_MAP_ID",
       mapTypeId,
       mapTypeControl: false,
@@ -366,8 +368,10 @@ export function ClientMap({
   useEffect(() => {
     if (!readyRef.current || !mapRef.current || !focus) return;
     mapRef.current.panTo({ lat: focus.latitude, lng: focus.longitude });
-    if ((mapRef.current.getZoom() ?? 0) < 14) mapRef.current.setZoom(16);
-  }, [focus]);
+    const currentZoom = mapRef.current.getZoom() ?? 0;
+    const nextZoom = focusZoom ?? (currentZoom < 14 ? 16 : currentZoom);
+    if (nextZoom !== currentZoom) mapRef.current.setZoom(nextZoom);
+  }, [focus, focusZoom]);
 
   useEffect(() => {
     if (readyRef.current && mapRef.current) mapRef.current.setMapTypeId(mapTypeId);

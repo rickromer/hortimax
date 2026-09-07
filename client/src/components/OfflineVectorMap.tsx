@@ -21,6 +21,7 @@ type OfflineVectorMapProps = {
   markers: OfflineMarker[];
   userPosition?: { latitude: number; longitude: number; accuracy?: number } | null;
   focus?: { latitude: number; longitude: number } | null;
+  focusZoom?: number;
   placementMode?: boolean;
   onMarkerClick?: (id: number) => void;
   onMapClick?: (coords: { latitude: number; longitude: number }) => void;
@@ -123,7 +124,7 @@ export function createOfflineMapStyle(): StyleSpecification {
 
 /** Visor de respaldo solo para APK sin red. No sustituye Google Maps en web ni al reconectar. */
 export function OfflineVectorMap({
-  markers, userPosition, focus, placementMode, onMarkerClick, onMapClick, onCenterChanged,
+  markers, userPosition, focus, focusZoom, placementMode, onMarkerClick, onMapClick, onCenterChanged,
 }: OfflineVectorMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -147,6 +148,7 @@ export function OfflineVectorMap({
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
     const archive = new PMTiles(archiveUrl);
     const initialView = resolveOfflineInitialView(focus, userPosition);
+    if (focus && focusZoom) initialView.zoom = focusZoom;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: createOfflineMapStyle(),
@@ -185,7 +187,7 @@ export function OfflineVectorMap({
       if (initialized) return;
       initialized = true;
       const target = preferredFocusRef.current;
-      if (target) map.jumpTo({ center: [target.longitude, target.latitude], zoom: 14 });
+      if (target) map.jumpTo({ center: [target.longitude, target.latitude], zoom: focusZoom ?? 14 });
       cityRefs.current = CITIES.map(([name, latitude, longitude]) => {
         const label = document.createElement("div");
         label.className = "offline-city-label";
@@ -239,8 +241,12 @@ export function OfflineVectorMap({
 
   useEffect(() => {
     if (!focus || !mapRef.current) return;
-    mapRef.current.easeTo({ center: [focus.longitude, focus.latitude], zoom: Math.max(mapRef.current.getZoom(), 14), duration: 300 });
-  }, [focus]);
+    mapRef.current.easeTo({
+      center: [focus.longitude, focus.latitude],
+      zoom: focusZoom ?? Math.max(mapRef.current.getZoom(), 14),
+      duration: 300,
+    });
+  }, [focus, focusZoom]);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[#e8f0e6]">

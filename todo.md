@@ -721,3 +721,8 @@
 - [x] Reproducir la causa en la dependencia de la lista cargada y el estado de ruta
 - [x] Corregir el foco con un destino persistente independiente de la lista
 - [ ] Validar físicamente el recorrido completo con el APK 1.0.12
+
+## Zoom al punto elegido desde ficha
+- [x] Aplicar zoom de detalle al cliente seleccionado al abrir el mapa principal
+- [x] Conservar el centrado GPS solamente para inicio de sesión y acción manual
+- [ ] Validar físicamente el foco y zoom desde la ficha en móvil

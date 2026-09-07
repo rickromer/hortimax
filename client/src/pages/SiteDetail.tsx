@@ -8,7 +8,6 @@ import { SiteFormSheet } from "@/components/SiteFormSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -59,7 +58,6 @@ export default function SiteDetail() {
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
-  const [locationActionsOpen, setLocationActionsOpen] = useState(false);
 
   const detailQuery = trpc.sites.detail.useQuery(
     { id: siteId },
@@ -229,8 +227,8 @@ export default function SiteDetail() {
               type="button"
               aria-label={`Elegir cómo ir a ${site.name}`}
               className="absolute inset-0 z-10 cursor-pointer bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
-              onClick={() => setLocationActionsOpen(true)}>
-              <span className="sr-only">Tocá para elegir cómo ir a este punto</span>
+              onClick={() => navigate(`/mapa?siteId=${site.id}`)}>
+              <span className="sr-only">Ir a este punto en el mapa principal</span>
             </button>
             <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 flex items-center justify-between rounded-lg bg-background/92 px-3 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur transition-transform duration-150 group-active:scale-[0.98]">
               <span className="flex items-center gap-2"><Navigation className="h-4 w-4 text-primary" />Tocá para ir a este punto</span>
@@ -302,25 +300,6 @@ export default function SiteDetail() {
             />
           </div>
         </div>
-
-        <Dialog open={locationActionsOpen} onOpenChange={setLocationActionsOpen}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Ir a {site.name}</DialogTitle>
-              <DialogDescription>Elegí cómo abrir o compartir la ubicación de este cliente.</DialogDescription>
-            </DialogHeader>
-            <Button className="w-full" asChild onClick={() => setLocationActionsOpen(false)}>
-              <Link href={`/mapa?siteId=${site.id}`}>
-                <Map className="h-4 w-4" />
-                Ver en mapa principal
-              </Link>
-            </Button>
-            <PointLocationActions
-              name={site.name}
-              coords={{ latitude: site.latitude, longitude: site.longitude }}
-            />
-          </DialogContent>
-        </Dialog>
 
         <Tabs defaultValue="notas">
           <TabsList className="w-full">

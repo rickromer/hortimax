@@ -704,3 +704,8 @@
 - [x] Instrumentar la respuesta de verificación de usuario sin exponer credenciales
 - [x] Distinguir fallo de red, CORS, certificado, API o formato de respuesta en el APK
 - [x] Corregir el transporte Android validado por evidencia y recompilar una versión nueva
+
+## Corrección de ir al punto desde ficha
+- [x] Navegar directamente al mapa principal con el identificador del cliente
+- [x] Enfocar y seleccionar el punto solicitado sin abrir un diálogo intermedio
+- [ ] Validar el recorrido ficha → mapa en móvil antes de publicar

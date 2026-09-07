@@ -391,3 +391,7 @@ La validación técnica final aprobó **112 pruebas** en 42 archivos, con 1 inte
 La prueba física del APK 1.0.8 reportó que la verificación de usuario seguía fallando aun con Internet. El flujo Android se ajustó para usar solicitudes tRPC individuales mediante HTTP nativo, evitando el lote del WebView. El cuerpo JSON se convierte explícitamente antes de enviarse, se conserva el encabezado de identificación móvil y el servidor puede reconocer la solicitud Android aunque el transporte nativo no incluya `Origin`.
 
 La web continúa usando el transporte por lotes y `fetch` del navegador. La corrección aprobó **113 pruebas** en 43 archivos, con una integración opcional omitida, además de TypeScript, compilación web y Gradle. El APK de prueba **1.0.9** requiere una comprobación física conectada antes de considerar resuelto el acceso.
+
+## Navegación directa desde ficha de cliente
+
+El mapa embebido de la ficha ahora tiene una capa táctil explícita que navega directamente a `/mapa?siteId=<id>`. El recorrido ya no abre un diálogo intermedio: el mapa principal recibe el identificador, enfoca el cliente y conserva la selección. La prueba `SiteDetail.locationActions.test.ts`, TypeScript, la compilación web y el empaquetado Android aprobaron. El APK de prueba **1.0.10** contiene este cambio y requiere confirmación física de la interacción táctil.

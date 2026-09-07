@@ -1,9 +1,12 @@
 import {
   clearSavedMapView,
   consumeGpsCenterAfterLogin,
+  consumeRequestedMapFocus,
   hasGpsCenterAfterLogin,
+  MAP_FOCUS_REQUEST_KEY,
   MAP_GPS_AFTER_LOGIN_KEY,
   MAP_VIEW_KEY,
+  requestMapFocus,
   readSavedMapView,
   requestGpsCenterAfterLogin,
   saveMapView,
@@ -62,6 +65,17 @@ describe("estado de sesión del mapa", () => {
     saveMapView(view, storage);
 
     expect(readSavedMapView(storage)).toEqual(view);
+  });
+
+  it("transfiere una vez el punto elegido desde la ficha al mapa", () => {
+    const storage = new MemoryStorage();
+    const request = { siteId: 42, latitude: -25.2844, longitude: -57.6359 };
+
+    requestMapFocus(request, storage);
+
+    expect(storage.getItem(MAP_FOCUS_REQUEST_KEY)).not.toBeNull();
+    expect(consumeRequestedMapFocus(storage)).toEqual(request);
+    expect(consumeRequestedMapFocus(storage)).toBeNull();
   });
 
   it("rechaza ubicaciones inválidas y permite limpiar la vista anterior al iniciar una sesión", () => {

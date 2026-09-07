@@ -7,7 +7,9 @@ describe("acceso táctil a ubicación desde Clientes", () => {
     const source = readFileSync(resolve(process.cwd(), "client/src/pages/SiteDetail.tsx"), "utf8");
     expect(source).toContain("Tocá para ir a este punto");
     expect(source).toContain('className="absolute inset-0 z-10 cursor-pointer bg-transparent');
-    expect(source).toContain("onClick={() => navigate(`/mapa?siteId=${site.id}`)}");
+    expect(source).toContain("requestMapFocus({");
+    expect(source).toContain("onClick={goToSiteOnMap}");
+    expect(source).toContain("Abrir este punto en el mapa principal");
     expect(source).not.toContain("setLocationActionsOpen");
     expect(source).toContain("Ver en mapa principal");
     expect(source).toContain("<PointLocationActions");

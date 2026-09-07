@@ -14,6 +14,7 @@ import { formatDistance, timeAgo } from "@/lib/format";
 import { placeFromMapCenter, startMapPlacement } from "@/lib/mapPlacement";
 import {
   consumeGpsCenterAfterLogin,
+  consumeRequestedMapFocus,
   hasGpsCenterAfterLogin,
   readSavedMapView,
   saveMapView,
@@ -48,17 +49,22 @@ export default function FieldMap() {
   const canCreatePoint = true;
   const geo = useGeolocation({ enabled: true });
   const restoredMapViewRef = useRef(readSavedMapView());
+  const requestedFocusRef = useRef(consumeRequestedMapFocus());
   const [shouldCenterGpsAfterLogin, setShouldCenterGpsAfterLogin] = useState(() =>
     hasGpsCenterAfterLogin()
   );
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(
-    () => restoredMapViewRef.current?.selectedId ?? null
+    () => requestedFocusRef.current?.siteId ?? restoredMapViewRef.current?.selectedId ?? null
   );
-  const selectedIdRef = useRef<number | null>(restoredMapViewRef.current?.selectedId ?? null);
+  const selectedIdRef = useRef<number | null>(
+    requestedFocusRef.current?.siteId ?? restoredMapViewRef.current?.selectedId ?? null
+  );
   const [focus, setFocus] = useState<{ latitude: number; longitude: number } | null>(
-    () => restoredMapViewRef.current?.center ?? null
+    () => requestedFocusRef.current
+      ? { latitude: requestedFocusRef.current.latitude, longitude: requestedFocusRef.current.longitude }
+      : restoredMapViewRef.current?.center ?? null
   );
   const [visibleMapCenter, setVisibleMapCenter] = useState<{
     latitude: number;
@@ -131,6 +137,13 @@ export default function FieldMap() {
   }, [position, shouldCenterGpsAfterLogin]);
   const sites = sitesQuery.data ?? [];
   const requestedSiteId = useMemo(() => parseRequestedMapSiteId(mapSearch), [mapSearch]);
+  useEffect(() => {
+    const requestedFocus = requestedFocusRef.current;
+    if (!requestedFocus) return;
+    selectedIdRef.current = requestedFocus.siteId;
+    setSelectedId(requestedFocus.siteId);
+    setFocus({ latitude: requestedFocus.latitude, longitude: requestedFocus.longitude });
+  }, []);
   useEffect(() => {
     if (!requestedSiteId) return;
     const requestedSite = sites.find(site => site.id === requestedSiteId);

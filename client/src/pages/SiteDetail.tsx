@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { downloadCsv, formatCoords, formatDateTime, formatDistance, timeAgo } from "@/lib/format";
 import { enqueueOfflineOperation, isNetworkFailure, isOffline } from "@/lib/offlineQueue";
+import { requestMapFocus } from "@/lib/mapSessionState";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -180,6 +181,14 @@ export default function SiteDetail() {
   const canEditClient = canEdit;
   const canContribute = canEdit;
   const canArchive = Boolean(user && (canEdit || site.createdBy === user.id));
+  const goToSiteOnMap = () => {
+    requestMapFocus({
+      siteId: site.id,
+      latitude: site.latitude,
+      longitude: site.longitude,
+    });
+    navigate(`/mapa?siteId=${site.id}`);
+  };
 
   return (
     <FieldShell
@@ -227,7 +236,7 @@ export default function SiteDetail() {
               type="button"
               aria-label={`Elegir cómo ir a ${site.name}`}
               className="absolute inset-0 z-10 cursor-pointer bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
-              onClick={() => navigate(`/mapa?siteId=${site.id}`)}>
+              onClick={goToSiteOnMap}>
               <span className="sr-only">Ir a este punto en el mapa principal</span>
             </button>
             <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 flex items-center justify-between rounded-lg bg-background/92 px-3 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur transition-transform duration-150 group-active:scale-[0.98]">
@@ -236,6 +245,10 @@ export default function SiteDetail() {
             </div>
           </div>
           <div className="p-3.5 space-y-3">
+            <Button variant="outline" className="w-full bg-background" onClick={goToSiteOnMap}>
+              <Map className="h-4 w-4" />
+              Abrir este punto en el mapa principal
+            </Button>
             <div className="flex flex-wrap gap-1.5">
               {site.clientType && <Badge variant="secondary">{site.clientType}</Badge>}
               {site.department && <Badge variant="outline">{site.department}</Badge>}

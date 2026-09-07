@@ -715,3 +715,9 @@
 - [x] Restaurar centro, zoom y selección del cliente solicitado en el mapa principal
 - [x] Cubrir el recorrido completo desde la ficha con pruebas de parámetro y navegación
 - [ ] Validar físicamente el recorrido ficha → mapa en móvil
+
+## Diagnóstico físico de ficha → mapa persistente
+- [x] Instrumentar el toque, la ruta emitida y el foco consumido por el mapa
+- [x] Reproducir la causa en la dependencia de la lista cargada y el estado de ruta
+- [x] Corregir el foco con un destino persistente independiente de la lista
+- [ ] Validar físicamente el recorrido completo con el APK 1.0.12

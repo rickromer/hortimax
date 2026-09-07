@@ -9,8 +9,13 @@ export type SavedMapView = {
   zoom?: number;
 };
 
+export type RequestedMapFocus = MapCoordinates & {
+  siteId: number;
+};
+
 export const MAP_GPS_AFTER_LOGIN_KEY = "hortimax-map-gps-after-login-v1";
 export const MAP_VIEW_KEY = "hortimax-map-view-v1";
+export const MAP_FOCUS_REQUEST_KEY = "hortimax-map-focus-request-v1";
 
 function browserSessionStorage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -61,6 +66,38 @@ export function consumeGpsCenterAfterLogin(storage: Storage | null = browserSess
     return requested;
   } catch {
     return false;
+  }
+}
+
+/** Conserva el punto elegido desde una ficha hasta que el mapa principal lo consuma. */
+export function requestMapFocus(
+  request: RequestedMapFocus,
+  storage: Storage | null = browserSessionStorage()
+) {
+  const siteId = request.siteId;
+  if (!Number.isInteger(siteId) || siteId <= 0 || !validCoordinates(request)) return;
+  try {
+    storage?.setItem(MAP_FOCUS_REQUEST_KEY, JSON.stringify({ ...request, siteId }));
+  } catch {
+    // La URL conserva siteId como respaldo si el almacenamiento temporal no está disponible.
+  }
+}
+
+/** Consume una sola vez el destino emitido por una ficha de cliente. */
+export function consumeRequestedMapFocus(
+  storage: Storage | null = browserSessionStorage()
+): RequestedMapFocus | null {
+  try {
+    const raw = storage?.getItem(MAP_FOCUS_REQUEST_KEY);
+    storage?.removeItem(MAP_FOCUS_REQUEST_KEY);
+    if (!raw) return null;
+    const value = JSON.parse(raw) as Partial<RequestedMapFocus>;
+    const siteId = value.siteId;
+    return Number.isInteger(siteId) && Number(siteId) > 0 && validCoordinates(value)
+      ? { siteId: Number(siteId), latitude: value.latitude, longitude: value.longitude }
+      : null;
+  } catch {
+    return null;
   }
 }
 

@@ -18,6 +18,7 @@ import {
   readSavedMapView,
   saveMapView,
 } from "@/lib/mapSessionState";
+import { parseRequestedMapSiteId } from "@/lib/requestedMapSite";
 import { resolveNewPointPickerStart } from "@/lib/newPointPickerStart";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
@@ -37,10 +38,11 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 
 export default function FieldMap() {
   const [location, setLocation] = useLocation();
+  const mapSearch = useSearch();
   const { user } = useAuth();
   const canEdit = Boolean(user);
   const canCreatePoint = true;
@@ -128,11 +130,7 @@ export default function FieldMap() {
     setShouldCenterGpsAfterLogin(false);
   }, [position, shouldCenterGpsAfterLogin]);
   const sites = sitesQuery.data ?? [];
-  const requestedSiteId = useMemo(() => {
-    const query = location.includes("?") ? location.slice(location.indexOf("?") + 1) : "";
-    const value = Number(new URLSearchParams(query).get("siteId"));
-    return Number.isInteger(value) && value > 0 ? value : null;
-  }, [location]);
+  const requestedSiteId = useMemo(() => parseRequestedMapSiteId(mapSearch), [mapSearch]);
   useEffect(() => {
     if (!requestedSiteId) return;
     const requestedSite = sites.find(site => site.id === requestedSiteId);

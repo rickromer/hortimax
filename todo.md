@@ -709,3 +709,8 @@
 - [x] Navegar directamente al mapa principal con el identificador del cliente
 - [x] Enfocar y seleccionar el punto solicitado sin abrir un diálogo intermedio
 - [ ] Validar el recorrido ficha → mapa en móvil antes de publicar
+
+## Corrección integral de foco ficha → mapa
+- [x] Detectar por qué el mapa principal no consume o no encuentra el `siteId` recibido
+- [x] Restaurar centro, zoom y selección del cliente solicitado en el mapa principal
+- [ ] Cubrir el recorrido completo desde la ficha y validarlo en móvil

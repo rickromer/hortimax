@@ -484,6 +484,8 @@ La caché de instalación se actualizó a `hortimax-shell-v4` y ahora, si una na
 
 El dominio publicado respondió 404 para `/` durante la comprobación más reciente, pero respondió correctamente el formulario HORTIMAX en `/acceso`. La instalación y las recuperaciones de navegación se ajustaron a esa ruta publicada verificable. Cuando una consulta de sesión permanece cargando, el splash muestra uno de tres estados no sensibles: `HMX-AUTH-CHECK` mientras consulta, `HMX-AUTH-PAUSED` si queda pausada y `HMX-AUTH-TIMEOUT` si supera ocho segundos. La validación completa volvió a aprobar **140 pruebas** en 55 archivos, con 1 archivo omitido (**141 pruebas** en total), más TypeScript y build.
 
+La traza publicada confirmó que `auth.me` responde correctamente con HTTP 200 y usuario nulo en aproximadamente 0,5 segundos desde `/acceso`; no es la consulta de sesión la que bloquea el formulario. La causa encontrada para instalaciones ya existentes era el trabajador de servicio: su precarga incluía `/`, ruta que el borde publicado respondió 404. Eso hace fallar `cache.addAll`, impide instalar el trabajador nuevo y conserva el cliente antiguo. Se actualizó a `hortimax-shell-v5` y su precarga contiene solo `/acceso` y el manifiesto, ambos recursos publicados válidos. Las pruebas completas volvieron a aprobar **140 pruebas** en 55 archivos, con 1 archivo omitido (**141 pruebas** en total), junto con TypeScript y build.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

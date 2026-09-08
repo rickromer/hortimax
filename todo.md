@@ -827,3 +827,8 @@
 - [x] Mostrar un código de estado no sensible cuando la inicialización de sesión no complete
 - [x] Usar el código obtenido para corregir el bloqueo real de acceso
 - [ ] Confirmar el acceso desde el teléfono antes de retomar cambios Android
+
+## Bloqueo persistente del login publicado
+- [x] Trazar la respuesta de la ruta publicada, la carga de JavaScript y la consulta auth.me
+- [x] Corregir el punto exacto de bloqueo sin alterar usuarios, datos ni permisos
+- [ ] Validar el mismo flujo en condiciones de navegador móvil antes de solicitar otra prueba

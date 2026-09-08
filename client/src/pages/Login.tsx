@@ -33,15 +33,15 @@ export default function Login() {
   const showInitialSetup = shouldShowInitialSetup(needsSetup, window.location.search);
 
   useEffect(() => {
-    if (!showInitialSetup && !authLoading && rememberedUser) window.location.replace("/acceso");
+    if (!showInitialSetup && !authLoading && rememberedUser) window.location.replace("/mapa");
   }, [authLoading, rememberedUser, showInitialSetup]);
 
-  const finish = () => {
-    void utils.auth.me.invalidate().catch(() => undefined);
-    void utils.auth.needsSetup.invalidate().catch(() => undefined);
+  const finish = async () => {
+    await utils.auth.me.invalidate();
+    await utils.auth.needsSetup.invalidate();
     clearSavedMapView();
     requestGpsCenterAfterLogin();
-    window.location.replace("/acceso");
+    window.location.href = "/mapa";
   };
 
   const checkUser = trpc.auth.checkUsername.useMutation({
@@ -68,19 +68,11 @@ export default function Login() {
 
   const completeOnlineLogin = async (response: any) => {
     const { mobileSessionToken, ...user } = response;
-    // Mantiene el aislamiento de carteras antes de navegar. Para el mismo
-    // usuario este paso es inmediato; si cambia la identidad, limpia la copia
-    // local autorizada antes de mostrar datos nuevos.
     await prepareOfflineOperationalDataForUser(user.id);
     saveNativeSessionToken(mobileSessionToken);
+    await rememberOfflineCredential(user, password);
     setOfflineSession(user);
-    finish();
-    // El verificador PBKDF2 permite el próximo ingreso sin señal, pero nunca
-    // debe retener la navegación normal después de que el servidor validó la
-    // contraseña. Se completa en segundo plano y no contiene datos de cartera.
-    void rememberOfflineCredential(user, password).catch(error => {
-      console.warn("No se pudo preparar la credencial offline", error);
-    });
+    await finish();
   };
 
   const login = trpc.auth.login.useMutation({

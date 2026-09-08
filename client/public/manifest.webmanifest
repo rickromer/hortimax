@@ -3,7 +3,7 @@
   "short_name": "HORTIMAX",
   "description": "Registro de clientes, visitas y notas para equipos de campo.",
   "lang": "es-PY",
-  "start_url": "/acceso",
+  "start_url": "/mapa",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f7f8f2",

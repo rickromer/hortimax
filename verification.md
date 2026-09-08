@@ -474,6 +474,8 @@ La evidencia del usuario muestra Chrome móvil detenido en la pantalla de carga 
 
 En el entorno móvil de verificación, las rutas de acceso y de campo cargaron sin quedar en el splash. La sesión de prueba existente redirigió `/acceso` a campo, comportamiento esperado para una sesión activa. El error de Google Maps visible en ese entorno de pruebas es independiente de la recuperación de acceso y no se interpreta como fallo de autenticación ni del servidor web.
 
+Como protección adicional ante el bloqueo persistente informado, `useAuth` libera el guard de ruta después de ocho segundos si `auth.me` permanece cargando, o inmediatamente si TanStack Query informa que la consulta está pausada. En ambos casos una sesión local previamente autorizada puede usarse en modo offline; sin ella, la ruta protegida redirige a `/acceso` en vez de permanecer en “Cargando”. La modificación se limita al estado transitorio de arranque y no toca usuarios, datos, formularios ni permisos. La regresión completa aprobó **139 pruebas** en 54 archivos, con 1 archivo omitido (**140 pruebas** en total), junto con TypeScript y build.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

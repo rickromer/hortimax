@@ -812,3 +812,8 @@
 - [x] Restaurar el acceso web estable sin alterar datos, formularios, roles ni rutas operativas
 - [ ] Verificar acceso en navegador móvil y escritorio antes de retomar cualquier trabajo de APK
 - [ ] Mantener suspendidos los cambios Android hasta recuperar y confirmar la web
+
+## Bloqueo web persistente tras sincronización
+- [x] Comparar la versión publicada con el último checkpoint web estable comprobado por el usuario
+- [x] Restaurar la web estable sin modificar la base de datos ni los formularios
+- [ ] Confirmar desde el teléfono que desaparece la pantalla de carga antes de volver al APK

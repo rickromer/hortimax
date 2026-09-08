@@ -5,6 +5,8 @@ import { forgetOfflineCredential, getOfflineSession, onOfflineAuthChange } from 
 import { clearOfflineOperationalData } from "@/lib/offlineOperationalData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+export const AUTH_BOOT_TIMEOUT_MS = 8_000;
+
 /**
  * Estado de autenticación de la app. El acceso es con usuario y contraseña
  * propios (sin OAuth): la sesión vive en una cookie firmada por el servidor.
@@ -12,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 export function useAuth() {
   const utils = trpc.useUtils();
   const [offlineSession, setOfflineSession] = useState(() => getOfflineSession());
+  const [bootstrapTimedOut, setBootstrapTimedOut] = useState(false);
 
   useEffect(() => onOfflineAuthChange(() => setOfflineSession(getOfflineSession())), []);
 
@@ -19,6 +22,16 @@ export function useAuth() {
     retry: false,
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (!meQuery.isLoading) {
+      setBootstrapTimedOut(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setBootstrapTimedOut(true), AUTH_BOOT_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [meQuery.isLoading]);
 
   useEffect(() => {
     if (!meQuery.data) return;
@@ -62,7 +75,9 @@ export function useAuth() {
   const state = useMemo(
     () => ({
       user: activeUser,
-      loading: (meQuery.isLoading && !offlineAllowed) || logoutMutation.isPending,
+      loading:
+        (meQuery.isLoading && meQuery.fetchStatus !== "paused" && !offlineAllowed && !bootstrapTimedOut) ||
+        logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
       isAuthenticated: Boolean(activeUser),
       isAdmin: activeUser?.role === "admin",
@@ -72,7 +87,9 @@ export function useAuth() {
       activeUser,
       meQuery.error,
       meQuery.isLoading,
+      meQuery.fetchStatus,
       offlineAllowed,
+      bootstrapTimedOut,
       logoutMutation.error,
       logoutMutation.isPending,
     ]

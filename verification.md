@@ -480,6 +480,8 @@ La comprobación publicada posterior abrió la raíz `/` y mostró el formulario
 
 La manifestación instalada de HORTIMAX iniciaba en `/mapa`, precisamente la ruta profunda que el borde publicado devolvió como 404. Se corrigió `start_url` a `/`, que sí entrega el portal y redirige de forma interna al acceso cuando no existe una sesión. Sumado al límite de carga de autenticación, esto evita tanto el 404 al abrir la instalación como el splash permanente si la consulta de sesión queda suspendida. La validación completa aprobó **140 pruebas** en 55 archivos, con 1 archivo omitido (**141 pruebas** en total), junto con TypeScript y build.
 
+La caché de instalación se actualizó a `hortimax-shell-v4` y ahora, si una navegación controlada recibe una respuesta no exitosa para una ruta de aplicación, devuelve la raíz del portal en lugar de conservar el 404. Las solicitudes de API siguen excluidas de esta regla. La suite completa volvió a aprobar **140 pruebas** en 55 archivos, con 1 archivo omitido (**141 pruebas** en total), junto con TypeScript y build. Falta verificar físicamente que Chrome/PWA adopta el nuevo trabajador y abre el login.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

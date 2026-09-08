@@ -1,4 +1,4 @@
-const CACHE_NAME = "hortimax-shell-v3";
+const CACHE_NAME = "hortimax-shell-v4";
 const APP_SHELL = ["/", "/acceso", "/manifest.webmanifest"];
 
 self.addEventListener("install", event => {
@@ -18,11 +18,18 @@ self.addEventListener("fetch", event => {
   if (url.pathname.startsWith("/api/")) return;
   event.respondWith(
     fetch(request).then(response => {
+      if (request.mode === "navigate" && !response.ok) {
+        return caches.match("/").then(cached => cached || fetch("/"));
+      }
       if (response.ok && response.type === "basic") {
         const copy = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
       }
       return response;
-    }).catch(() => caches.match(request).then(cached => cached || caches.match("/acceso")))
+    }).catch(() =>
+      caches.match(request).then(cached =>
+        cached || (request.mode === "navigate" ? caches.match("/") : caches.match("/acceso"))
+      )
+    )
   );
 });

@@ -449,3 +449,19 @@ El APK 1.0.22 reemplaza la transferencia de rangos desde JavaScript hacia el com
 Android permite tráfico HTTP únicamente hacia este origen local mediante la configuración de la aplicación. El modo conectado sigue seleccionando Google Maps y la web no usa ni expone el servidor. Las pruebas completas aprobaron **131 pruebas** en 49 archivos, con 1 archivo de integración omitido (**132 pruebas** en total); TypeScript, build web y Gradle Android completaron sin errores. El APK contiene `OfflineMapHttpServer`, `OfflineMapAssetPlugin`, el bundle con `getMapUrl` y el PMTiles de **174.661.701 bytes** almacenado sin compresión. Su SHA-256 es `75224307b08cc5a26eaf5a34e288242ea1b06aa8faaf630363e681e63ed0b48b`.
 
 El render en teléfono no se declara resuelto todavía. Falta instalar el APK 1.0.22 y comprobar en modo avión que aparecen calles detrás de los pines, que el mapa se puede desplazar y ampliar, y que el formulario Nuevo punto permite llegar al botón de registro mediante scroll.
+
+## APK 1.0.23: separación de Google Maps conectado y OSM local
+
+La captura posterior del teléfono mostró que la aplicación estaba en línea y por eso montaba Google Maps JavaScript, pero Google lo señalaba como “For development purposes only”. La carga del SDK no fallaba: el problema es que JavaScript API valida el origen del WebView y la credencial/billing del proyecto, por lo que no es un mecanismo confiable para una aplicación Capacitor. Google documenta que ese mapa oscurecido o con marca de desarrollo indica un problema de credencial o facturación; además, el SDK de Android usa una clave asociada al paquete y la huella de firma, no al referer del WebView.[1] [2]
+
+El APK 1.0.23 incorpora `@capacitor/google-maps` y, únicamente en Android con conexión, muestra Google Maps a través del SDK nativo. La clave ya existente se inyecta en el manifiesto durante Gradle mediante un placeholder de entorno, sin escribirse en el repositorio. El mapa recibe cámara, pines por tipo de cliente, selección, toque del mapa, GPS y el selector normal/híbrido. La interfaz web sigue usando su componente Google Maps previo y no recibe el SDK nativo.
+
+Cuando Android informa falta de conexión, `FieldMap` no crea el mapa nativo: conserva el visor MapLibre/OSM local que entrega PMTiles de Paraguay desde el servidor loopback interno. Así quedan dos rutas excluyentes, sin “mezclar” Google y OSM: Google Maps nativo conectado, y OSM vial local con referencias y pines en modo avión. La suite completa aprobó **133 pruebas** en 50 archivos, con 1 archivo omitido (**134 pruebas** en total); TypeScript, build web y Gradle, con el plugin nativo de Google Maps, aprobaron. El APK 1.0.23 contiene el SDK Google Maps nativo, el servidor OSM local y PMTiles sin compresión. SHA-256: `2310452c7361cc8e1f268bad536435a701a8a4cfac285406c6ca9a0a9880029b`.
+
+La prueba física continúa pendiente. Para declararlo funcionando se debe instalar 1.0.23 y verificar **primero con Internet** que Google Maps no muestre el aviso, responda a pan/zoom y pines; después cerrar la aplicación, activar modo avión y comprobar calles/referencias OSM, GPS, pan/zoom y Nuevo punto.
+
+### Referencias
+
+[1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)
+
+[2] [Maps SDK for Android — Get an API Key](https://developers.google.com/maps/documentation/android-sdk/get-api-key)

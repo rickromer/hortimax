@@ -346,3 +346,13 @@
     border-radius: 999px;
   }
 }
+
+/* En Android el SDK de Google Maps se coloca detrás del WebView. Esta clase
+   solo se activa en el mapa conectado y no altera la página web habitual. */
+html.native-google-map-active,
+html.native-google-map-active body,
+html.native-google-map-active #root,
+html.native-google-map-active .native-map-shell,
+html.native-google-map-active .native-map-shell main {
+  background: transparent !important;
+}

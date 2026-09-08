@@ -7,9 +7,12 @@ android {
         applicationId "py.hortimax.portal"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 22
-        versionName "1.0.22"
+        versionCode 23
+        versionName "1.0.23"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // La clave se toma solo durante el build desde el secreto ya existente;
+        // nunca se escribe en el repositorio ni en recursos fuente.
+        manifestPlaceholders = [googleMapsApiKey: (System.getenv("VITE_CAPACITOR_GOOGLE_MAPS_API_KEY") ?: "")]
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61

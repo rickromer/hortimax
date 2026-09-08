@@ -9,4 +9,13 @@ describe("experiencia de mapa sin señal", () => {
     expect(source).not.toContain("Sin señal: Google Maps requiere Internet");
     expect(source).not.toContain("border-amber-300");
   });
+
+  it("separa Google Maps Android conectado del visor OSM local sin señal", () => {
+    const source = readFileSync(resolve(process.cwd(), "client/src/pages/FieldMap.tsx"), "utf8");
+
+    expect(source).toContain("const nativeConnectedMode = isNativeApp && online");
+    expect(source).toContain("<OfflineVectorMap");
+    expect(source).toContain("<NativeGoogleMap");
+    expect(source).toContain("!offlineMode && !nativeConnectedMode");
+  });
 });

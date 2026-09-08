@@ -790,3 +790,13 @@
 - [x] Sustituir la ruta que mantiene el fondo vacío por un render local comprobable sin alterar Google Maps web
 - [x] Recompilar el APK solo después de verificar mosaicos y calles locales
 - [ ] Probar físicamente el APK recompilado con modo avión antes de entregar como resuelto
+
+## Incidencia conectada APK 1.0.22 — Google Maps Android rechazado
+- [x] Separar de forma verificable el estado de red Android del cambio entre Google Maps y mapa local
+- [x] Sustituir el Google Maps JavaScript en Android conectado por el SDK nativo, que no depende del origen WebView rechazado
+- [ ] Probar físicamente los modos conectado y modo avión como recorridos independientes
+
+## Comportamiento definitivo de cartografía Android
+- [x] Usar Google Maps normal mediante SDK nativo únicamente cuando la conexión sea utilizable
+- [x] Usar OSM local vial con referencias, pines, pan y zoom únicamente sin conexión
+- [ ] Confirmar ambos modos en teléfono antes de declararlos disponibles

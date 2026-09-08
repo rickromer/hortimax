@@ -1,5 +1,6 @@
 import { CheckinDialog } from "@/components/CheckinDialog";
 import { ClientMap } from "@/components/ClientMap";
+import { NativeGoogleMap } from "@/components/NativeGoogleMap";
 import { OfflineVectorMap } from "@/components/OfflineVectorMap";
 import { FieldShell } from "@/components/FieldShell";
 import { MapPlaceSearch } from "@/components/MapPlaceSearch";
@@ -92,6 +93,7 @@ export default function FieldMap() {
   const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
   const isNativeApp = Capacitor.isNativePlatform();
   const offlineMode = isNativeApp && !online;
+  const nativeConnectedMode = isNativeApp && online;
   const [checkinSite, setCheckinSite] = useState<{ id: number; name: string } | null>(null);
   const hasAutoCentered = useRef(false);
 
@@ -223,9 +225,10 @@ export default function FieldMap() {
   };
 
   return (
-    <FieldShell
-      bleed
-      hideContext
+      <FieldShell
+        bleed
+        hideContext
+        nativeMap={nativeConnectedMode}
       subtitle={
         geo.loading && !position
           ? "Buscando señal GPS…"
@@ -268,6 +271,36 @@ export default function FieldMap() {
               if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
             }}
           />
+        ) : nativeConnectedMode ? (
+          <NativeGoogleMap
+            markers={markers}
+            userPosition={position}
+            focus={focus}
+            focusZoom={focusZoom}
+            initialZoom={restoredMapViewRef.current?.zoom}
+            mapTypeId={mapType}
+            onMapClick={coords => {
+              if (!placementMode) return;
+              setPlacementCoords(placeFromMapCenter(coords));
+              setFocus(coords);
+            }}
+            onCenterChanged={coords => {
+              setVisibleMapCenter(coords);
+              saveMapView({
+                center: { latitude: coords.latitude, longitude: coords.longitude },
+                selectedId: selectedIdRef.current,
+                zoom: coords.zoom,
+              });
+              if (placementMode) setPlacementCoords(placeFromMapCenter(coords));
+            }}
+            onMarkerClick={id => {
+              if (id === -1) return;
+              selectedIdRef.current = id;
+              setSelectedId(id);
+              const site = sites.find(s => s.id === id);
+              if (site) setFocus({ latitude: site.latitude, longitude: site.longitude });
+            }}
+          />
         ) : (
           <ClientMap
             markers={markers}
@@ -301,7 +334,7 @@ export default function FieldMap() {
           />
         )}
 
-        {!offlineMode && (
+        {!offlineMode && !nativeConnectedMode && (
           <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
             <MapPlaceSearch
               map={mapInstance}

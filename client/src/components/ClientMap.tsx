@@ -59,6 +59,7 @@ export type MapMarker = {
   latitude: number;
   longitude: number;
   clientType?: string | null;
+  department?: string | null;
   zone?: string | null;
   selected?: boolean;
 };

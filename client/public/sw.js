@@ -19,7 +19,7 @@ self.addEventListener("fetch", event => {
   event.respondWith(
     fetch(request).then(response => {
       if (request.mode === "navigate" && !response.ok) {
-        return caches.match("/").then(cached => cached || fetch("/"));
+        return caches.match("/acceso").then(cached => cached || fetch("/acceso"));
       }
       if (response.ok && response.type === "basic") {
         const copy = response.clone();
@@ -28,7 +28,7 @@ self.addEventListener("fetch", event => {
       return response;
     }).catch(() =>
       caches.match(request).then(cached =>
-        cached || (request.mode === "navigate" ? caches.match("/") : caches.match("/acceso"))
+        cached || caches.match("/acceso")
       )
     )
   );

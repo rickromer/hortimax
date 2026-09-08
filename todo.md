@@ -822,3 +822,8 @@
 - [x] Reproducir el inicio de sesión web móvil con la misma ruta de HORTIMAX
 - [x] Corregir el bloqueo de acceso desde la aplicación sin derivar el flujo de HORTIMAX a soporte externo
 - [ ] Confirmar desde el teléfono el acceso recuperado antes de reanudar el APK
+
+## Diagnóstico visible de login HORTIMAX
+- [x] Mostrar un código de estado no sensible cuando la inicialización de sesión no complete
+- [x] Usar el código obtenido para corregir el bloqueo real de acceso
+- [ ] Confirmar el acceso desde el teléfono antes de retomar cambios Android

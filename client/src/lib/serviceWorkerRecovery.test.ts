@@ -10,6 +10,6 @@ describe("recuperación de caché web móvil", () => {
     expect(source).toContain('if (url.pathname.startsWith("/api/")) return');
     expect(source).toContain('caches.match("/acceso")');
     expect(source).toContain('request.mode === "navigate" && !response.ok');
-    expect(source).toContain('caches.match("/")');
+    expect(source).toContain('caches.match("/acceso")');
   });
 });

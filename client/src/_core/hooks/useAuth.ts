@@ -7,6 +7,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 export const AUTH_BOOT_TIMEOUT_MS = 8_000;
 
+export function getAuthStartupDiagnostic(input: {
+  isLoading: boolean;
+  fetchStatus: "fetching" | "paused" | "idle";
+  timedOut: boolean;
+}) {
+  if (!input.isLoading) return null;
+  if (input.timedOut) return "HMX-AUTH-TIMEOUT";
+  if (input.fetchStatus === "paused") return "HMX-AUTH-PAUSED";
+  return "HMX-AUTH-CHECK";
+}
+
 /**
  * Estado de autenticación de la app. El acceso es con usuario y contraseña
  * propios (sin OAuth): la sesión vive en una cookie firmada por el servidor.
@@ -71,6 +82,11 @@ export function useAuth() {
 
   const offlineAllowed = Boolean(offlineSession) && (meQuery.isError || (typeof navigator !== "undefined" && navigator.onLine === false));
   const activeUser = meQuery.data ?? (offlineAllowed ? offlineSession : null);
+  const startupDiagnostic = getAuthStartupDiagnostic({
+    isLoading: meQuery.isLoading,
+    fetchStatus: meQuery.fetchStatus,
+    timedOut: bootstrapTimedOut,
+  });
 
   const state = useMemo(
     () => ({
@@ -79,6 +95,7 @@ export function useAuth() {
         (meQuery.isLoading && meQuery.fetchStatus !== "paused" && !offlineAllowed && !bootstrapTimedOut) ||
         logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
+      startupDiagnostic,
       isAuthenticated: Boolean(activeUser),
       isAdmin: activeUser?.role === "admin",
       canManageAll: canManageAll(activeUser?.role),
@@ -90,6 +107,7 @@ export function useAuth() {
       meQuery.fetchStatus,
       offlineAllowed,
       bootstrapTimedOut,
+      startupDiagnostic,
       logoutMutation.error,
       logoutMutation.isPending,
     ]

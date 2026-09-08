@@ -8,7 +8,7 @@ describe("inicio de HORTIMAX instalada", () => {
       readFileSync(resolve(process.cwd(), "client/public/manifest.webmanifest"), "utf8")
     ) as { start_url?: string; scope?: string };
 
-    expect(manifest.start_url).toBe("/");
+    expect(manifest.start_url).toBe("/acceso");
     expect(manifest.scope).toBe("/");
   });
 });

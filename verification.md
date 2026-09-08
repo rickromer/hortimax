@@ -482,6 +482,8 @@ La manifestación instalada de HORTIMAX iniciaba en `/mapa`, precisamente la rut
 
 La caché de instalación se actualizó a `hortimax-shell-v4` y ahora, si una navegación controlada recibe una respuesta no exitosa para una ruta de aplicación, devuelve la raíz del portal en lugar de conservar el 404. Las solicitudes de API siguen excluidas de esta regla. La suite completa volvió a aprobar **140 pruebas** en 55 archivos, con 1 archivo omitido (**141 pruebas** en total), junto con TypeScript y build. Falta verificar físicamente que Chrome/PWA adopta el nuevo trabajador y abre el login.
 
+El dominio publicado respondió 404 para `/` durante la comprobación más reciente, pero respondió correctamente el formulario HORTIMAX en `/acceso`. La instalación y las recuperaciones de navegación se ajustaron a esa ruta publicada verificable. Cuando una consulta de sesión permanece cargando, el splash muestra uno de tres estados no sensibles: `HMX-AUTH-CHECK` mientras consulta, `HMX-AUTH-PAUSED` si queda pausada y `HMX-AUTH-TIMEOUT` si supera ocho segundos. La validación completa volvió a aprobar **140 pruebas** en 55 archivos, con 1 archivo omitido (**141 pruebas** en total), más TypeScript y build.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

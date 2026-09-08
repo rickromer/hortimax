@@ -2,6 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { canManageAll } from "@shared/permissions";
 import { TRPCClientError } from "@trpc/client";
 import { forgetOfflineCredential, getOfflineSession, onOfflineAuthChange } from "@/lib/offlineAuth";
+import { clearOfflineOperationalData } from "@/lib/offlineOperationalData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
@@ -45,6 +46,7 @@ export function useAuth() {
       try {
         sessionStorage.removeItem("manus-cookie");
       } catch {}
+      await clearOfflineOperationalData();
       forgetOfflineCredential();
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();

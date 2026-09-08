@@ -19,6 +19,7 @@ export function OfflineSync() {
   const [syncing, setSyncing] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const createSite = trpc.sites.create.useMutation();
+  const updateSite = trpc.sites.update.useMutation();
   const checkin = trpc.sites.checkin.useMutation();
   const createNote = trpc.notes.create.useMutation();
   const createFollowup = trpc.followups.create.useMutation();
@@ -38,6 +39,9 @@ export function OfflineSync() {
         switch (operation.kind) {
           case "site.create":
             await createSite.mutateAsync(operation.input as Parameters<typeof createSite.mutateAsync>[0]);
+            break;
+          case "site.update":
+            await updateSite.mutateAsync(operation.input as Parameters<typeof updateSite.mutateAsync>[0]);
             break;
           case "site.checkin":
             await checkin.mutateAsync(operation.input as Parameters<typeof checkin.mutateAsync>[0]);
@@ -59,7 +63,7 @@ export function OfflineSync() {
     }
     setSyncing(false);
     await refreshCount();
-  }, [checkin, createFollowup, createNote, createSite, refreshCount, syncing]);
+  }, [checkin, createFollowup, createNote, createSite, refreshCount, syncing, updateSite]);
 
   useEffect(() => {
     const goOnline = () => {

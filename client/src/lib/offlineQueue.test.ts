@@ -47,6 +47,13 @@ describe("offlineQueue", () => {
     expect(operations[0].attempts).toBe(0);
   });
 
+  it("admite una edición de cliente para sincronizar el estado final al reconectar", async () => {
+    await enqueueOfflineOperation("site.update", { id: 12, name: "Cliente corregido" });
+    await expect(listOfflineOperations()).resolves.toMatchObject([
+      { kind: "site.update", input: { id: 12, name: "Cliente corregido" } },
+    ]);
+  });
+
   it("conserva el error y el contador de intentos hasta que el sincronizador la elimine", async () => {
     const operation = await enqueueOfflineOperation("site.create", { name: "Cliente sin señal" });
     await updateOfflineOperation({ ...operation, attempts: 1, lastError: "Sin conexión" });

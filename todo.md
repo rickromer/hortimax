@@ -637,6 +637,13 @@
 - [ ] Aislar la caché de cada usuario y limpiar datos al cerrar o revocar sesión
 - [ ] Validar físicamente el ciclo completo: uso con modo avión y sincronización posterior
 
+## Requisito operativo offline prioritario
+- [ ] Precargar automáticamente el mapa local y los datos autorizados al entrar con Internet
+- [ ] Abrir HORTIMAX sin señal con GPS, mapa local, cartera, fichas e historial previamente consultado
+- [ ] Permitir crear puntos, notas, visitas y recordatorios offline desde la misma interfaz
+- [ ] Sincronizar automáticamente las operaciones idempotentes y refrescar la cartera al recuperar señal
+- [ ] Corregir cualquier corte responsive sin modificar campos, textos, validaciones ni datos de formularios
+
 ## APK actualizado de entrega
 - [x] Recompilar el instalador Android desde la versión consolidada vigente
 - [x] Verificar logo original, cargador Google Maps y exclusión del APK del repositorio
@@ -669,6 +676,12 @@
 - [x] Regresar automáticamente a Google Maps integrado cuando vuelva Internet
 - [x] No abrir una aplicación externa ni modificar el mapa web
 - [x] Empaquetar PMTiles sin compresión para permitir lectura local por rangos en Android
+
+## Visor offline completo dentro de HORTIMAX
+- [ ] Renderizar un mapa vial OSM completo, no una microvista ni un fondo simplificado
+- [ ] Mantener pantalla completa, arrastre, pellizco, zoom, GPS, pines y selección de punto sin señal
+- [ ] Conservar Google Maps e híbrido únicamente al existir conexión
+- [ ] No descargar, clonar ni cachear cartografía o imágenes Google dentro del APK
 
 ## Administración móvil y puntos archivados
 - [x] Compactar y hacer responsive la distribución por departamento en Administración
@@ -757,3 +770,11 @@
 - [x] Diagnosticar por qué Capacitor no conserva la solicitud de foco de la ficha
 - [x] Transferir el punto y zoom mediante un mecanismo compatible con Android
 - [ ] Compilar y confirmar físicamente que el APK iguala el recorrido web
+
+## Datos y operaciones offline por dispositivo
+- [x] Aislar la caché y cola offline por usuario autorizado en el teléfono
+- [x] Limpiar datos operativos locales al cerrar sesión o revocar el dispositivo
+- [x] Conservar la cola pendiente cuando el mismo usuario vuelve a ingresar
+- [x] Encolar de forma idempotente las ediciones de clientes realizadas sin señal
+- [x] Verificar la precarga de ficha, notas, visitas y recordatorios antes de perder señal
+- [x] Actualizar automáticamente la precarga cuando la cartera cambie o vuelva la conexión

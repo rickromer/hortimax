@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AndroidAssetBlobSource, AndroidNativeAssetSource, createOfflineMapStyle, latitudeToTileY, longitudeToTileX, resolveOfflineInitialView } from "./OfflineVectorMap";
+import { AndroidAssetBlobSource, AndroidNativeAssetSource, createOfflineMapStyle, latitudeToTileY, longitudeToTileX, parseOfflineTileUrl, resolveOfflineInitialView } from "./OfflineVectorMap";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("mapa vectorial offline", () => {
@@ -11,8 +11,13 @@ describe("mapa vectorial offline", () => {
   it("incluye la capa vial de las rutas locales", () => {
     const style = createOfflineMapStyle();
     const roads = style.layers?.find(layer => layer.id === "roads");
-    expect(style.sources.paraguay.type).toBe("geojson");
-    expect(roads && "filter" in roads ? roads.filter : null).toEqual(["==", ["get", "_layer"], "streets"]);
+    expect(style.sources.paraguay.type).toBe("vector");
+    expect(roads && "source-layer" in roads ? roads["source-layer"] : null).toBe("streets");
+  });
+
+  it("interpreta las solicitudes de mosaicos del visor interactivo", () => {
+    expect(parseOfflineTileUrl("hortimax-pmtiles://paraguay/14/5683/9407.pbf")).toEqual({ z: 14, x: 5683, y: 9407 });
+    expect(parseOfflineTileUrl("https://otro-mapa/14/5683/9407.pbf")).toBeNull();
   });
 
   it("prioriza el cliente o GPS para que el mapa offline abra a zoom vial", () => {

@@ -1,10 +1,7 @@
 import * as maplibregl from "maplibre-gl";
 import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
-import { VectorTile } from "@mapbox/vector-tile";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
-import type { GeoJSONSource, StyleSpecification } from "maplibre-gl";
+import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { PbfReader } from "pbf";
 import { PMTiles, type Source } from "pmtiles";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { registerPlugin } from "@capacitor/core";
@@ -40,7 +37,8 @@ const CITIES = [
 const CLIENT_COLORS: Record<string, string> = {
   Productor: "#3AA44B", Revendedor: "#E3A008", Cooperativa: "#0BA4A6", Acopio: "#CE0A0A",
 };
-const VECTOR_LAYERS = ["water_polygons", "water_lines", "boundaries", "street_labels", "streets", "buildings"] as const;
+const OFFLINE_PROTOCOL = "hortimax-pmtiles";
+const OFFLINE_SOURCE_URL = `${OFFLINE_PROTOCOL}://paraguay/{z}/{x}/{y}.pbf`;
 
 type OfflineMapAssetPlugin = {
   readRange(options: { offset: number; length: number }): Promise<{ data: string }>;
@@ -101,10 +99,6 @@ function clientColor(type?: string | null) {
   return CLIENT_COLORS[type ?? ""] ?? "#53666A";
 }
 
-function emptyFeatureCollection(): FeatureCollection<Geometry> {
-  return { type: "FeatureCollection", features: [] };
-}
-
 export function longitudeToTileX(longitude: number, zoom: number) {
   return Math.floor(((longitude + 180) / 360) * 2 ** zoom);
 }
@@ -124,37 +118,33 @@ export function resolveOfflineInitialView(
     : { center: [-58.448255, -23.448435] as [number, number], zoom: 6.2 };
 }
 
-async function readVisibleFeatures(archive: PMTiles, map: maplibregl.Map) {
-  const zoom = Math.max(0, Math.min(14, Math.floor(map.getZoom())));
-  const bounds = map.getBounds();
-  const maxIndex = 2 ** zoom - 1;
-  const minX = Math.max(0, longitudeToTileX(bounds.getWest(), zoom) - 1);
-  const maxX = Math.min(maxIndex, longitudeToTileX(bounds.getEast(), zoom) + 1);
-  const minY = Math.max(0, latitudeToTileY(bounds.getNorth(), zoom) - 1);
-  const maxY = Math.min(maxIndex, latitudeToTileY(bounds.getSouth(), zoom) + 1);
-  const reads: Array<Promise<Feature<Geometry>[]>> = [];
+let offlineArchive: PMTiles | null = null;
+let protocolRegistered = false;
 
-  for (let x = minX; x <= maxX; x += 1) {
-    for (let y = minY; y <= maxY; y += 1) {
-      reads.push((async () => {
-        const tileData = await archive.getZxy(zoom, x, y);
-        if (!tileData) return [];
-        const tile = new VectorTile(new PbfReader(new Uint8Array(tileData.data)));
-        const features: Feature<Geometry>[] = [];
-        for (const layerName of VECTOR_LAYERS) {
-          const layer = tile.layers[layerName];
-          if (!layer) continue;
-          for (let index = 0; index < layer.length; index += 1) {
-            const feature = layer.feature(index).toGeoJSON(x, y, zoom) as Feature<Geometry>;
-            feature.properties = { ...(feature.properties ?? {}), _layer: layerName };
-            features.push(feature);
-          }
-        }
-        return features;
-      })());
-    }
+function getOfflineArchive(archiveUrl: string) {
+  if (!offlineArchive) {
+    offlineArchive = new PMTiles(
+      isNativeAndroidApp() ? new AndroidNativeAssetSource() : new AndroidAssetBlobSource(archiveUrl)
+    );
   }
-  return (await Promise.all(reads)).flat();
+  return offlineArchive;
+}
+
+export function parseOfflineTileUrl(url: string) {
+  const match = url.match(/^hortimax-pmtiles:\/\/paraguay\/(\d+)\/(\d+)\/(\d+)\.pbf$/);
+  if (!match) return null;
+  return { z: Number(match[1]), x: Number(match[2]), y: Number(match[3]) };
+}
+
+function registerOfflineProtocol(archiveUrl: string) {
+  if (protocolRegistered) return;
+  maplibregl.addProtocol(OFFLINE_PROTOCOL, async (params, abortController) => {
+    const tileId = parseOfflineTileUrl(params.url);
+    if (!tileId) throw new Error("Solicitud inválida del mapa offline");
+    const tile = await getOfflineArchive(archiveUrl).getZxy(tileId.z, tileId.x, tileId.y, abortController.signal);
+    return { data: tile?.data ?? new ArrayBuffer(0) };
+  });
+  protocolRegistered = true;
 }
 
 export function createOfflineMapStyle(): StyleSpecification {
@@ -162,19 +152,22 @@ export function createOfflineMapStyle(): StyleSpecification {
     version: 8,
     sources: {
       paraguay: {
-        type: "geojson",
-        data: emptyFeatureCollection(),
+        type: "vector",
+        tiles: [OFFLINE_SOURCE_URL],
+        minzoom: 0,
+        maxzoom: 14,
         attribution: "© OpenStreetMap contributors · Geofabrik",
       },
     },
     layers: [
       { id: "background", type: "background", paint: { "background-color": "#e8f0e6" } },
-      { id: "water-polygons", type: "fill", source: "paraguay", filter: ["==", ["get", "_layer"], "water_polygons"], paint: { "fill-color": "#b9dce8" } },
-      { id: "water-lines", type: "line", source: "paraguay", filter: ["==", ["get", "_layer"], "water_lines"], paint: { "line-color": "#79b7cf", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.6, 14, 2.4] } },
-      { id: "boundaries", type: "line", source: "paraguay", filter: ["==", ["get", "_layer"], "boundaries"], paint: { "line-color": "#78917d", "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.8, 10, 1.8], "line-dasharray": [3, 2] } },
-      { id: "road-casing", type: "line", source: "paraguay", filter: ["==", ["get", "_layer"], "streets"], minzoom: 6, paint: { "line-color": "#fff", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.2, 10, 3.5, 14, 7], "line-opacity": 0.92 } },
-      { id: "roads", type: "line", source: "paraguay", filter: ["==", ["get", "_layer"], "streets"], minzoom: 6, paint: { "line-color": ["match", ["get", "kind"], ["motorway", "trunk", "primary"], "#e6a23c", ["secondary", "tertiary"], "#e7c86c", "#c8c5b8"], "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.7, 10, 2, 14, 4.5] } },
-      { id: "buildings", type: "fill", source: "paraguay", filter: ["==", ["get", "_layer"], "buildings"], minzoom: 13, paint: { "fill-color": "#d8d0c4", "fill-outline-color": "#b9afa2", "fill-opacity": 0.85 } },
+      { id: "land", type: "fill", source: "paraguay", "source-layer": "land", paint: { "fill-color": "#edf3e7" } },
+      { id: "water-polygons", type: "fill", source: "paraguay", "source-layer": "water_polygons", paint: { "fill-color": "#b9dce8" } },
+      { id: "water-lines", type: "line", source: "paraguay", "source-layer": "water_lines", paint: { "line-color": "#79b7cf", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.6, 14, 2.4] } },
+      { id: "boundaries", type: "line", source: "paraguay", "source-layer": "boundaries", paint: { "line-color": "#78917d", "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.8, 10, 1.8], "line-dasharray": [3, 2] } },
+      { id: "road-casing", type: "line", source: "paraguay", "source-layer": "streets", minzoom: 5, paint: { "line-color": "#fffdf7", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 3.4, 14, 8], "line-opacity": 0.95 } },
+      { id: "roads", type: "line", source: "paraguay", "source-layer": "streets", minzoom: 5, paint: { "line-color": "#d7c68e", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.55, 10, 1.8, 14, 4.8] } },
+      { id: "buildings", type: "fill", source: "paraguay", "source-layer": "buildings", minzoom: 13, paint: { "fill-color": "#d8d0c4", "fill-outline-color": "#b9afa2", "fill-opacity": 0.85 } },
     ],
   };
 }
@@ -187,7 +180,6 @@ export function OfflineVectorMap({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRefs = useRef<maplibregl.Marker[]>([]);
   const cityRefs = useRef<maplibregl.Marker[]>([]);
-  const tileLoadGeneration = useRef(0);
   const onMapClickRef = useRef(onMapClick);
   const onCenterChangedRef = useRef(onCenterChanged);
   const preferredFocusRef = useRef(focus ?? userPosition ?? null);
@@ -203,9 +195,7 @@ export function OfflineVectorMap({
   useEffect(() => {
     if (!containerRef.current) return;
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
-    const archive = new PMTiles(
-      isNativeAndroidApp() ? new AndroidNativeAssetSource() : new AndroidAssetBlobSource(archiveUrl)
-    );
+    registerOfflineProtocol(archiveUrl);
     const initialView = resolveOfflineInitialView(focus, userPosition);
     if (focus && focusZoom) initialView.zoom = focusZoom;
     const map = new maplibregl.Map({
@@ -229,19 +219,6 @@ export function OfflineVectorMap({
     });
 
     let initialized = false;
-    const loadVisibleTiles = async () => {
-      const generation = ++tileLoadGeneration.current;
-      try {
-        const features = await readVisibleFeatures(archive, map);
-        if (generation !== tileLoadGeneration.current || !map.getSource("paraguay")) return;
-        (map.getSource("paraguay") as GeoJSONSource).setData({ type: "FeatureCollection", features });
-        setLoadError(null);
-      } catch (error) {
-        if (generation === tileLoadGeneration.current) {
-          setLoadError(error instanceof Error ? error.message : "No se pudo leer el paquete offline");
-        }
-      }
-    };
     const initialize = () => {
       if (initialized) return;
       initialized = true;
@@ -253,14 +230,13 @@ export function OfflineVectorMap({
         label.textContent = name;
         return new maplibregl.Marker({ element: label, anchor: "center" }).setLngLat([longitude, latitude]).addTo(map);
       });
-      void loadVisibleTiles();
+      setLoadError(null);
     };
     map.on("style.load", initialize);
     if (map.isStyleLoaded()) initialize();
     const timeout = window.setTimeout(() => {
       if (!initialized) setLoadError("El visor local no inició. Reinstalá el APK completo.");
     }, 8_000);
-    map.on("moveend", loadVisibleTiles);
 
     return () => {
       window.clearTimeout(timeout);

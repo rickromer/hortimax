@@ -186,7 +186,18 @@ export function SiteFormSheet({
       onOpenChange(false);
       if (site?.id) onSaved?.(site.id);
     },
-    onError: error => toast.error(error.message),
+    onError: (error, input) => {
+      if (isNetworkFailure(error)) {
+        void enqueueOfflineOperation("site.update", input as Record<string, unknown>)
+          .then(() => {
+            toast.success("Cambios guardados en el teléfono. Se sincronizarán al recuperar señal.");
+            onOpenChange(false);
+          })
+          .catch(queueError => toast.error(queueError instanceof Error ? queueError.message : "No se pudo guardar sin conexión"));
+        return;
+      }
+      toast.error(error.message);
+    },
   });
 
   const busy = createSite.isPending || updateSite.isPending;
@@ -223,6 +234,15 @@ export function SiteFormSheet({
     };
 
     if (mode === "edit" && initial?.id) {
+      if (isOffline()) {
+        void enqueueOfflineOperation("site.update", { id: initial.id, ...payload })
+          .then(() => {
+            toast.success("Cambios guardados en el teléfono. Se sincronizarán al recuperar señal.");
+            onOpenChange(false);
+          })
+          .catch(error => toast.error(error instanceof Error ? error.message : "No se pudo guardar sin conexión"));
+        return;
+      }
       updateSite.mutate({ id: initial.id, ...payload });
       return;
     }

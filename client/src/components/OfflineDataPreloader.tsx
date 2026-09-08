@@ -3,17 +3,27 @@ import { useEffect, useRef, useState } from "react";
 
 const DETAIL_BATCH_SIZE = 8;
 
+export function offlinePreloadKey(userId: number, sites: Array<{ id: number }>) {
+  return `${userId}:${sites.map(site => site.id).sort((left, right) => left - right).join(",")}`;
+}
+
 export function OfflineDataPreloader() {
   const utils = trpc.useUtils();
   const me = trpc.auth.me.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
   const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
   const sites = trpc.sites.list.useQuery({}, { enabled: Boolean(me.data && online), staleTime: 5 * 60 * 1000 });
   trpc.calendar.timeline.useQuery(undefined, { enabled: Boolean(me.data && online), staleTime: 5 * 60 * 1000 });
-  const runningForUser = useRef<number | null>(null);
+  const runningForPortfolio = useRef<string | null>(null);
 
   useEffect(() => {
-    const goOnline = () => setOnline(true);
-    const goOffline = () => setOnline(false);
+    const goOnline = () => {
+      runningForPortfolio.current = null;
+      setOnline(true);
+    };
+    const goOffline = () => {
+      runningForPortfolio.current = null;
+      setOnline(false);
+    };
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);
     return () => {
@@ -23,16 +33,18 @@ export function OfflineDataPreloader() {
   }, []);
 
   useEffect(() => {
-    if (!online || !me.data || !sites.data || runningForUser.current === me.data.id) return;
+    if (!online || !me.data || !sites.data) return;
     const userId = me.data.id;
     const siteData = sites.data;
-    runningForUser.current = userId;
+    const preloadKey = offlinePreloadKey(userId, siteData);
+    if (runningForPortfolio.current === preloadKey) return;
+    runningForPortfolio.current = preloadKey;
     let cancelled = false;
     void (async () => {
       for (let index = 0; index < siteData.length && !cancelled; index += DETAIL_BATCH_SIZE) {
         const batch = siteData.slice(index, index + DETAIL_BATCH_SIZE);
         await Promise.all(
-          batch.map(site => utils.sites.detail.prefetch({ id: site.id }, { staleTime: 12 * 60 * 60 * 1000 }))
+          batch.map(site => utils.sites.detail.prefetch({ id: site.id }, { staleTime: 0 }))
         );
       }
       if (!cancelled) {
@@ -43,7 +55,7 @@ export function OfflineDataPreloader() {
       }
     })().catch(error => {
       console.warn("No se pudo completar la precarga offline", error);
-      runningForUser.current = null;
+      runningForPortfolio.current = null;
     });
     return () => {
       cancelled = true;

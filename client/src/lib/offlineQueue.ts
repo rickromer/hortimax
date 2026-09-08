@@ -1,4 +1,4 @@
-export type OfflineOperationKind = "site.create" | "site.checkin" | "note.create" | "followup.create";
+export type OfflineOperationKind = "site.create" | "site.update" | "site.checkin" | "note.create" | "followup.create";
 
 export type OfflineOperation = {
   id: string;
@@ -86,6 +86,13 @@ export async function listOfflineOperations(): Promise<OfflineOperation[]> {
 export async function removeOfflineOperation(id: string) {
   if (!browserAvailable()) return;
   await withStore("readwrite", store => store.delete(id));
+  notifyChange();
+}
+
+/** El cierre de sesión revoca también operaciones locales pendientes de ese usuario. */
+export async function clearOfflineOperations() {
+  if (!browserAvailable()) return;
+  await withStore("readwrite", store => store.clear());
   notifyChange();
 }
 

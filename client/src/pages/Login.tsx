@@ -8,6 +8,7 @@ import { clearSavedMapView, requestGpsCenterAfterLogin } from "@/lib/mapSessionS
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { getRememberedOfflineUser, isNetworkFailure, rememberOfflineCredential, setOfflineSession, verifyOfflineCredential } from "@/lib/offlineAuth";
+import { prepareOfflineOperationalDataForUser } from "@/lib/offlineOperationalData";
 import { saveNativeSessionToken } from "@/lib/nativeSession";
 import { TRPCClientError } from "@trpc/client";
 import { ArrowLeft, KeyRound, Loader2, MapPinned, ShieldCheck } from "lucide-react";
@@ -67,6 +68,7 @@ export default function Login() {
 
   const completeOnlineLogin = async (response: any) => {
     const { mobileSessionToken, ...user } = response;
+    await prepareOfflineOperationalDataForUser(user.id);
     saveNativeSessionToken(mobileSessionToken);
     await rememberOfflineCredential(user, password);
     setOfflineSession(user);

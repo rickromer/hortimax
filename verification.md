@@ -486,6 +486,8 @@ El dominio publicado respondió 404 para `/` durante la comprobación más recie
 
 La traza publicada confirmó que `auth.me` responde correctamente con HTTP 200 y usuario nulo en aproximadamente 0,5 segundos desde `/acceso`; no es la consulta de sesión la que bloquea el formulario. La causa encontrada para instalaciones ya existentes era el trabajador de servicio: su precarga incluía `/`, ruta que el borde publicado respondió 404. Eso hace fallar `cache.addAll`, impide instalar el trabajador nuevo y conserva el cliente antiguo. Se actualizó a `hortimax-shell-v5` y su precarga contiene solo `/acceso` y el manifiesto, ambos recursos publicados válidos. Las pruebas completas volvieron a aprobar **140 pruebas** en 55 archivos, con 1 archivo omitido (**141 pruebas** en total), junto con TypeScript y build.
 
+Después de autenticar, `Login` esperaba la generación local del verificador PBKDF2 para habilitar el ingreso offline antes de navegar. Esa tarea es secundaria al login online y puede demorar o no resolver en ciertos navegadores móviles, dejando la interfaz aparentemente cargando. La navegación a `/mapa` y la sesión local ahora se ejecutan inmediatamente después de conservar el aislamiento de cartera; la credencial offline se genera en segundo plano con captura de error. La precarga detallada de clientes continúa ejecutándose después de ingresar mediante el componente de precarga y no bloquea el mapa. La validación completa aprobó **141 pruebas** en 56 archivos, con 1 archivo omitido (**142 pruebas** en total), junto con TypeScript y build.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

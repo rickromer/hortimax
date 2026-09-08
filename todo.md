@@ -832,3 +832,8 @@
 - [x] Trazar la respuesta de la ruta publicada, la carga de JavaScript y la consulta auth.me
 - [x] Corregir el punto exacto de bloqueo sin alterar usuarios, datos ni permisos
 - [ ] Validar el mismo flujo en condiciones de navegador móvil antes de solicitar otra prueba
+
+## Bloqueo posterior al inicio de sesión
+- [x] Trazar la preparación de sesión y la precarga offline después de validar usuario y contraseña
+- [x] Permitir entrar al mapa de inmediato sin esperar indefinidamente datos secundarios
+- [ ] Confirmar desde el teléfono que el login llega al mapa antes de retomar el APK

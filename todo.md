@@ -800,3 +800,9 @@
 - [x] Usar Google Maps normal mediante SDK nativo únicamente cuando la conexión sea utilizable
 - [x] Usar OSM local vial con referencias, pines, pan y zoom únicamente sin conexión
 - [ ] Confirmar ambos modos en teléfono antes de declararlos disponibles
+
+## Regresión APK 1.0.23 — arranque bloqueado
+- [x] Diagnosticar por qué el APK queda detenido en “Iniciando” antes de mostrar el acceso
+- [x] Corregir únicamente la inicialización Android que bloquea el login, sin alterar la web estable
+- [x] Compilar el APK con la recuperación de arranque y validarlo técnicamente
+- [ ] Comprobar físicamente que el acceso vuelve a abrir antes de probar los mapas

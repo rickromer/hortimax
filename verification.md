@@ -460,6 +460,14 @@ Cuando Android informa falta de conexión, `FieldMap` no crea el mapa nativo: co
 
 La prueba física continúa pendiente. Para declararlo funcionando se debe instalar 1.0.23 y verificar **primero con Internet** que Google Maps no muestre el aviso, responda a pan/zoom y pines; después cerrar la aplicación, activar modo avión y comprobar calles/referencias OSM, GPS, pan/zoom y Nuevo punto.
 
+## APK 1.0.24: recuperación ante bloqueo de arranque Android
+
+El reporte físico de 1.0.23 indicó que el APK quedaba indefinidamente en “Iniciando” antes de llegar al acceso, mientras la web continúa operativa. Se aisló el riesgo a inicializaciones nativas/HTTP propias del APK: una llamada `CapacitorHttp` sin respuesta no tenía un límite de tiempo y el servidor loopback del mapa se iniciaba al cargar el bridge, incluso sin abrir el mapa.
+
+La versión 1.0.24 aplica dos cambios exclusivamente Android. Primero, toda petición HTTP nativa tiene ahora un límite de 12 segundos; una comunicación detenida pasa a error controlado y permite al login ofrecer su flujo normal u offline, en lugar de bloquearse indefinidamente. Segundo, el servidor PMTiles ya no se abre durante el inicio de la aplicación: se crea solo cuando MapLibre solicita el mapa sin señal. No cambia el formulario, datos, roles, permisos, sesiones web ni la interfaz conectada de la web.
+
+La validación técnica aprobó **136 pruebas** en 52 archivos, con 1 archivo omitido (**137 pruebas** en total); TypeScript, build web y Gradle Android aprobaron. El APK 1.0.24 empaqueta Google Maps nativo, el servidor OSM local diferido y el PMTiles sin compresión. SHA-256: `520e0f919f20f9d5067a75722aa72587ae6f71bdb602dcbbd6478c248f5b2565`. La comprobación física del login aún es obligatoria antes de reanudar la prueba de mapas.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

@@ -488,6 +488,8 @@ La traza publicada confirmó que `auth.me` responde correctamente con HTTP 200 y
 
 Después de autenticar, `Login` esperaba la generación local del verificador PBKDF2 para habilitar el ingreso offline antes de navegar. Esa tarea es secundaria al login online y puede demorar o no resolver en ciertos navegadores móviles, dejando la interfaz aparentemente cargando. La navegación a `/mapa` y la sesión local ahora se ejecutan inmediatamente después de conservar el aislamiento de cartera; la credencial offline se genera en segundo plano con captura de error. La precarga detallada de clientes continúa ejecutándose después de ingresar mediante el componente de precarga y no bloquea el mapa. La validación completa aprobó **141 pruebas** en 56 archivos, con 1 archivo omitido (**142 pruebas** en total), junto con TypeScript y build.
 
+La causa restante estaba en la recarga posterior al login: aunque el formulario publicado abre en `/acceso`, el navegador se enviaba a `/mapa` después de aceptar usuario y contraseña. El borde de publicación puede rechazar esa ruta profunda antes de cargar React. La entrada `/acceso` ahora monta directamente `FieldMap` cuando `auth.me` devuelve una sesión válida; `Login` recarga únicamente `/acceso`. Así, el ingreso autenticado no depende de que el borde responda `/mapa`. Las pruebas completas aprobaron **142 pruebas** en 57 archivos, con 1 archivo omitido (**143 pruebas** en total), junto con TypeScript y build. La confirmación en teléfono sigue pendiente.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

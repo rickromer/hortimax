@@ -33,7 +33,7 @@ export default function Login() {
   const showInitialSetup = shouldShowInitialSetup(needsSetup, window.location.search);
 
   useEffect(() => {
-    if (!showInitialSetup && !authLoading && rememberedUser) window.location.replace("/mapa");
+    if (!showInitialSetup && !authLoading && rememberedUser) window.location.replace("/acceso");
   }, [authLoading, rememberedUser, showInitialSetup]);
 
   const finish = () => {
@@ -41,7 +41,7 @@ export default function Login() {
     void utils.auth.needsSetup.invalidate().catch(() => undefined);
     clearSavedMapView();
     requestGpsCenterAfterLogin();
-    window.location.replace("/mapa");
+    window.location.replace("/acceso");
   };
 
   const checkUser = trpc.auth.checkUsername.useMutation({

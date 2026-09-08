@@ -837,3 +837,8 @@
 - [x] Trazar la preparación de sesión y la precarga offline después de validar usuario y contraseña
 - [x] Permitir entrar al mapa de inmediato sin esperar indefinidamente datos secundarios
 - [ ] Confirmar desde el teléfono que el login llega al mapa antes de retomar el APK
+
+## Incompatibilidad de navegación publicada /mapa
+- [x] Eliminar la navegación de recarga hacia /mapa después del login y montar el mapa desde /acceso autenticado
+- [x] Validar que el acceso autenticado no solicite una ruta profunda al borde publicado
+- [ ] Confirmar desde el teléfono que inicia sesión y entra al mapa

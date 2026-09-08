@@ -58,10 +58,21 @@ function Guard({
   return <Component />;
 }
 
+/**
+ * El borde publicado garantiza la ruta /acceso. Al tener sesión, se monta el
+ * campo desde esa misma entrada en lugar de recargar /mapa, una ruta profunda
+ * que algunos navegadores móviles recibían como 404 antes de entregar React.
+ */
+function AccessEntry() {
+  const { user, loading, startupDiagnostic } = useAuth();
+  if (loading) return <Splash diagnosticCode={startupDiagnostic} />;
+  return user ? <FieldMap /> : <Login />;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/acceso" component={Login} />
+      <Route path="/acceso" component={AccessEntry} />
 
       {/* El campo y los datos operativos requieren siempre una sesión válida. */}
       <Route path="/">{() => <Redirect to="/acceso" />}</Route>

@@ -778,3 +778,9 @@
 - [x] Encolar de forma idempotente las ediciones de clientes realizadas sin señal
 - [x] Verificar la precarga de ficha, notas, visitas y recordatorios antes de perder señal
 - [x] Actualizar automáticamente la precarga cuando la cartera cambie o vuelva la conexión
+
+## Incidencia física APK 1.0.20 — mapa y formulario
+- [x] Corregir el visor Android sin señal que muestra pines pero no las calles del mapa local
+- [x] Ajustar Nuevo punto para que use el ancho disponible y permita desplazarse por todo el formulario en Android
+- [x] Cubrir ambas correcciones con pruebas y recompilar un APK aislado sin tocar la web estable
+- [ ] Confirmar físicamente mapa vial y formulario corregido en el teléfono

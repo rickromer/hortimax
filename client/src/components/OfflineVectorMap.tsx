@@ -2,7 +2,7 @@ import * as maplibregl from "maplibre-gl";
 import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { PMTiles, type Source } from "pmtiles";
+import { PMTiles, Protocol, type Source } from "pmtiles";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { registerPlugin } from "@capacitor/core";
 import { isNativeAndroidApp } from "@/lib/nativeSession";
@@ -37,8 +37,8 @@ const CITIES = [
 const CLIENT_COLORS: Record<string, string> = {
   Productor: "#3AA44B", Revendedor: "#E3A008", Cooperativa: "#0BA4A6", Acopio: "#CE0A0A",
 };
-const OFFLINE_PROTOCOL = "hortimax-pmtiles";
-const OFFLINE_SOURCE_URL = `${OFFLINE_PROTOCOL}://paraguay/{z}/{x}/{y}.pbf`;
+const OFFLINE_PROTOCOL = "pmtiles";
+const OFFLINE_ARCHIVE_KEY = "hortimax-native-asset:paraguay-shortbread-1.0.pmtiles";
 
 type OfflineMapAssetPlugin = {
   readRange(options: { offset: number; length: number }): Promise<{ data: string }>;
@@ -86,7 +86,7 @@ export class AndroidAssetBlobSource implements Source {
 /** Fuente de APK: lee rangos desde AssetManager, sin HTTP del WebView. */
 export class AndroidNativeAssetSource implements Source {
   getKey() {
-    return "hortimax-native-asset:paraguay-shortbread-1.0.pmtiles";
+    return OFFLINE_ARCHIVE_KEY;
   }
 
   async getBytes(offset: number, length: number) {
@@ -119,6 +119,7 @@ export function resolveOfflineInitialView(
 }
 
 let offlineArchive: PMTiles | null = null;
+let offlineProtocol: Protocol | null = null;
 let protocolRegistered = false;
 
 function getOfflineArchive(archiveUrl: string) {
@@ -131,29 +132,28 @@ function getOfflineArchive(archiveUrl: string) {
 }
 
 export function parseOfflineTileUrl(url: string) {
-  const match = url.match(/^hortimax-pmtiles:\/\/paraguay\/(\d+)\/(\d+)\/(\d+)\.pbf$/);
+  const match = url.match(/^pmtiles:\/\/(.+)\/(\d+)\/(\d+)\/(\d+)$/);
   if (!match) return null;
-  return { z: Number(match[1]), x: Number(match[2]), y: Number(match[3]) };
+  return { archiveKey: match[1], z: Number(match[2]), x: Number(match[3]), y: Number(match[4]) };
 }
 
-function registerOfflineProtocol(archiveUrl: string) {
+function registerOfflineProtocol(archive: PMTiles) {
+  if (!offlineProtocol) offlineProtocol = new Protocol({ metadata: false });
+  offlineProtocol.add(archive);
   if (protocolRegistered) return;
-  maplibregl.addProtocol(OFFLINE_PROTOCOL, async (params, abortController) => {
-    const tileId = parseOfflineTileUrl(params.url);
-    if (!tileId) throw new Error("Solicitud inválida del mapa offline");
-    const tile = await getOfflineArchive(archiveUrl).getZxy(tileId.z, tileId.x, tileId.y, abortController.signal);
-    return { data: tile?.data ?? new ArrayBuffer(0) };
-  });
+  maplibregl.addProtocol(OFFLINE_PROTOCOL, offlineProtocol.tile);
   protocolRegistered = true;
 }
 
-export function createOfflineMapStyle(): StyleSpecification {
+export function createOfflineMapStyle(archiveKey = OFFLINE_ARCHIVE_KEY): StyleSpecification {
   return {
     version: 8,
     sources: {
       paraguay: {
         type: "vector",
-        tiles: [OFFLINE_SOURCE_URL],
+        // Protocol de PMTiles: MapLibre solicita z/x/y sin extensión; el
+        // adaptador oficial resuelve el archivo registrado desde AssetManager.
+        tiles: [`${OFFLINE_PROTOCOL}://${archiveKey}/{z}/{x}/{y}`],
         minzoom: 0,
         maxzoom: 14,
         attribution: "© OpenStreetMap contributors · Geofabrik",
@@ -195,12 +195,13 @@ export function OfflineVectorMap({
   useEffect(() => {
     if (!containerRef.current) return;
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
-    registerOfflineProtocol(archiveUrl);
+    const archive = getOfflineArchive(archiveUrl);
+    registerOfflineProtocol(archive);
     const initialView = resolveOfflineInitialView(focus, userPosition);
     if (focus && focusZoom) initialView.zoom = focusZoom;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: createOfflineMapStyle(),
+      style: createOfflineMapStyle(archive.source.getKey()),
       center: initialView.center,
       zoom: initialView.zoom,
       minZoom: 4.6,

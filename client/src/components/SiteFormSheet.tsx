@@ -272,7 +272,7 @@ export function SiteFormSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-lg max-h-[92dvh] overflow-x-hidden overflow-y-auto px-4 py-5 sm:px-6">
+      <DialogContent className="box-border !flex h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-lg flex-col gap-3 overflow-hidden px-3 py-4 sm:h-auto sm:max-h-[92dvh] sm:w-[calc(100vw-1.5rem)] sm:px-6 sm:py-5">
         <DialogHeader>
           <DialogTitle>
             {mode === "edit" ? "Editar punto" : "Nuevo punto de cliente"}
@@ -284,8 +284,9 @@ export function SiteFormSheet({
           </DialogDescription>
         </DialogHeader>
 
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5">
         {mode === "create" && (
-          <div className="rounded-lg bg-secondary px-3 py-2.5 text-sm space-y-2.5">
+          <div className="rounded-lg bg-secondary px-3 py-2 text-sm space-y-2">
             <div className="flex items-center gap-2.5">
             <MapPin className="h-4 w-4 text-primary shrink-0" />
             {selectedCoords ? (
@@ -301,7 +302,7 @@ export function SiteFormSheet({
               <span className="text-muted-foreground flex-1">Todavía no elegiste una ubicación</span>
             )}
             </div>
-            <div className="flex flex-col min-[420px]:flex-row min-[420px]:flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2 min-[420px]:flex min-[420px]:flex-row min-[420px]:flex-wrap">
               {onRequestLocation && (
                 <Button
                   type="button"
@@ -331,13 +332,13 @@ export function SiteFormSheet({
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="h-9 w-full min-[420px]:w-auto"
+                className="col-span-2 h-9 w-full min-[420px]:w-auto"
                 onClick={() => setShowCoordinates(show => !show)}>
                 Coordenadas
               </Button>
             </div>
             {showCoordinates && (
-              <div className="grid grid-cols-1 min-[420px]:grid-cols-[1fr_1fr_auto] gap-2 items-end pt-1">
+              <div className="grid grid-cols-2 min-[420px]:grid-cols-[1fr_1fr_auto] gap-2 items-end pt-1">
                 <div className="space-y-1">
                   <Label htmlFor="point-lat" className="text-xs">Latitud</Label>
                   <Input
@@ -360,7 +361,7 @@ export function SiteFormSheet({
                     className="h-9 text-xs"
                   />
                 </div>
-                <Button type="button" size="sm" className="h-9 w-full min-[420px]:w-auto" onClick={applyManualCoordinates}>
+                <Button type="button" size="sm" className="col-span-2 h-9 w-full min-[420px]:col-span-1 min-[420px]:w-auto" onClick={applyManualCoordinates}>
                   Usar
                 </Button>
               </div>
@@ -368,7 +369,7 @@ export function SiteFormSheet({
           </div>
         )}
 
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="space-y-3 pb-1 [&_input]:h-10">
           <div className="space-y-1.5">
             <Label htmlFor="site-name">Nombre del cliente *</Label>
             <Input
@@ -486,6 +487,7 @@ export function SiteFormSheet({
             </Button>
           </DialogFooter>
         </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

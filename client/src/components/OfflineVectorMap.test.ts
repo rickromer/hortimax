@@ -11,12 +11,16 @@ describe("mapa vectorial offline", () => {
   it("incluye la capa vial de las rutas locales", () => {
     const style = createOfflineMapStyle();
     const roads = style.layers?.find(layer => layer.id === "roads");
+    const source = style.sources.paraguay;
     expect(style.sources.paraguay.type).toBe("vector");
+    expect("tiles" in source ? source.tiles : null).toEqual([
+      "pmtiles://hortimax-native-asset:paraguay-shortbread-1.0.pmtiles/{z}/{x}/{y}",
+    ]);
     expect(roads && "source-layer" in roads ? roads["source-layer"] : null).toBe("streets");
   });
 
-  it("interpreta las solicitudes de mosaicos del visor interactivo", () => {
-    expect(parseOfflineTileUrl("hortimax-pmtiles://paraguay/14/5683/9407.pbf")).toEqual({ z: 14, x: 5683, y: 9407 });
+  it("interpreta las solicitudes del protocolo PMTiles compatible con MapLibre", () => {
+    expect(parseOfflineTileUrl("pmtiles://hortimax-native-asset:paraguay-shortbread-1.0.pmtiles/14/5683/9407")).toEqual({ archiveKey: "hortimax-native-asset:paraguay-shortbread-1.0.pmtiles", z: 14, x: 5683, y: 9407 });
     expect(parseOfflineTileUrl("https://otro-mapa/14/5683/9407.pbf")).toBeNull();
   });
 

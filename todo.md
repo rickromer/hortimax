@@ -817,3 +817,8 @@
 - [x] Comparar la versión publicada con el último checkpoint web estable comprobado por el usuario
 - [x] Restaurar la web estable sin modificar la base de datos ni los formularios
 - [ ] Confirmar desde el teléfono que desaparece la pantalla de carga antes de volver al APK
+
+## Login HORTIMAX — corrección dentro del proyecto
+- [x] Reproducir el inicio de sesión web móvil con la misma ruta de HORTIMAX
+- [x] Corregir el bloqueo de acceso desde la aplicación sin derivar el flujo de HORTIMAX a soporte externo
+- [ ] Confirmar desde el teléfono el acceso recuperado antes de reanudar el APK

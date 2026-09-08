@@ -476,6 +476,10 @@ En el entorno móvil de verificación, las rutas de acceso y de campo cargaron s
 
 Como protección adicional ante el bloqueo persistente informado, `useAuth` libera el guard de ruta después de ocho segundos si `auth.me` permanece cargando, o inmediatamente si TanStack Query informa que la consulta está pausada. En ambos casos una sesión local previamente autorizada puede usarse en modo offline; sin ella, la ruta protegida redirige a `/acceso` en vez de permanecer en “Cargando”. La modificación se limita al estado transitorio de arranque y no toca usuarios, datos, formularios ni permisos. La regresión completa aprobó **139 pruebas** en 54 archivos, con 1 archivo omitido (**140 pruebas** en total), junto con TypeScript y build.
 
+La comprobación publicada posterior abrió la raíz `/` y mostró el formulario de acceso HORTIMAX. La ruta directa `/mapa` respondió 404 desde el borde de publicación antes de entregar el cliente React, lo que no corresponde al comportamiento esperado para un enlace profundo. La recuperación de login debe preservar la raíz operativa y eliminar la dependencia de que el navegador/PWA reabra una ruta protegida directamente.
+
+La manifestación instalada de HORTIMAX iniciaba en `/mapa`, precisamente la ruta profunda que el borde publicado devolvió como 404. Se corrigió `start_url` a `/`, que sí entrega el portal y redirige de forma interna al acceso cuando no existe una sesión. Sumado al límite de carga de autenticación, esto evita tanto el 404 al abrir la instalación como el splash permanente si la consulta de sesión queda suspendida. La validación completa aprobó **140 pruebas** en 55 archivos, con 1 archivo omitido (**141 pruebas** en total), junto con TypeScript y build.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

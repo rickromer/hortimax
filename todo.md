@@ -806,3 +806,9 @@
 - [x] Corregir únicamente la inicialización Android que bloquea el login, sin alterar la web estable
 - [x] Compilar el APK con la recuperación de arranque y validarlo técnicamente
 - [ ] Comprobar físicamente que el acceso vuelve a abrir antes de probar los mapas
+
+## Incidencia crítica web móvil — carga detenida
+- [x] Diagnosticar por qué el navegador móvil queda detenido en “Cargando Portal de Seguimiento a Clientes HORTIMAX…”
+- [x] Restaurar el acceso web estable sin alterar datos, formularios, roles ni rutas operativas
+- [ ] Verificar acceso en navegador móvil y escritorio antes de retomar cualquier trabajo de APK
+- [ ] Mantener suspendidos los cambios Android hasta recuperar y confirmar la web

@@ -9,4 +9,8 @@ describe("transporte HTTP nativo", () => {
   it("rechaza una solicitud detenida en lugar de bloquear el arranque", async () => {
     await expect(awaitWithTimeout(new Promise<never>(() => {}), 10)).rejects.toThrow("tardó demasiado");
   });
+
+  it("mantiene el mismo límite de recuperación para solicitudes web y Android", async () => {
+    await expect(awaitWithTimeout(Promise.resolve(new Response("ok")), 20)).resolves.toHaveProperty("status", 200);
+  });
 });

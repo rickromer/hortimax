@@ -468,6 +468,12 @@ La versión 1.0.24 aplica dos cambios exclusivamente Android. Primero, toda peti
 
 La validación técnica aprobó **136 pruebas** en 52 archivos, con 1 archivo omitido (**137 pruebas** en total); TypeScript, build web y Gradle Android aprobaron. El APK 1.0.24 empaqueta Google Maps nativo, el servidor OSM local diferido y el PMTiles sin compresión. SHA-256: `520e0f919f20f9d5067a75722aa72587ae6f71bdb602dcbbd6478c248f5b2565`. La comprobación física del login aún es obligatoria antes de reanudar la prueba de mapas.
 
+## Incidencia web móvil reportada el 8 de septiembre de 2026
+
+La evidencia del usuario muestra Chrome móvil detenido en la pantalla de carga de una ruta protegida. La comprobación independiente del dominio publicado abrió correctamente `/acceso` y la consulta pública `auth.me` respondió HTTP 200 con usuario nulo en menos de cinco segundos. Por tanto, no hay evidencia de caída general del servidor ni de la API de sesión; la recuperación se concentra en evitar que una petición web móvil pendiente deje el componente de protección en carga indefinida y en actualizar la caché de aplicación controlada por el navegador.
+
+En el entorno móvil de verificación, las rutas de acceso y de campo cargaron sin quedar en el splash. La sesión de prueba existente redirigió `/acceso` a campo, comportamiento esperado para una sesión activa. El error de Google Maps visible en ese entorno de pruebas es independiente de la recuperación de acceso y no se interpreta como fallo de autenticación ni del servidor web.
+
 ### Referencias
 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)

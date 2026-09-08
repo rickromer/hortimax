@@ -1,4 +1,4 @@
-const CACHE_NAME = "hortimax-shell-v2";
+const CACHE_NAME = "hortimax-shell-v3";
 const APP_SHELL = ["/", "/acceso", "/manifest.webmanifest"];
 
 self.addEventListener("install", event => {

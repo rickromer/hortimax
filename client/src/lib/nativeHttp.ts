@@ -23,7 +23,7 @@ export async function awaitWithTimeout<T>(promise: Promise<T>, timeoutMs = NATIV
  * WebView para autenticar el acceso al portal publicado.
  */
 export async function nativeMobileFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  if (!Capacitor.isNativePlatform()) return globalThis.fetch(input, init);
+  if (!Capacitor.isNativePlatform()) return awaitWithTimeout(globalThis.fetch(input, init));
 
   const request = input instanceof Request ? input : new Request(input, init);
   const headers = Object.fromEntries(request.headers.entries());

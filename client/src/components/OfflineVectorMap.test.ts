@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AndroidAssetBlobSource, AndroidNativeAssetSource, createOfflineMapStyle, latitudeToTileY, longitudeToTileX, parseOfflineTileUrl, resolveOfflineInitialView } from "./OfflineVectorMap";
+import { AndroidAssetBlobSource, BrowserRangeSource, createOfflineMapStyle, latitudeToTileY, longitudeToTileX, parseOfflineTileUrl, resolveOfflineInitialView } from "./OfflineVectorMap";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("mapa vectorial offline", () => {
@@ -43,7 +43,24 @@ describe("mapa vectorial offline", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("expone una fuente nativa para evitar HTTP Range dentro del APK", () => {
-    expect(new AndroidNativeAssetSource().getKey()).toContain("hortimax-native-asset");
+  it("solicita solo el rango requerido cuando se usa el visor de diagnóstico", async () => {
+    const originalFetch = globalThis.fetch;
+    const fetchMock = vi.fn().mockResolvedValue(new Response(new Uint8Array([1, 2]), { status: 206 }));
+    globalThis.fetch = fetchMock;
+
+    const source = new BrowserRangeSource("https://local/offline/paraguay.pmtiles");
+    expect([...new Uint8Array((await source.getBytes(10, 2)).data)]).toEqual([1, 2]);
+    expect(fetchMock).toHaveBeenCalledWith("https://local/offline/paraguay.pmtiles", {
+      headers: { Range: "bytes=10-11" },
+    });
+    globalThis.fetch = originalFetch;
+  });
+
+  it("vincula el estilo a una URL local HTTP compatible con workers MapLibre", () => {
+    const style = createOfflineMapStyle("http://127.0.0.1:43121/paraguay-shortbread-1.0.pmtiles");
+    const source = style.sources.paraguay;
+    expect("tiles" in source ? source.tiles : null).toEqual([
+      "pmtiles://http://127.0.0.1:43121/paraguay-shortbread-1.0.pmtiles/{z}/{x}/{y}",
+    ]);
   });
 });

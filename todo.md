@@ -784,3 +784,9 @@
 - [x] Ajustar Nuevo punto para que use el ancho disponible y permita desplazarse por todo el formulario en Android
 - [x] Cubrir ambas correcciones con pruebas y recompilar un APK aislado sin tocar la web estable
 - [ ] Confirmar físicamente mapa vial y formulario corregido en el teléfono
+
+## Bloqueo confirmado APK 1.0.21 — mosaicos invisibles
+- [x] Trazar la lectura Android del PMTiles, la descompresión MVT y las capas vectoriales realmente entregadas a MapLibre
+- [x] Sustituir la ruta que mantiene el fondo vacío por un render local comprobable sin alterar Google Maps web
+- [x] Recompilar el APK solo después de verificar mosaicos y calles locales
+- [ ] Probar físicamente el APK recompilado con modo avión antes de entregar como resuelto

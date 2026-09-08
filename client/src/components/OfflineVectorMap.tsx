@@ -41,17 +41,10 @@ const OFFLINE_PROTOCOL = "pmtiles";
 const OFFLINE_ARCHIVE_KEY = "hortimax-native-asset:paraguay-shortbread-1.0.pmtiles";
 
 type OfflineMapAssetPlugin = {
-  readRange(options: { offset: number; length: number }): Promise<{ data: string }>;
+  getMapUrl(): Promise<{ url: string }>;
 };
 
 const offlineMapAsset = registerPlugin<OfflineMapAssetPlugin>("OfflineMapAsset");
-
-function decodeBase64Range(value: string) {
-  const binary = atob(value);
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
-  return bytes.buffer;
-}
 
 /**
  * El servidor de activos de Capacitor no responde de forma uniforme a solicitudes
@@ -83,15 +76,24 @@ export class AndroidAssetBlobSource implements Source {
   }
 }
 
-/** Fuente de APK: lee rangos desde AssetManager, sin HTTP del WebView. */
-export class AndroidNativeAssetSource implements Source {
+/** Fuente de diagnóstico/navegador: evita cargar el paquete entero en memoria. */
+export class BrowserRangeSource implements Source {
+  constructor(private readonly url: string) {}
+
   getKey() {
-    return OFFLINE_ARCHIVE_KEY;
+    return this.url;
   }
 
   async getBytes(offset: number, length: number) {
-    const response = await offlineMapAsset.readRange({ offset, length });
-    return { data: decodeBase64Range(response.data) };
+    const response = await fetch(this.url, {
+      headers: { Range: `bytes=${offset}-${offset + length - 1}` },
+    });
+    if (!response.ok && response.status !== 206) {
+      throw new Error(`No se pudo leer el tramo local (${response.status})`);
+    }
+    const data = await response.arrayBuffer();
+    if (import.meta.env.DEV) console.info("[offline-map] tramo local", { offset, length, bytes: data.byteLength });
+    return { data };
   }
 }
 
@@ -124,9 +126,7 @@ let protocolRegistered = false;
 
 function getOfflineArchive(archiveUrl: string) {
   if (!offlineArchive) {
-    offlineArchive = new PMTiles(
-      isNativeAndroidApp() ? new AndroidNativeAssetSource() : new AndroidAssetBlobSource(archiveUrl)
-    );
+    offlineArchive = new PMTiles(new BrowserRangeSource(archiveUrl));
   }
   return offlineArchive;
 }
@@ -184,7 +184,8 @@ export function OfflineVectorMap({
   const onCenterChangedRef = useRef(onCenterChanged);
   const preferredFocusRef = useRef(focus ?? userPosition ?? null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const archiveUrl = useMemo(() => new URL("/offline/paraguay-shortbread-1.0.pmtiles", window.location.href).toString(), []);
+  const browserArchiveUrl = useMemo(() => new URL("/offline/paraguay-shortbread-1.0.pmtiles", window.location.href).toString(), []);
+  const [archiveUrl, setArchiveUrl] = useState<string | null>(() => isNativeAndroidApp() ? null : browserArchiveUrl);
 
   useEffect(() => {
     onMapClickRef.current = onMapClick;
@@ -193,7 +194,23 @@ export function OfflineVectorMap({
   }, [focus, onCenterChanged, onMapClick, userPosition]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!isNativeAndroidApp()) {
+      setArchiveUrl(browserArchiveUrl);
+      return;
+    }
+    let active = true;
+    offlineMapAsset.getMapUrl()
+      .then(({ url }) => {
+        if (active) setArchiveUrl(url);
+      })
+      .catch(error => {
+        if (active) setLoadError(error instanceof Error ? error.message : "No se pudo abrir el mapa local");
+      });
+    return () => { active = false; };
+  }, [browserArchiveUrl]);
+
+  useEffect(() => {
+    if (!containerRef.current || !archiveUrl) return;
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
     const archive = getOfflineArchive(archiveUrl);
     registerOfflineProtocol(archive);

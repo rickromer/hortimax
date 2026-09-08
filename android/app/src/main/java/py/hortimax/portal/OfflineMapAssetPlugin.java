@@ -18,6 +18,30 @@ import java.nio.channels.FileChannel;
 public class OfflineMapAssetPlugin extends Plugin {
     private static final String ASSET_PATH = "public/offline/paraguay-shortbread-1.0.pmtiles";
     private static final int MAX_RANGE_BYTES = 2 * 1024 * 1024;
+    private OfflineMapHttpServer localServer;
+
+    @Override
+    public void load() {
+        try {
+            localServer = new OfflineMapHttpServer(getContext());
+            localServer.start();
+        } catch (Exception ignored) {
+            localServer = null;
+        }
+    }
+
+    /** URL loopback usada únicamente por MapLibre y sus workers para leer el activo local. */
+    @PluginMethod
+    public void getMapUrl(PluginCall call) {
+        try {
+            if (localServer == null) localServer = new OfflineMapHttpServer(getContext());
+            JSObject result = new JSObject();
+            result.put("url", localServer.getUrl());
+            call.resolve(result);
+        } catch (Exception error) {
+            call.reject("No se pudo abrir el mapa local", error);
+        }
+    }
 
     @PluginMethod
     public void readRange(PluginCall call) {

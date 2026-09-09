@@ -22,7 +22,7 @@ import SiteDetail from "./pages/SiteDetail";
 import SiteList from "./pages/SiteList";
 import TeamCalendar from "./pages/TeamCalendar";
 
-function Splash() {
+function Splash({ diagnosticCode }: { diagnosticCode?: string | null }) {
   return (
     <div className="min-h-dvh grid place-items-center bg-background">
       <div className="flex flex-col items-center gap-3">
@@ -30,6 +30,11 @@ function Splash() {
           <MapPinned className="h-6 w-6" />
         </div>
         <p className="text-sm text-muted-foreground">Cargando {BRAND_NAME}…</p>
+        {diagnosticCode ? (
+          <p className="text-[11px] font-mono text-muted-foreground" aria-live="polite">
+            Estado: {diagnosticCode}
+          </p>
+        ) : null}
       </div>
     </div>
   );
@@ -45,18 +50,29 @@ function Guard({
   adminOnly?: boolean;
   managementOnly?: boolean;
 }) {
-  const { user, loading, isAdmin, canManageAll } = useAuth();
-  if (loading) return <Splash />;
+  const { user, loading, isAdmin, canManageAll, startupDiagnostic } = useAuth();
+  if (loading) return <Splash diagnosticCode={startupDiagnostic} />;
   if (!user) return <Redirect to="/acceso" />;
   if (adminOnly && !isAdmin) return <Redirect to="/mapa" />;
   if (managementOnly && !canManageAll) return <Redirect to="/mapa" />;
   return <Component />;
 }
 
+/**
+ * El borde publicado garantiza la ruta /acceso. Al tener sesión, se monta el
+ * campo desde esa misma entrada en lugar de recargar /mapa, una ruta profunda
+ * que algunos navegadores móviles recibían como 404 antes de entregar React.
+ */
+function AccessEntry() {
+  const { user, loading, startupDiagnostic } = useAuth();
+  if (loading) return <Splash diagnosticCode={startupDiagnostic} />;
+  return user ? <FieldMap /> : <Login />;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/acceso" component={Login} />
+      <Route path="/acceso" component={AccessEntry} />
 
       {/* El campo y los datos operativos requieren siempre una sesión válida. */}
       <Route path="/">{() => <Redirect to="/acceso" />}</Route>

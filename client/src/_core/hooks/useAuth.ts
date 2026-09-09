@@ -5,6 +5,19 @@ import { forgetOfflineCredential, getOfflineSession, onOfflineAuthChange } from 
 import { clearOfflineOperationalData } from "@/lib/offlineOperationalData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+export const AUTH_BOOT_TIMEOUT_MS = 8_000;
+
+export function getAuthStartupDiagnostic(input: {
+  isLoading: boolean;
+  fetchStatus: "fetching" | "paused" | "idle";
+  timedOut: boolean;
+}) {
+  if (!input.isLoading) return null;
+  if (input.timedOut) return "HMX-AUTH-TIMEOUT";
+  if (input.fetchStatus === "paused") return "HMX-AUTH-PAUSED";
+  return "HMX-AUTH-CHECK";
+}
+
 /**
  * Estado de autenticación de la app. El acceso es con usuario y contraseña
  * propios (sin OAuth): la sesión vive en una cookie firmada por el servidor.
@@ -12,6 +25,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 export function useAuth() {
   const utils = trpc.useUtils();
   const [offlineSession, setOfflineSession] = useState(() => getOfflineSession());
+  const [bootstrapTimedOut, setBootstrapTimedOut] = useState(false);
 
   useEffect(() => onOfflineAuthChange(() => setOfflineSession(getOfflineSession())), []);
 
@@ -19,6 +33,16 @@ export function useAuth() {
     retry: false,
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (!meQuery.isLoading) {
+      setBootstrapTimedOut(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setBootstrapTimedOut(true), AUTH_BOOT_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [meQuery.isLoading]);
 
   useEffect(() => {
     if (!meQuery.data) return;
@@ -58,12 +82,20 @@ export function useAuth() {
 
   const offlineAllowed = Boolean(offlineSession) && (meQuery.isError || (typeof navigator !== "undefined" && navigator.onLine === false));
   const activeUser = meQuery.data ?? (offlineAllowed ? offlineSession : null);
+  const startupDiagnostic = getAuthStartupDiagnostic({
+    isLoading: meQuery.isLoading,
+    fetchStatus: meQuery.fetchStatus,
+    timedOut: bootstrapTimedOut,
+  });
 
   const state = useMemo(
     () => ({
       user: activeUser,
-      loading: (meQuery.isLoading && !offlineAllowed) || logoutMutation.isPending,
+      loading:
+        (meQuery.isLoading && meQuery.fetchStatus !== "paused" && !offlineAllowed && !bootstrapTimedOut) ||
+        logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
+      startupDiagnostic,
       isAuthenticated: Boolean(activeUser),
       isAdmin: activeUser?.role === "admin",
       canManageAll: canManageAll(activeUser?.role),
@@ -72,7 +104,10 @@ export function useAuth() {
       activeUser,
       meQuery.error,
       meQuery.isLoading,
+      meQuery.fetchStatus,
       offlineAllowed,
+      bootstrapTimedOut,
+      startupDiagnostic,
       logoutMutation.error,
       logoutMutation.isPending,
     ]

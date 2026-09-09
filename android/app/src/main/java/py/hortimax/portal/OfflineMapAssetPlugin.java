@@ -20,16 +20,6 @@ public class OfflineMapAssetPlugin extends Plugin {
     private static final int MAX_RANGE_BYTES = 2 * 1024 * 1024;
     private OfflineMapHttpServer localServer;
 
-    @Override
-    public void load() {
-        try {
-            localServer = new OfflineMapHttpServer(getContext());
-            localServer.start();
-        } catch (Exception ignored) {
-            localServer = null;
-        }
-    }
-
     /** URL loopback usada únicamente por MapLibre y sus workers para leer el activo local. */
     @PluginMethod
     public void getMapUrl(PluginCall call) {

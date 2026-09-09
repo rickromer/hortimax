@@ -800,3 +800,45 @@
 - [x] Usar Google Maps normal mediante SDK nativo únicamente cuando la conexión sea utilizable
 - [x] Usar OSM local vial con referencias, pines, pan y zoom únicamente sin conexión
 - [ ] Confirmar ambos modos en teléfono antes de declararlos disponibles
+
+## Regresión APK 1.0.23 — arranque bloqueado
+- [x] Diagnosticar por qué el APK queda detenido en “Iniciando” antes de mostrar el acceso
+- [x] Corregir únicamente la inicialización Android que bloquea el login, sin alterar la web estable
+- [x] Compilar el APK con la recuperación de arranque y validarlo técnicamente
+- [ ] Comprobar físicamente que el acceso vuelve a abrir antes de probar los mapas
+
+## Incidencia crítica web móvil — carga detenida
+- [x] Diagnosticar por qué el navegador móvil queda detenido en “Cargando Portal de Seguimiento a Clientes HORTIMAX…”
+- [x] Restaurar el acceso web estable sin alterar datos, formularios, roles ni rutas operativas
+- [ ] Verificar acceso en navegador móvil y escritorio antes de retomar cualquier trabajo de APK
+- [ ] Mantener suspendidos los cambios Android hasta recuperar y confirmar la web
+
+## Bloqueo web persistente tras sincronización
+- [x] Comparar la versión publicada con el último checkpoint web estable comprobado por el usuario
+- [x] Restaurar la web estable sin modificar la base de datos ni los formularios
+- [ ] Confirmar desde el teléfono que desaparece la pantalla de carga antes de volver al APK
+
+## Login HORTIMAX — corrección dentro del proyecto
+- [x] Reproducir el inicio de sesión web móvil con la misma ruta de HORTIMAX
+- [x] Corregir el bloqueo de acceso desde la aplicación sin derivar el flujo de HORTIMAX a soporte externo
+- [ ] Confirmar desde el teléfono el acceso recuperado antes de reanudar el APK
+
+## Diagnóstico visible de login HORTIMAX
+- [x] Mostrar un código de estado no sensible cuando la inicialización de sesión no complete
+- [x] Usar el código obtenido para corregir el bloqueo real de acceso
+- [ ] Confirmar el acceso desde el teléfono antes de retomar cambios Android
+
+## Bloqueo persistente del login publicado
+- [x] Trazar la respuesta de la ruta publicada, la carga de JavaScript y la consulta auth.me
+- [x] Corregir el punto exacto de bloqueo sin alterar usuarios, datos ni permisos
+- [ ] Validar el mismo flujo en condiciones de navegador móvil antes de solicitar otra prueba
+
+## Bloqueo posterior al inicio de sesión
+- [x] Trazar la preparación de sesión y la precarga offline después de validar usuario y contraseña
+- [x] Permitir entrar al mapa de inmediato sin esperar indefinidamente datos secundarios
+- [ ] Confirmar desde el teléfono que el login llega al mapa antes de retomar el APK
+
+## Incompatibilidad de navegación publicada /mapa
+- [x] Eliminar la navegación de recarga hacia /mapa después del login y montar el mapa desde /acceso autenticado
+- [x] Validar que el acceso autenticado no solicite una ruta profunda al borde publicado
+- [ ] Confirmar desde el teléfono que inicia sesión y entra al mapa

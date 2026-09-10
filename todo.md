@@ -842,3 +842,37 @@
 - [x] Eliminar la navegación de recarga hacia /mapa después del login y montar el mapa desde /acceso autenticado
 - [x] Validar que el acceso autenticado no solicite una ruta profunda al borde publicado
 - [ ] Confirmar desde el teléfono que inicia sesión y entra al mapa
+
+## Web congelada por solicitud del usuario
+- [x] Mantener la web HORTIMAX en 58f449c9 sin nuevas modificaciones operativas
+- [x] Generar APK instalable exactamente desde 58f449c9
+- [x] Verificar APK, versión Android y recursos empaquetados sin publicar cambios web
+- [ ] Entregar APK válido y mantener la web congelada
+
+## Google Cloud / Maps pendiente del APK
+- [ ] Diagnosticar la solicitud de verificación de tarjeta sin exponer credenciales
+- [ ] Separar saldo promocional/prepago, facturación del proyecto y autorización de la clave Android
+- [ ] Documentar pasos para revisar proyecto, facturación, API habilitada y restricciones de la clave
+
+## Regla de alcance vigente
+- [x] No cambiar formularios, clientes, datos, permisos, rutas ni comportamiento de la web estable mientras se trabaja en Android
+
+---
+
+## Fallo APK conectado: sesión y clientes no cargan
+- [ ] Trazar en Android la URL de API, autenticación y respuesta de `sites.list`
+- [ ] Corregir únicamente el transporte conectado del APK sin modificar la web congelada
+- [ ] Confirmar que la cartera autorizada y los clientes aparecen antes de validar el mapa
+- [ ] Compilar un APK conectado y entregar evidencia técnica sin declarar resuelta la prueba física
+
+## Ajuste solicitado: quitar códigos técnicos del login
+- [x] Retirar de la interfaz los códigos visibles HMX-AUTH-* y conservar mensajes normales
+- [x] Mantener el acceso conectado Android independiente de la precarga offline
+- [ ] Verificar que la web congelada no reciba cambios operativos
+
+## Reconstrucción APK desde web estable instalada
+- [x] Tomar la web instalada estable como base de compilación sin cambiar su operación
+- [x] Quitar de la web el código técnico visible HMX-AUTH-* sin alterar el login
+- [x] Recompilar APK con login conectado, cartera, clientes y mapa conectado
+- [x] Inspeccionar el APK y documentar que el mapa offline puede pixelarse al superar el zoom disponible
+- [x] Entregar el APK reconstruido sin publicar cambios operativos adicionales en la web

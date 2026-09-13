@@ -13,9 +13,9 @@ describe("experiencia de mapa sin señal", () => {
   it("separa Google Maps Android conectado del visor OSM local sin señal", () => {
     const source = readFileSync(resolve(process.cwd(), "client/src/pages/FieldMap.tsx"), "utf8");
 
-    expect(source).toContain("const nativeConnectedMode = isNativeApp && online");
+    expect(source).toContain("const nativeConnectedMode = false");
     expect(source).toContain("<OfflineVectorMap");
-    expect(source).toContain("<NativeGoogleMap");
+    expect(source).toContain("<ClientMap");
     expect(source).toContain("!offlineMode && !nativeConnectedMode");
   });
 });

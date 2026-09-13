@@ -876,3 +876,9 @@
 - [x] Recompilar APK con login conectado, cartera, clientes y mapa conectado
 - [x] Inspeccionar el APK y documentar que el mapa offline puede pixelarse al superar el zoom disponible
 - [x] Entregar el APK reconstruido sin publicar cambios operativos adicionales en la web
+
+## Continuación: mapa conectado APK y cuota de publicación
+- [ ] Corregir el render del mapa conectado Android sin modificar la web congelada
+- [ ] Mantener documentada la respuesta de cartera y separar clientes cargados de mapa no renderizado
+- [ ] No intentar publicar mientras Cloud Run reporte cuota ServicesPerProject agotada
+- [ ] Validar físicamente el APK conectado antes de declarar resuelto

@@ -7,8 +7,8 @@ android {
         applicationId "py.hortimax.portal"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 26
-        versionName "1.0.26"
+        versionCode 28
+        versionName "1.0.28"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // La clave se toma solo durante el build desde el secreto ya existente;
         // nunca se escribe en el repositorio ni en recursos fuente.

@@ -860,10 +860,10 @@
 ---
 
 ## Fallo APK conectado: sesión y clientes no cargan
-- [ ] Trazar en Android la URL de API, autenticación y respuesta de `sites.list`
-- [ ] Corregir únicamente el transporte conectado del APK sin modificar la web congelada
-- [ ] Confirmar que la cartera autorizada y los clientes aparecen antes de validar el mapa
-- [ ] Compilar un APK conectado y entregar evidencia técnica sin declarar resuelta la prueba física
+- [x] Trazar en Android la URL de API, autenticación y respuesta de `sites.list`
+- [x] Corregir únicamente el transporte conectado del APK sin modificar la web congelada
+- [x] Confirmar que la cartera autorizada y los clientes aparecen antes de validar el mapa
+- [x] Compilar un APK conectado y entregar evidencia técnica sin declarar resuelta la prueba física
 
 ## Ajuste solicitado: quitar códigos técnicos del login
 - [x] Retirar de la interfaz los códigos visibles HMX-AUTH-* y conservar mensajes normales
@@ -878,7 +878,22 @@
 - [x] Entregar el APK reconstruido sin publicar cambios operativos adicionales en la web
 
 ## Continuación: mapa conectado APK y cuota de publicación
-- [ ] Corregir el render del mapa conectado Android sin modificar la web congelada
-- [ ] Mantener documentada la respuesta de cartera y separar clientes cargados de mapa no renderizado
+- [x] Corregir el render del mapa conectado Android sin modificar la web congelada
+- [x] Mantener documentada la respuesta de cartera y separar clientes cargados de mapa no renderizado
 - [ ] No intentar publicar mientras Cloud Run reporte cuota ServicesPerProject agotada
 - [ ] Validar físicamente el APK conectado antes de declarar resuelto
+
+## Ajuste visual solicitado: retirar HMX-AUTH de la web
+- [x] Verificar que la interfaz publicada no muestre mensajes HMX-AUTH-* ni códigos técnicos de sesión
+- [x] Confirmar que el estado de carga conserve solo un mensaje normal para el usuario
+
+## Entrega solicitada APK 1.0.27
+- [x] Verificar existencia, versión y huella del instalador antes de entregarlo
+- [x] Entregar APK con mapa conectado priorizado y aclarar que requiere prueba física
+
+## Diagnóstico mapa conectado APK
+- [x] Determinar si “Mapa sin señal” proviene de detección de red o rechazo de Google Maps
+- [ ] Verificar autorización, facturación y respuesta del mapa conectado sin exponer claves
+- [x] Mantener clientes y cartera funcionando mientras se corrige el visor
+- [x] No entregar APK nuevo hasta identificar la causa
+- [x] Documentar que una actualización manual requiere APK completo; diferencial solo mediante Play Store

@@ -91,7 +91,7 @@ export default function FieldMap() {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
   const isNativeApp = Capacitor.isNativePlatform();
-  const offlineMode = isNativeApp && !online;
+  const [connectedMapFallback, setConnectedMapFallback] = useState(false);
   // En Android conectado se usa ClientMap con el proxy de la web estable.
   // NativeGoogleMap queda fuera de la ruta operativa hasta resolver la autorización nativa.
   const nativeConnectedMode = false;
@@ -102,6 +102,12 @@ export default function FieldMap() {
     { search: search.trim() || undefined },
     { staleTime: 30_000 }
   );
+  // Network.getStatus puede informar desconectado aunque la API nativa ya haya
+  // respondido. La consulta de cartera es la evidencia operativa de conexión.
+  const connectedApiReady = isNativeApp && sitesQuery.isFetchedAfterMount && sitesQuery.isSuccess;
+  const offlineMode = isNativeApp && !online && !connectedApiReady;
+  const localMapMode = offlineMode ||
+    (isNativeApp && (online || connectedApiReady) && connectedMapFallback);
 
   const position = geo.position;
   useEffect(() => {
@@ -248,7 +254,7 @@ export default function FieldMap() {
         </Button>
       }>
       <div className="absolute inset-0">
-        {offlineMode ? (
+        {localMapMode ? (
           <OfflineVectorMap
             markers={markers}
             userPosition={position}
@@ -281,6 +287,12 @@ export default function FieldMap() {
             initialZoom={restoredMapViewRef.current?.zoom}
             mapTypeId={mapType}
             onReady={map => setMapInstance(map)}
+            onLoadError={() => {
+              if (isNativeApp && (online || connectedApiReady)) {
+                setConnectedMapFallback(true);
+                toast.error("Google Maps no está disponible; se activó el mapa local.");
+              }
+            }}
             onMapClick={coords => {
               if (!placementMode) return;
               setPlacementCoords(placeFromMapCenter(coords));
@@ -305,7 +317,7 @@ export default function FieldMap() {
           />
         )}
 
-        {!offlineMode && !nativeConnectedMode && (
+        {!localMapMode && !nativeConnectedMode && (
           <div className={cn("absolute left-3 right-16 z-20 sm:right-auto sm:w-[24rem]", placementMode ? "top-20" : "top-3")}>
             <MapPlaceSearch
               map={mapInstance}

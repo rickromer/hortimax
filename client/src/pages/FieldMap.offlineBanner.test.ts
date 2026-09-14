@@ -16,6 +16,11 @@ describe("experiencia de mapa sin señal", () => {
     expect(source).toContain("const nativeConnectedMode = false");
     expect(source).toContain("<OfflineVectorMap");
     expect(source).toContain("<ClientMap");
-    expect(source).toContain("!offlineMode && !nativeConnectedMode");
+    expect(source).toContain("!localMapMode && !nativeConnectedMode");
+    expect(source).toContain("connectedApiReady");
+    expect(source).toContain("sitesQuery.isFetchedAfterMount");
+    expect(source).toContain("connectedMapFallback");
+    expect(source).toContain("setConnectedMapFallback(true)");
+    expect(source).toContain("Google Maps no está disponible; se activó el mapa local.");
   });
 });

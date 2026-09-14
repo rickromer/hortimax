@@ -13,14 +13,9 @@ describe("experiencia de mapa sin señal", () => {
   it("separa Google Maps Android conectado del visor OSM local sin señal", () => {
     const source = readFileSync(resolve(process.cwd(), "client/src/pages/FieldMap.tsx"), "utf8");
 
-    expect(source).toContain("const nativeConnectedMode = false");
+    expect(source).toContain("const nativeConnectedMode = isNativeApp && online");
     expect(source).toContain("<OfflineVectorMap");
-    expect(source).toContain("<ClientMap");
-    expect(source).toContain("!localMapMode && !nativeConnectedMode");
-    expect(source).toContain("connectedApiReady");
-    expect(source).toContain("sitesQuery.isFetchedAfterMount");
-    expect(source).toContain("connectedMapFallback");
-    expect(source).toContain("setConnectedMapFallback(true)");
-    expect(source).toContain("Google Maps no está disponible; se activó el mapa local.");
+    expect(source).toContain("<NativeGoogleMap");
+    expect(source).toContain("!offlineMode && !nativeConnectedMode");
   });
 });

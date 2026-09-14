@@ -9,7 +9,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { getRememberedOfflineUser, isNetworkFailure, rememberOfflineCredential, setOfflineSession, verifyOfflineCredential } from "@/lib/offlineAuth";
 import { prepareOfflineOperationalDataForUser } from "@/lib/offlineOperationalData";
-import { isNativeAndroidApp, saveNativeSessionToken } from "@/lib/nativeSession";
+import { saveNativeSessionToken } from "@/lib/nativeSession";
 import { TRPCClientError } from "@trpc/client";
 import { ArrowLeft, KeyRound, Loader2, MapPinned, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -68,22 +68,13 @@ export default function Login() {
 
   const completeOnlineLogin = async (response: any) => {
     const { mobileSessionToken, ...user } = response;
-    // En Android la entrada no puede esperar la precarga offline: si una
-    // consulta secundaria queda pendiente, el usuario debe ver de inmediato
-    // la cartera conectada. La precarga continúa en segundo plano.
-    if (isNativeAndroidApp()) {
-      saveNativeSessionToken(mobileSessionToken);
-      setOfflineSession(user);
-      finish();
-      void prepareOfflineOperationalDataForUser(user.id).catch(error => {
-        console.warn("No se pudo preparar la copia offline", error);
-      });
-    } else {
-      // La web conserva su flujo estable actual.
-      await prepareOfflineOperationalDataForUser(user.id);
-      setOfflineSession(user);
-      finish();
-    }
+    // Mantiene el aislamiento de carteras antes de navegar. Para el mismo
+    // usuario este paso es inmediato; si cambia la identidad, limpia la copia
+    // local autorizada antes de mostrar datos nuevos.
+    await prepareOfflineOperationalDataForUser(user.id);
+    saveNativeSessionToken(mobileSessionToken);
+    setOfflineSession(user);
+    finish();
     // El verificador PBKDF2 permite el próximo ingreso sin señal, pero nunca
     // debe retener la navegación normal después de que el servidor validó la
     // contraseña. Se completa en segundo plano y no contiene datos de cartera.

@@ -31,11 +31,7 @@ function loadMapScript(): Promise<void> {
   if (window.google?.maps) return Promise.resolve();
   if (window.__mapsLoader__) return window.__mapsLoader__;
 
-  // La web estable y el APK conectado usan el proxy Forge. La clave directa
-  // queda reservada para integraciones nativas explícitas; así Android no
-  // queda en blanco cuando Google exige verificación o restricciones distintas.
-  const useDirectKey = import.meta.env.VITE_CAPACITOR_BUILD !== "true";
-  const ownKey = useDirectKey ? (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) : undefined;
+  const ownKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
   const src = ownKey
     ? `https://maps.googleapis.com/maps/api/js?key=${ownKey}&v=weekly&libraries=marker,places,geocoding,geometry&language=es&region=PY`
     : `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry&language=es&region=PY`;

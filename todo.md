@@ -842,3 +842,13 @@
 - [x] Eliminar la navegación de recarga hacia /mapa después del login y montar el mapa desde /acceso autenticado
 - [x] Validar que el acceso autenticado no solicite una ruta profunda al borde publicado
 - [ ] Confirmar desde el teléfono que inicia sesión y entra al mapa
+
+## Incidencia DNS publicada
+- [ ] Comprobar resolución del dominio mapaclientes-cqpci7xz.manus.space
+- [ ] Verificar que el despliegue c5249b9c siga disponible
+- [ ] Recuperar una URL pública funcional sin modificar la aplicación
+
+## Ajuste visual solicitado
+- [x] Verificar que “Made with Manus” no proviene del código de HORTIMAX; su ocultación requiere una configuración de plataforma
+- [x] Retirar “HMX-AUTH-CHECK” de la carga web
+- [x] Verificar que login, datos, formularios y permisos no cambien

@@ -495,3 +495,7 @@ La causa restante estaba en la recarga posterior al login: aunque el formulario 
 [1] [Google Maps JavaScript API — Error Messages](https://developers.google.com/maps/documentation/javascript/error-messages)
 
 [2] [Maps SDK for Android — Get an API Key](https://developers.google.com/maps/documentation/android-sdk/get-api-key)
+
+## Comprobación DNS y bloqueo HMX-AUTH posterior al rollback
+
+El 14 de septiembre de 2026, la navegación de verificación a `https://mapaclientes-cqpci7xz.manus.space/` resolvió correctamente y entregó HTML del Portal de Seguimiento a Clientes HORTIMAX. Sin embargo, la interfaz quedó visible en `Cargando Portal de Seguimiento a Clientes HORTIMAX… Estado: HMX-AUTH-CHECK`. La consola no mostró errores JavaScript. Por tanto, en esta comprobación el dominio no estaba en NXDOMAIN; la incidencia observable era el bloqueo del guard de sesión. Se conserva c5249b9c sin modificar mientras se decide si se elimina ese diagnóstico temporal.

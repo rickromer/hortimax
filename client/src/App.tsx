@@ -22,7 +22,7 @@ import SiteDetail from "./pages/SiteDetail";
 import SiteList from "./pages/SiteList";
 import TeamCalendar from "./pages/TeamCalendar";
 
-function Splash({ diagnosticCode }: { diagnosticCode?: string | null }) {
+function Splash() {
   return (
     <div className="min-h-dvh grid place-items-center bg-background">
       <div className="flex flex-col items-center gap-3">
@@ -30,11 +30,6 @@ function Splash({ diagnosticCode }: { diagnosticCode?: string | null }) {
           <MapPinned className="h-6 w-6" />
         </div>
         <p className="text-sm text-muted-foreground">Cargando {BRAND_NAME}…</p>
-        {diagnosticCode ? (
-          <p className="text-[11px] font-mono text-muted-foreground" aria-live="polite">
-            Estado: {diagnosticCode}
-          </p>
-        ) : null}
       </div>
     </div>
   );
@@ -50,8 +45,8 @@ function Guard({
   adminOnly?: boolean;
   managementOnly?: boolean;
 }) {
-  const { user, loading, isAdmin, canManageAll, startupDiagnostic } = useAuth();
-  if (loading) return <Splash diagnosticCode={startupDiagnostic} />;
+  const { user, loading, isAdmin, canManageAll } = useAuth();
+  if (loading) return <Splash />;
   if (!user) return <Redirect to="/acceso" />;
   if (adminOnly && !isAdmin) return <Redirect to="/mapa" />;
   if (managementOnly && !canManageAll) return <Redirect to="/mapa" />;
@@ -64,8 +59,8 @@ function Guard({
  * que algunos navegadores móviles recibían como 404 antes de entregar React.
  */
 function AccessEntry() {
-  const { user, loading, startupDiagnostic } = useAuth();
-  if (loading) return <Splash diagnosticCode={startupDiagnostic} />;
+  const { user, loading } = useAuth();
+  if (loading) return <Splash />;
   return user ? <FieldMap /> : <Login />;
 }
 

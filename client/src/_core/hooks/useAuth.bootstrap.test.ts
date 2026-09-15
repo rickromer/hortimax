@@ -13,5 +13,9 @@ describe("arranque de autenticación web", () => {
     expect(source).toContain('return "HMX-AUTH-CHECK"');
     expect(source).toContain('return "HMX-AUTH-PAUSED"');
     expect(source).toContain('return "HMX-AUTH-TIMEOUT"');
+
+    const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
+    expect(appSource).not.toContain("diagnosticCode");
+    expect(appSource).not.toContain("HMX-AUTH");
   });
 });

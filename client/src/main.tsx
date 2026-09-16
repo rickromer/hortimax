@@ -79,6 +79,16 @@ const trpcClient = trpc.createClient({
 });
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  const serviceWorkerRefreshKey = "hortimax-sw-refresh-v6-auth-clean";
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    try {
+      if (sessionStorage.getItem(serviceWorkerRefreshKey) === "1") return;
+      sessionStorage.setItem(serviceWorkerRefreshKey, "1");
+      window.location.reload();
+    } catch {
+      // Si el almacenamiento no está disponible, la nueva sesión se aplicará al próximo acceso.
+    }
+  });
   window.addEventListener("load", () => {
     void navigator.serviceWorker.register("/sw.js?v=auth-clean-1", { updateViaCache: "none" });
   });

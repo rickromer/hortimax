@@ -10,9 +10,7 @@ describe("arranque de autenticación web", () => {
     expect(source).toContain("meQuery.fetchStatus !== \"paused\"");
     expect(source).toContain("!bootstrapTimedOut");
     expect(source).toContain("window.setTimeout(() => setBootstrapTimedOut(true), AUTH_BOOT_TIMEOUT_MS)");
-    expect(source).toContain('return "HMX-AUTH-CHECK"');
-    expect(source).toContain('return "HMX-AUTH-PAUSED"');
-    expect(source).toContain('return "HMX-AUTH-TIMEOUT"');
+    expect(source).not.toContain("HMX-AUTH");
 
     const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
     expect(appSource).not.toContain("diagnosticCode");

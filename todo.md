@@ -877,3 +877,10 @@
 - [x] Diagnosticar carga infinita posterior al login en PC
 - [x] Aplicar recuperación mínima sin tocar el subdominio nuevo
 - [ ] Validar celular y PC antes de reanudar la migración
+
+## Incidencia crítica de producción: autenticación
+- [x] Eliminar definitivamente cualquier HMX-AUTH-CHECK visible para usuarios
+- [x] Auditar cookie de sesión, auth.me y consultas de arranque
+- [x] Sustituir carga indefinida por recuperación visible y accionable
+- [ ] Validar login y sesión persistente en producción desde PC y celular
+- [ ] Definir criterio de continuidad y respaldo antes de habilitar uso empresarial

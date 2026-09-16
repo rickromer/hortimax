@@ -10,6 +10,7 @@ describe("finalización de login", () => {
     expect(source).not.toContain('window.location.replace("/mapa")');
     expect(source).toContain("void rememberOfflineCredential(user, password).catch");
     expect(source).not.toContain("await rememberOfflineCredential(user, password)");
-    expect(source).toContain("await prepareOfflineOperationalDataForUser(user.id)");
+    expect(source).toContain("void prepareOfflineOperationalDataForUser(user.id).catch");
+    expect(source).not.toContain("await prepareOfflineOperationalDataForUser(user.id)");
   });
 });

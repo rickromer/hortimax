@@ -68,16 +68,19 @@ export default function Login() {
 
   const completeOnlineLogin = async (response: any) => {
     const { mobileSessionToken, ...user } = response;
-    // Mantiene el aislamiento de carteras antes de navegar. Para el mismo
-    // usuario este paso es inmediato; si cambia la identidad, limpia la copia
-    // local autorizada antes de mostrar datos nuevos.
-    await prepareOfflineOperationalDataForUser(user.id);
+
+    // La sesión del servidor ya fue validada. Guardamos la identidad y
+    // navegamos inmediatamente; ninguna preparación local puede bloquear el
+    // acceso normal ni dejar la pantalla en “Cargando”.
     saveNativeSessionToken(mobileSessionToken);
     setOfflineSession(user);
     finish();
-    // El verificador PBKDF2 permite el próximo ingreso sin señal, pero nunca
-    // debe retener la navegación normal después de que el servidor validó la
-    // contraseña. Se completa en segundo plano y no contiene datos de cartera.
+
+    // La copia operativa para uso sin conexión se prepara después de entrar.
+    // Si tarda o falla, no afecta el acceso online ni los formularios.
+    void prepareOfflineOperationalDataForUser(user.id).catch(error => {
+      console.warn("No se pudo preparar la cartera offline", error);
+    });
     void rememberOfflineCredential(user, password).catch(error => {
       console.warn("No se pudo preparar la credencial offline", error);
     });

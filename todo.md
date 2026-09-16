@@ -852,3 +852,28 @@
 - [x] Verificar que “Made with Manus” no proviene del código de HORTIMAX; su ocultación requiere una configuración de plataforma
 - [x] Retirar “HMX-AUTH-CHECK” de la carga web
 - [x] Verificar que login, datos, formularios y permisos no cambien
+
+## Incidencia combinada: caché y DNS
+- [ ] Comprobar si mapaclientes-cqpci7xz.manus.space resuelve por DNS
+- [ ] Verificar si HTTPS y /acceso responden
+- [ ] Distinguir caché/guard de sesión de una caída DNS
+- [ ] Aplicar solo la recuperación necesaria
+
+## Congelamiento por inestabilidad de acceso
+- [ ] Mantener congelada la versión estable sin nuevos cambios de código
+- [ ] Confirmar que el último checkpoint estable y los datos siguen preservados
+- [ ] Preparar una ruta de acceso independiente del dominio preview
+
+## Migración fuera del preview
+- [ ] Congelar y respaldar la versión estable actual
+- [ ] Confirmar hosting destino y si será WebDev con dominio propio o servidor independiente
+- [ ] Decidir reemplazo de OAuth Manus por autenticación propia o proveedor externo
+- [ ] Decidir conservar o migrar TiDB, almacenamiento y APIs Forge
+- [ ] Configurar `crm.fcg.com.py` solo después de validar el nuevo destino
+- [ ] Mantener el dominio preview como respaldo durante la transición
+
+## Recuperación antes de migrar
+- [x] Comprobar NXDOMAIN del dominio actual en celular
+- [x] Diagnosticar carga infinita posterior al login en PC
+- [x] Aplicar recuperación mínima sin tocar el subdominio nuevo
+- [ ] Validar celular y PC antes de reanudar la migración
